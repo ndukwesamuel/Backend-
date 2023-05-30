@@ -1,4 +1,6 @@
 const asyncHandler = require("express-async-handler");
+const { handleErrors } = require("./Middleware/errorHandler/function");
+const User = require("../Models/Users");
 
 const getData = asyncHandler(async (req, res) => {
   let data = [
@@ -22,8 +24,24 @@ const getData = asyncHandler(async (req, res) => {
   res.status(200).json(data);
 });
 
-const register = asyncHandler(async (req, res) => {});
+const register = asyncHandler(async (req, res) => {
+  const { name, email, password } = req.body;
+  const newUser = new User({
+    fullName: name,
+    email: email,
+    password: password,
+  });
+
+  try {
+    savedUser = await newUser.save();
+    res.status(201).json({ saveduser });
+  } catch (err) {
+    const error = handleErrors(err);
+    res.status(500).json({ message: error });
+  }
+});
 
 module.exports = {
   getData,
+  register,
 };

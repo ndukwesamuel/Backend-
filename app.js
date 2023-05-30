@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const Route = require("./Routes/Route");
+const bodyParser = require("body-parser");
 dotenv.config();
 
 mongoose.set("strictQuery", true);
@@ -12,8 +13,10 @@ mongoose
   .catch((err) => console.log(err));
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 // this is the  api route
 app.use("/api", Route);

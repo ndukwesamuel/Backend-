@@ -2,8 +2,9 @@ const { Router } = require("express");
 
 const router = Router();
 
-const { getData } = require("../Controller/Controller");
+const { getData, register } = require("../Controller/Controller");
 
 router.route("/getdata").get(getData);
+router.route("/user/register").post(register);
 
 module.exports = router;
