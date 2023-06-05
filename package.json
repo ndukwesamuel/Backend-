@@ -25,6 +25,7 @@
     "express-session": "^1.17.3",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^6.8.4",
+    "nodemailer": "^6.9.3",
     "uuid": "^9.0.0",
     "validator": "^13.7.0"
   }

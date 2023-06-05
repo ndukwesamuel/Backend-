@@ -10,8 +10,10 @@ const handleErrors = (err) => {
     return "Incorrect password";
   }
 
-  if (err.code === 11000) {
+  if (err.code === 11000 && err.keyPattern.name) {
     // duplicate errors
+    errs = "Name is not available";
+  } else {
     errs = "Email already exist";
     return errs;
   }
