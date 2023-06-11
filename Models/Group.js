@@ -12,6 +12,7 @@ const groupSchema = new Schema(
       type: String,
       ref: "Users",
     },
+    members: [],
   },
   { timestamps: true }
 );
