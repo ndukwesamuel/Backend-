@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const emailVerification = require("../Models/emailVerification");
-const userPasswordReset = require("../models/passwordReset");
+const userPasswordReset = require("../Models/passwordReset");
 const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 
@@ -26,21 +26,22 @@ transporter.verify((error, message) => {
 });
 
 // Configuration for Password reset email
-const sendResetEmail = async ({ _id, email }, res) => {
-  const uniqueNumber = Math.floor(100000 + Math.random() * 900000).toString();
+const sendPasswordResetEmail = async ({ _id, email }, redirectUrl, res) => {
+  const uniqueString = uuidv4() + _id;
 
   const mailOptions = {
     from: process.env.EMAIL,
     to: email,
     subject: "Password Reset",
-    html: `<p>Please copy these numbers to reset your password: ${uniqueNumber} </p> \n <b>Verification code expires in 1 hour</b>`,
+    html: `<p>Please click the link to reset your password: <a href=${redirectUrl}?userId=${_id}&uniqueString=${uniqueString}>here</a></p>
+  \n <b>Verification code expires in 1 hour</b>`,
   };
 
   try {
-    const hashedUniqueNumber = await bcrypt.hash(uniqueNumber, 10);
+    const hashedUniqueString = await bcrypt.hash(uniqueString, 10);
     const passwordReset = new userPasswordReset({
       userId: _id,
-      uniqueNumber: hashedUniqueNumber,
+      uniqueString: hashedUniqueString,
       createdAt: Date.now(),
       expireAt: Date.now() + 3600000,
     });
@@ -62,20 +63,21 @@ const sendResetEmail = async ({ _id, email }, res) => {
 
 // Email verification
 const sendVerificationEmail = async ({ _id, email }, res) => {
-  const uniqueNumber = Math.floor(100000 + Math.random() * 900000).toString();
+  const uniqueString = uuidv4() + _id;
+  const redirectUrl = "webuy-opal.vercel.app";
 
   const mailOptions = {
     from: process.env.EMAIL,
     to: email,
     subject: "Email Verification",
-    html: `<p>Please copy these numbers to verify your email: ${uniqueNumber} </p> \n <b>Verification code expires in 1 hour</b>`,
+    html: `<p>Please click the link to verify your email: <a href=${redirectUrl}/verify-email?userId=${_id}&uniqueString=${uniqueString}>here</a></p> \n <b>Verification link expires in 1 hour</b>`,
   };
 
   try {
-    const hashedUniqueNumber = await bcrypt.hash(uniqueNumber, 10);
+    const hashedUniqueString = await bcrypt.hash(uniqueString, 10);
     const verification = new emailVerification({
       userId: _id,
-      uniqueNumber: hashedUniqueNumber,
+      uniqueString: hashedUniqueString,
       createdAt: Date.now(),
       expireAt: Date.now() + 3600000,
     });
@@ -95,4 +97,4 @@ const sendVerificationEmail = async ({ _id, email }, res) => {
   }
 };
 
-module.exports = { sendVerificationEmail, sendResetEmail };
+module.exports = { sendVerificationEmail, sendPasswordResetEmail };

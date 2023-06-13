@@ -9,10 +9,11 @@ const {
   home,
   group,
   emailVerification,
-  resendOTP,
+  resendVerificationEmail,
   getAllGroups,
   joinGroup,
   passwordResetEmail,
+  resetPassword,
   getCategory,
   getAllCategories,
   createCategory,
@@ -35,9 +36,10 @@ router.route("/user/register").post(register);
 router.route("/user/login").post(login);
 router.route("/create-group").post(verifyToken, group);
 router.route("/verify-email").post(emailVerification);
-router.route("/resendOTP").post(resendOTP);
+router.route("/resendOTP").post(resendVerificationEmail);
 router.route("/groups/:groupName/join").get(joinGroup);
-router.route("/PasswordResetOTP").post(passwordResetEmail);
+router.route("/passwordResetEmail").post(passwordResetEmail);
+router.route("/resetPassword").post(resetPassword);
 
 router.route("/groups").get(getAllGroups);
 

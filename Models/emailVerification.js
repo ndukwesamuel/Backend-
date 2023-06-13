@@ -6,7 +6,7 @@ const emailVerificationSchema = new Schema({
   userId: {
     type: String,
   },
-  uniqueNumber: {
+  uniqueString: {
     type: String,
   },
   createdAt: {
