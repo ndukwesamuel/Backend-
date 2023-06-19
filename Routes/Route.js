@@ -56,10 +56,14 @@ router.route("/product").post(verifyTokenAndAdmin, createProduct);
 router.route("/product/:id").delete(verifyTokenAndAdmin, deleteProduct);
 router.route("/product/:id").put(verifyTokenAndAdmin, updateProduct);
 
-router.route("/cart/:userId").get(getCart);
-router.route("/cart/:userId/items").post(addToCart);
-router.route("/cart/:userId/items/:productId").patch(decreaseCartItems);
-router.route("/cart/:userId/items/:productId").delete(removeFromCart);
+router.route("/cart").get(verifyToken, getCart);
+router.route("/cart/addItem").post(verifyToken, addToCart);
+router
+  .route("/cart/decreaseItems/:productId")
+  .patch(verifyToken, decreaseCartItems);
+router
+  .route("/cart/:userId/items/:productId")
+  .delete(verifyToken, removeFromCart);
 
 router.route("/home").get(verifyToken, home);
 

@@ -10,6 +10,9 @@ const User = require("../Models/Users");
 const Group = require("../Models/Group");
 const Email = require("../Models/emailVerification");
 const userPasswordReset = require("../Models/passwordReset");
+const Category = require("../Models/Category");
+const Product = require("../Models/Products");
+const Cart = require("../Models/Carts");
 
 const getData = async (req, res) => {
   let data = [
@@ -74,7 +77,7 @@ const emailVerification = async (req, res) => {
 
   try {
     userData = await Email.findOne({ userId }).sort({ createdAt: -1 });
-
+    console.log(userData);
     if (userData) {
       const expireAt = userData.expireAt;
 
@@ -213,7 +216,7 @@ const resetPassword = asyncHandler(async (req, res) => {
                     userPasswordReset
                       .deleteOne({ userId })
                       .then((response) => {
-                        res.json({ message: "password reset successful" });
+                        res.json({ message: "password reset successfully" });
                       })
                       .catch((err) => {
                         res.json({ message: "deleting reset data failed" });
@@ -380,69 +383,62 @@ const updateCategory = async (req, res) => {
 
 // GET cart for a user
 const getCart = async (req, res) => {
-  try {
-    const cart = await Cart.findOne({ userId: req.params.userId });
+  const cart = await Cart.findOne({ userId: req.user.id });
+  if (cart) {
     res.status(200).json(cart);
-  } catch (err) {
-    res.status(500).json({ message: "Login to view your cart items" });
+  } else {
+    res.status(200).json({ message: "Cart is empty" });
   }
 };
 
 // ADD item to cart
 const addToCart = async (req, res) => {
-  try {
-    const { productId, quantity, price, name } = req.body;
-    const cart = await Cart.findOne({ userId: req.params.userId });
-    if (!cart) {
-      // create a new cart if one doesn't exist for the user
-      const newCart = new Cart({
-        userId: req.params.userId,
-        items: [{ productId, quantity, price, name }],
-      });
-      await newCart.save();
-      res.status(200).json(newCart);
+  const { productId, quantity, price, name } = req.body;
+  const cart = await Cart.findOne({ userId: req.user.id });
+  if (!cart) {
+    // create a new cart if one doesn't exist for the user
+    const newCart = new Cart({
+      userId: req.user.id,
+      items: [{ productId, quantity, price, name }],
+    });
+    await newCart.save();
+    res.status(200).json(newCart);
+  } else {
+    // add the item to the existing cart
+    const index = cart.items.findIndex((item) => item.productId == productId);
+    if (index === -1) {
+      // add the item if it doesn't already exist in the cart
+      cart.items.push({ productId, quantity, price, name });
     } else {
-      // add the item to the existing cart
-      const index = cart.items.findIndex((item) => item.productId == productId);
-      if (index === -1) {
-        // add the item if it doesn't already exist in the cart
-        cart.items.push({ productId, quantity, price, name });
-      } else {
-        // update the quantity of the item if it already exists in the cart
-        cart.items[index].quantity += 1;
-      }
-      await cart.save();
-      res.status(200).json(cart);
+      // update the quantity of the item if it already exists in the cart
+      cart.items[index].quantity += 1;
     }
-  } catch (err) {
-    res.status(404).json({ message: "User not found" });
+    await cart.save();
+    res.status(200).json(cart);
   }
 };
 // Decrease items quantity
 const decreaseCartItems = async (req, res) => {
-  try {
-    const cart = await Cart.findOne({ userId: req.params.userId });
-    if (!cart) {
-      return res.status(404).json({ message: "Cart not found" });
-    }
-    const index = cart.items.findIndex(
-      (item) => item.productId == req.params.productId
-    );
-    if (index === -1) {
-      return res.status(404).json({ message: "Item not found in cart" });
+  const cart = await Cart.findOne({ userId: req.user.id });
+  if (!cart) {
+    return res.status(404).json({ message: "Cart is empty" });
+  }
+  // How do i get the productId besides param  ? ? ?
+  const index = cart.items.findIndex(
+    (item) => item.productId == req.params.productId
+  );
+  if (index === -1) {
+    return res.status(404).json({ message: "Item not found in cart" });
+  } else {
+    if (cart.items[index].quantity > 1) {
+      cart.items[index].quantity -= 1;
+      await cart.save();
+      res.status(200).json(cart);
     } else {
-      if (cart.items[index].quantity > 1) {
-        cart.items[index].quantity -= 1;
-        await cart.save();
-        res.status(200).json(cart);
-      } else {
-        cart.items.splice(index, 1);
-        await cart.save();
-        res.status(200).json(cart);
-      }
+      cart.items.splice(index, 1);
+      await cart.save();
+      res.status(200).json(cart);
     }
-  } catch (err) {
-    res.status(404).json({ message: "User not found" });
   }
 };
 // REMOVE item from cart
@@ -490,7 +486,6 @@ const createProduct = async (req, res) => {
     res.status(200).json({ message: "Product saved" });
   } catch (err) {
     const error = handleErrors(err);
-    console.log(err);
     res.status(500).json({ error: true, message: error });
   }
 };
