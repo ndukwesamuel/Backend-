@@ -21,7 +21,7 @@ const {
   updateCategory,
   addToCart,
   getCart,
-  removeFromCart,
+  deleteFromCart,
   decreaseCartItems,
   getAllProducts,
   createProduct,
@@ -58,12 +58,8 @@ router.route("/product/:id").put(verifyTokenAndAdmin, updateProduct);
 
 router.route("/cart").get(verifyToken, getCart);
 router.route("/cart/addItem").post(verifyToken, addToCart);
-router
-  .route("/cart/decreaseItems/:productId")
-  .patch(verifyToken, decreaseCartItems);
-router
-  .route("/cart/:userId/items/:productId")
-  .delete(verifyToken, removeFromCart);
+router.route("/cart/decreaseItem").patch(verifyToken, decreaseCartItems);
+router.route("/cart/deleteItem").delete(verifyToken, deleteFromCart);
 
 router.route("/home").get(verifyToken, home);
 

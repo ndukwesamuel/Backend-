@@ -29,6 +29,11 @@ const cartSchema = new Schema({
       },
     },
   ],
+  bill: {
+    type: Number,
+    default: 0,
+  },
+
   createdAt: {
     type: Date,
     default: Date.now,
