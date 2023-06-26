@@ -1,4 +1,5 @@
-const asyncHandler = require("express-async-handler");
+const https = require("https");
+const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
 const { handleErrors } = require("../Middleware/errorHandler/function");
 const {
@@ -13,6 +14,11 @@ const userPasswordReset = require("../Models/passwordReset");
 const Category = require("../Models/Category");
 const Product = require("../Models/Products");
 const Cart = require("../Models/Cart");
+const paymentVerification = require("../Models/paymentVerification");
+
+dotenv.config();
+
+const paystackKey = process.env.PAYSTACK_SECRET_KEY;
 
 const getData = async (req, res) => {
   let data = [
@@ -170,7 +176,7 @@ const passwordResetEmail = async (req, res) => {
   }
 };
 
-const resetPassword = asyncHandler(async (req, res) => {
+const resetPassword = async (req, res) => {
   const { userId, uniqueString, newPassword } = req.body;
   try {
     userData = await userPasswordReset
@@ -249,7 +255,7 @@ const resetPassword = asyncHandler(async (req, res) => {
     console.log(err);
     res.status(404).json("Invalid id");
   }
-});
+};
 
 const group = async (req, res) => {
   const { name } = req.body;
@@ -383,11 +389,11 @@ const updateCategory = async (req, res) => {
 
 // GET cart for a user
 const getCart = async (req, res) => {
-  try {
-    const cart = await Cart.findOne({ userId: req.user.id });
-    res.status(200).json(cart);
-  } catch (error) {
+  const cart = await Cart.findOne({ userId: req.user.id });
+  if (!cart) {
     res.status(404).json({ message: "Cart is empty" });
+  } else {
+    res.status(200).json(cart);
   }
 };
 
@@ -422,7 +428,6 @@ const addToCart = async (req, res) => {
       cart.bill = cart.items.reduce((total, curr) => {
         return total + curr.quantity * curr.price;
       }, initailValue);
-      console.log(cart.bill);
     }
     await cart.save();
     res.status(200).json(cart);
@@ -454,20 +459,20 @@ const decreaseCartItems = async (req, res) => {
     res.status(404).json({ message: "Cart is empty" });
   }
 };
-// REMOVE all items from cart
+// REMOVES an item from cart at once
 const deleteFromCart = async (req, res) => {
   try {
     const cart = await Cart.findOne({ userId: req.user.id });
-    // if (!cart) {
-    //   return res.status(404).json({ message: "Cart is empty" });
-    // }
     const index = cart.items.findIndex(
       (item) => item.productId == req.body.productId
     );
     if (index === -1) {
       return res.status(404).json({ message: "Item not found in cart" });
     }
+    const deletedItemBill =
+      cart.items[index].quantity * cart.items[index].price;
     cart.items.splice(index, 1);
+    cart.bill -= deletedItemBill;
     await cart.save();
     res.status(200).json(cart);
   } catch (err) {
@@ -580,6 +585,103 @@ const getProductByCategory = async (req, res) => {
     res.status(500).json({ error: true, message: errors });
   }
 };
+
+const payment = async (req, res) => {
+  const { email, amount, firstname, lastname, phone } = req.body;
+  console.log(amount);
+  try {
+    const params = JSON.stringify({
+      email: `${email}`,
+      amount: `${amount}`,
+      callback_url: "https://webuy-opal.vercel.app/verify",
+    });
+
+    const options = {
+      hostname: "api.paystack.co",
+      port: 443,
+      path: "/transaction/initialize",
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${paystackKey}`,
+        // "Content-Type": "application/json",
+      },
+    };
+    const reqpaystack = https
+      .request(options, (reqpaystack) => {
+        let data = "";
+
+        reqpaystack.on("data", (chunk) => {
+          data += chunk;
+        });
+
+        reqpaystack.on("end", () => {
+          res.send(data);
+          // console.log(JSON.parse(data));
+        });
+      })
+      .on("error", (error) => {
+        res.send(error);
+      });
+
+    reqpaystack.write(params);
+    reqpaystack.end();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const verifyPayment = async (req, res) => {
+  const { reference } = req.body;
+
+  const https = require("https");
+
+  const options = {
+    hostname: "api.paystack.co",
+    port: 443,
+    path: `/transaction/verify/${reference}`,
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${paystackKey}`,
+    },
+  };
+
+  const reqpaystack = https
+    .request(options, (respaystack) => {
+      let data = "";
+
+      respaystack.on("data", (chunk) => {
+        data += chunk;
+      });
+
+      respaystack.on("end", () => {
+        const response = JSON.parse(data);
+        if (response.message && response.status === true) {
+          const amountPaid = response.data.amount / 100;
+
+          const newVerification = new paymentVerification({
+            firstname: response.data.customer.first_name,
+            lastname: response.data.customer.last_name,
+            amount: amountPaid,
+            email: response.data.customer.email,
+            customer_code: response.data.customer.customer_code,
+            phone: response.data.customer.phone,
+            customer_id: response.data.customer.id,
+            verification_id: response.data.id,
+            reference: response.data.reference,
+            created_at: response.data.created_at,
+          });
+          newVerification.save();
+        }
+        res.send(response);
+      });
+    })
+    .on("error", (error) => {
+      res.send(JSON.parse(error));
+
+      // console.error(error);
+    });
+  reqpaystack.end();
+};
 //  for testing the verifyToken middleware
 const home = async (req, res) => {
   res.send("this is the home");
@@ -611,4 +713,6 @@ module.exports = {
   updateProduct,
   getProduct,
   getProductByCategory,
+  payment,
+  verifyPayment,
 };

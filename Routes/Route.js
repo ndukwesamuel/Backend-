@@ -29,6 +29,8 @@ const {
   updateProduct,
   getProduct,
   getProductByCategory,
+  payment,
+  verifyPayment,
 } = require("../Controller/Controller");
 
 router.route("/getdata").get(getData);
@@ -60,6 +62,9 @@ router.route("/cart").get(verifyToken, getCart);
 router.route("/cart/addItem").post(verifyToken, addToCart);
 router.route("/cart/decreaseItem").patch(verifyToken, decreaseCartItems);
 router.route("/cart/deleteItem").delete(verifyToken, deleteFromCart);
+
+router.route("/payment").post(payment);
+router.route("/paymentVerification").post(verifyPayment);
 
 router.route("/home").get(verifyToken, home);
 
