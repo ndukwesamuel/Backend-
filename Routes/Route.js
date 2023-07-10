@@ -6,6 +6,7 @@ const {
   getData,
   register,
   login,
+  logout,
   home,
   group,
   emailVerification,
@@ -36,6 +37,8 @@ const {
 router.route("/getdata").get(getData);
 router.route("/user/register").post(register);
 router.route("/user/login").post(login);
+router.route("/user/logout").patch(verifyToken, logout);
+
 router.route("/create-group").post(verifyToken, group);
 router.route("/verify-email").post(emailVerification);
 router.route("/resendOTP").post(resendVerificationEmail);

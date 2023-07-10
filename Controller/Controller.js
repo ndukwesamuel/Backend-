@@ -1,5 +1,7 @@
 const https = require("https");
 const dotenv = require("dotenv");
+
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { handleErrors } = require("../Middleware/errorHandler/function");
 const {
@@ -76,6 +78,24 @@ const login = async (req, res) => {
     const error = handleErrors(err);
     res.status(400).json({ error });
   }
+};
+
+const logout = async (req, res) => {
+  const authHeader = req.headers.token;
+  jwt.sign(
+    authHeader,
+    "",
+    {
+      expiresIn: 1,
+    },
+    (logout, err) => {
+      if (logout) {
+        res.status(200).json({ message: "Logged out" });
+      } else {
+        res.status(401).json({ message: err });
+      }
+    }
+  );
 };
 
 const emailVerification = async (req, res) => {
@@ -690,6 +710,7 @@ module.exports = {
   getData,
   register,
   login,
+  logout,
   group,
   emailVerification,
   home,
