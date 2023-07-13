@@ -277,7 +277,7 @@ const resetPassword = async (req, res) => {
   }
 };
 
-const group = async (req, res) => {
+const createGroup = async (req, res) => {
   const { name } = req.body;
   const userId = req.user.id;
 
@@ -308,17 +308,27 @@ const group = async (req, res) => {
 
 const joinGroup = async (req, res) => {
   const userId = req.user.id;
+  // use allmemebers to check if a user belong to any group before joining a group
   try {
-    const groupName = await Group.findOne({ name: req.params.groupName });
     const isUserAdmin = await Group.findOne({ userAdminId: userId });
     if (!isUserAdmin) {
-      await Group.create({ member: userId });
-      res.status(200).json({ message: "done" });
+      const group = await Group.findOne({ name: req.params.groupName });
+      console.log(Group.findOne({ members: userId }));
+      if (!group) {
+        res.status(404).json({ message: "Group not found" });
+      } else if (group.members.includes(userId)) {
+        res.json({ message: "You already joined this group" });
+      } else {
+        group.members.push(userId);
+        await group.save();
+        res.status(200).json({ message: `Joined ${group.name} group` });
+      }
     } else {
-      res.status(404).json({ message: "You already joined this group" });
+      res.status(404).json({ message: "You already created a group" });
     }
   } catch (err) {
     const error = handleErrors({ message: err });
+    res.json({ message: error });
   }
 };
 
@@ -711,7 +721,7 @@ module.exports = {
   register,
   login,
   logout,
-  group,
+  createGroup,
   emailVerification,
   home,
   resendVerificationEmail,
