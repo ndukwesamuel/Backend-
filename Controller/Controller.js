@@ -308,16 +308,24 @@ const createGroup = async (req, res) => {
 
 const joinGroup = async (req, res) => {
   const userId = req.user.id;
+
   // use allmemebers to check if a user belong to any group before joining a group
   try {
     const isUserAdmin = await Group.findOne({ userAdminId: userId });
     if (!isUserAdmin) {
+      const groups = await Group.find();
+      const existingMemebers = [];
+
+      groups.forEach((group) => {
+        existingMemebers.push(...group.members);
+      });
+      console.log(existingMemebers);
+
       const group = await Group.findOne({ name: req.params.groupName });
-      console.log(Group.findOne({ members: userId }));
       if (!group) {
         res.status(404).json({ message: "Group not found" });
-      } else if (group.members.includes(userId)) {
-        res.json({ message: "You already joined this group" });
+      } else if (existingMemebers.includes(userId)) {
+        res.json({ message: "You already joined a group" });
       } else {
         group.members.push(userId);
         await group.save();
