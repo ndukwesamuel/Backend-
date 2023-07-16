@@ -308,19 +308,14 @@ const createGroup = async (req, res) => {
 
 const joinGroup = async (req, res) => {
   const userId = req.user.id;
-
-  // use allmemebers to check if a user belong to any group before joining a group
   try {
     const isUserAdmin = await Group.findOne({ userAdminId: userId });
     if (!isUserAdmin) {
       const groups = await Group.find();
       const existingMemebers = [];
-
       groups.forEach((group) => {
         existingMemebers.push(...group.members);
       });
-      console.log(existingMemebers);
-
       const group = await Group.findOne({ name: req.params.groupName });
       if (!group) {
         res.status(404).json({ message: "Group not found" });
@@ -351,6 +346,22 @@ const getAllGroups = async (req, res) => {
   } catch (err) {
     const error = handleErrors(err);
     res.status(500).json({ message: error });
+  }
+};
+
+const deleteGroup = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const isUserAdmin = await Group.findOne({ userAdminId: userId });
+    if (isUserAdmin) {
+      await Group.deleteOne({ name: req.params.groupName });
+      res.status(200).json({ message: "Group deleted" });
+    } else {
+      res.status(401).json({ message: "Action not permitted" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.json({ message: error });
   }
 };
 
@@ -736,6 +747,7 @@ module.exports = {
   resetPassword,
   getAllGroups,
   joinGroup,
+  deleteGroup,
   passwordResetEmail,
   getCategory,
   getAllCategories,

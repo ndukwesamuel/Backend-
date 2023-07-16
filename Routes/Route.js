@@ -13,6 +13,7 @@ const {
   resendVerificationEmail,
   getAllGroups,
   joinGroup,
+  deleteGroup,
   passwordResetEmail,
   resetPassword,
   getCategory,
@@ -39,14 +40,15 @@ router.route("/user/register").post(register);
 router.route("/user/login").post(login);
 router.route("/user/logout").patch(verifyToken, logout);
 
-router.route("/create-group").post(verifyToken, createGroup);
 router.route("/verify-email").post(emailVerification);
 router.route("/resendOTP").post(resendVerificationEmail);
 router.route("/passwordResetEmail").post(passwordResetEmail);
 router.route("/resetPassword").post(resetPassword);
 
+router.route("/create-group").post(verifyToken, createGroup);
 router.route("/groups").get(getAllGroups);
 router.route("/groups/:groupName/join").post(verifyToken, joinGroup);
+router.route("/groups/:groupName/delete").delete(verifyToken, deleteGroup);
 
 router.route("/category/:id").get(getCategory);
 router.route("/categories").get(getAllCategories);
