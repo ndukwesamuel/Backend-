@@ -1,5 +1,4 @@
 const handleErrors = (err) => {
-  // handling registration error
   let errs = {};
 
   // handling err from login
@@ -32,4 +31,11 @@ const handleErrors = (err) => {
   return errs;
 };
 
-module.exports = { handleErrors };
+const getImageId = (imageURL) => {
+  const splitUrl = imageURL.split("/");
+  const imageIdExt = splitUrl[splitUrl.length - 1];
+  const imageId = imageIdExt.split(".")[0];
+  return imageId;
+};
+
+module.exports = { handleErrors, getImageId };

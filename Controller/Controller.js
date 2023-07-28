@@ -1,9 +1,11 @@
 const https = require("https");
 const dotenv = require("dotenv");
-
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const { handleErrors } = require("../Middleware/errorHandler/function");
+const {
+  handleErrors,
+  getImageId,
+} = require("../Middleware/errorHandler/function");
 const {
   sendVerificationEmail,
   sendPasswordResetEmail,
@@ -17,6 +19,8 @@ const Category = require("../Models/Category");
 const Product = require("../Models/Products");
 const Cart = require("../Models/Cart");
 const paymentVerification = require("../Models/paymentVerification");
+const cloudinary = require("../utils/Cloudinary");
+const upload = require("../Middleware/multer").single("image");
 
 dotenv.config();
 
@@ -278,7 +282,7 @@ const resetPassword = async (req, res) => {
 };
 
 const createGroup = async (req, res) => {
-  const { name } = req.body;
+  const name = req.body.name.toLowerCase();
   const userId = req.user.id;
 
   try {
@@ -360,16 +364,23 @@ const deleteGroup = async (req, res) => {
       res.status(401).json({ message: "Action not permitted" });
     }
   } catch (error) {
-    console.log(error);
     res.json({ message: error });
   }
 };
 
 const createCategory = async (req, res) => {
   try {
-    await Category.create(req.body);
+    const upload = await cloudinary.uploader.upload(req.file.path, {
+      folder: "webuyam",
+    });
+    const newCategory = new Category({
+      name: req.body.name.toLowerCase(),
+      image: upload.secure_url,
+    });
+    await newCategory.save();
     res.status(200).json({ message: "Category created" });
   } catch (err) {
+    console.log(err);
     const error = handleErrors(err);
     res.status(500).json({ error: true, message: error });
   }
@@ -534,23 +545,21 @@ const createProduct = async (req, res) => {
   if (!categoryCheck) {
     return res.status(400).json({ error: true, message: "Invalid category" });
   }
-  // if (!req.file) {
-  //   return res.status(400).json({
-  //     error: "Insert image",
-  //   });
-  // }
-  // const fileName = req.file.filename;
-  // const imagePath = `${req.protocol}://${req.get("host")}/image/uploads/`;
-  const newProduct = new Product({
-    name: req.body.name,
-    price: req.body.price,
-    // image: `${imagePath}${fileName}`,
-    description: req.body.description,
-    category: req.body.category,
-  });
   try {
+    const upload = await cloudinary.uploader.upload(req.file.path, {
+      folder: "webuyam",
+    });
+    const newProduct = new Product({
+      name: req.body.name,
+      price: req.body.price,
+      image: upload.secure_url,
+      description: req.body.description,
+      category: req.body.category,
+    });
     savedProduct = await newProduct.save();
-    res.status(200).json({ message: "Product saved" });
+    res.status(200).json({
+      message: "Product saved",
+    });
   } catch (err) {
     const error = handleErrors(err);
     res.status(500).json({ error: true, message: error });
@@ -575,7 +584,7 @@ const getAllProducts = async (req, res) => {
   try {
     products = await Product.find().sort({ createdAt: -1 });
     if (products.length < 1) {
-      res.status(200).json("No product created yet");
+      res.status(200).json({ message: "No product created yet" });
     } else {
       res.status(200).json(products);
     }
@@ -588,12 +597,16 @@ const getAllProducts = async (req, res) => {
 const deleteProduct = async (req, res) => {
   try {
     const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+    const imageURL = deletedProduct.image;
+    const imageId = getImageId(imageURL);
     if (deletedProduct) {
+      await cloudinary.uploader.destroy(`webuyam/${imageId}`);
       res.status(200).json({ message: "Product successfully deleted" });
     } else {
       res.status(404).json({ message: "Product not found" });
     }
   } catch (err) {
+    console.log(err);
     const errors = handleErrors(err);
     res.status(500).json({ error: errors, message: "Product deletion failed" });
   }
@@ -601,18 +614,33 @@ const deleteProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
   try {
+    const currentProduct = await Product.findById(req.params.id);
+    const imageId = getImageId(currentProduct.image);
+    await cloudinary.uploader.destroy(`webuyam/${imageId}`);
+
+    const upload = await cloudinary.uploader.upload(req.file.path, {
+      folder: "webuyam",
+    });
+    const data = {
+      name: req.body.name,
+      price: req.body.price,
+      image: upload.secure_url,
+      description: req.body.description,
+      category: req.body.category,
+    };
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
-      req.body
+      data,
+      { new: true }
     );
     if (updatedProduct) {
       res.status(200).json({ message: "Product successfully updated" });
     } else {
-      res.status(404).json({ message: "Product to be updated not found" });
+      res.status(404).json({ message: "Product not found" });
     }
   } catch (err) {
-    const errors = handleErrors(err);
-    res.status(500).json({ error: errors, message: "Product update failed" });
+    // const errors = handleErrors(err);
+    res.status(500).json({ error: err, message: "Product update failed" });
   }
 };
 

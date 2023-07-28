@@ -1,5 +1,5 @@
 const { Router } = require("express");
-
+const upload = require("../Middleware/multer");
 const router = Router();
 const { verifyToken, verifyTokenAndAdmin } = require("../Middleware/auth");
 const {
@@ -52,16 +52,20 @@ router.route("/groups/:groupName/delete").delete(verifyToken, deleteGroup);
 
 router.route("/category/:id").get(getCategory);
 router.route("/categories").get(getAllCategories);
-router.route("/category").post(verifyTokenAndAdmin, createCategory);
-router.route("/category/:id").delete(verifyTokenAndAdmin, deleteCategory);
-router.route("/category/:id").put(verifyTokenAndAdmin, updateCategory);
+router.route("/category").post(createCategory);
+router.route("/category/:id").delete(upload.single("image"), deleteCategory);
+router.route("/category/:id").put(upload.single("image"), updateCategory);
 router.route("/category-products/:name").get(getProductByCategory);
 
 router.route("/products").get(getAllProducts);
 router.route("/product/:id").get(getProduct);
-router.route("/product").post(verifyTokenAndAdmin, createProduct);
-router.route("/product/:id").delete(verifyTokenAndAdmin, deleteProduct);
-router.route("/product/:id").put(verifyTokenAndAdmin, updateProduct);
+router
+  .route("/product")
+  .post(verifyTokenAndAdmin, upload.single("image"), createProduct);
+router.route("/product/:id").delete(deleteProduct);
+router
+  .route("/product/:id")
+  .put(verifyTokenAndAdmin, upload.single("image"), updateProduct);
 
 router.route("/cart").get(verifyToken, getCart);
 router.route("/cart/addItem").post(verifyToken, addToCart);
