@@ -1,9 +1,8 @@
 const jwt = require("jsonwebtoken");
 const User = require("../Models/Users");
 // create token for password hashing
-const validTime = 60 * 60; // in seconds
 const createToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: validTime });
+  return jwt.sign({ id }, process.env.JWT_SECRET, {});
 };
 
 const verifyToken = async (req, res, next) => {
