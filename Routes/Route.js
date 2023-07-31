@@ -38,7 +38,7 @@ const {
 router.route("/getdata").get(getData);
 router.route("/user/register").post(register);
 router.route("/user/login").post(login);
-router.route("/user/logout").patch(verifyToken, logout);
+router.route("/user/logout").get(verifyToken, logout);
 
 router.route("/verify-email").post(emailVerification);
 router.route("/resendOTP").post(resendVerificationEmail);
@@ -52,9 +52,15 @@ router.route("/groups/:groupName/delete").delete(verifyToken, deleteGroup);
 
 router.route("/category/:id").get(getCategory);
 router.route("/categories").get(getAllCategories);
-router.route("/category").post(upload.single("image"), createCategory);
-router.route("/category/:id").delete(upload.single("image"), deleteCategory);
-router.route("/category/:id").put(upload.single("image"), updateCategory);
+router
+  .route("/category")
+  .post(verifyTokenAndAdmin, upload.single("image"), createCategory);
+router
+  .route("/category/:id")
+  .delete(verifyTokenAndAdmin, upload.single("image"), deleteCategory);
+router
+  .route("/category/:id")
+  .put(verifyTokenAndAdmin, upload.single("image"), updateCategory);
 router.route("/category-products/:name").get(getProductByCategory);
 
 router.route("/products").get(getAllProducts);
