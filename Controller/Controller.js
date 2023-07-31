@@ -374,13 +374,12 @@ const createCategory = async (req, res) => {
       folder: "webuyam",
     });
     const newCategory = new Category({
-      name: req.body.name.toLowerCase(),
+      name: req.body.name,
       image: upload.secure_url,
     });
     await newCategory.save();
     res.status(200).json({ message: "Category created" });
   } catch (err) {
-    console.log(err);
     const error = handleErrors(err);
     res.status(500).json({ error: true, message: error });
   }
@@ -415,7 +414,10 @@ const getAllCategories = async (req, res) => {
 const deleteCategory = async (req, res) => {
   try {
     const deletedCategory = await Category.findByIdAndDelete(req.params.id);
+    const imageURL = deletedCategory.image;
+    const imageId = getImageId(imageURL);
     if (deletedCategory) {
+      await cloudinary.uploader.destroy(`webuyam/${imageId}`);
       res.status(200).json({ message: "category successfully deleted" });
     } else {
       res.status(404).json({ message: "category not found" });
@@ -430,16 +432,28 @@ const deleteCategory = async (req, res) => {
 
 const updateCategory = async (req, res) => {
   try {
-    const updatedCategory = await Category.findByIdAndUpdate(req.params.id, {
-      name: req.body.name,
-      image: req.body.image,
+    const currentCategory = await Category.findById(req.params.id);
+    const imageId = getImageId(currentCategory.image);
+    await cloudinary.uploader.destroy(`webuyam/${imageId}`);
+
+    const upload = await cloudinary.uploader.upload(req.file.path, {
+      folder: "webuyam",
     });
+    const data = {
+      name: req.body.name,
+      image: upload.secure_url,
+    };
+    const updatedCategory = await Category.findByIdAndUpdate(
+      req.params.id,
+      data,
+      {
+        new: true,
+      }
+    );
     if (updatedCategory) {
-      res.status(200).json({ message: "category successfully updated" });
+      res.status(200).json({ message: "Category successfully updated" });
     } else {
-      res
-        .status(404)
-        .json({ error: true, message: "category to be updated not found" });
+      res.status(404).json({ error: true, message: "Category not found" });
     }
   } catch (err) {
     const error = handleErrors(err);
@@ -606,7 +620,6 @@ const deleteProduct = async (req, res) => {
       res.status(404).json({ message: "Product not found" });
     }
   } catch (err) {
-    console.log(err);
     const errors = handleErrors(err);
     res.status(500).json({ error: errors, message: "Product deletion failed" });
   }

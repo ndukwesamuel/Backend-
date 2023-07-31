@@ -10,11 +10,12 @@ const handleErrors = (err) => {
   }
 
   if (err.code === 11000 && err.keyPattern.name) {
-    // duplicate errors
     errs = "Name is not available";
-  } else {
+  } else if (err.code === 11000 && err.keyPattern.email) {
     errs = "Email already exist";
     return errs;
+  } else if (err.error === "ENOTFOUND") {
+    errs = "Connection lost";
   }
 
   // validation errors

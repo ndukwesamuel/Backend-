@@ -52,7 +52,7 @@ router.route("/groups/:groupName/delete").delete(verifyToken, deleteGroup);
 
 router.route("/category/:id").get(getCategory);
 router.route("/categories").get(getAllCategories);
-router.route("/category").post(createCategory);
+router.route("/category").post(upload.single("image"), createCategory);
 router.route("/category/:id").delete(upload.single("image"), deleteCategory);
 router.route("/category/:id").put(upload.single("image"), updateCategory);
 router.route("/category-products/:name").get(getProductByCategory);
