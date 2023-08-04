@@ -678,11 +678,19 @@ const getProductByCategory = async (req, res) => {
 
 const payment = async (req, res) => {
   const { email, amount, firstname, lastname, phone } = req.body;
-  console.log(amount);
   try {
     const params = JSON.stringify({
       email: `${email}`,
-      amount: `${amount}`,
+      amount: `${amount * 100}`,
+      first_name: firstname,
+      last_name: lastname,
+      phone: phone,
+      metadata: {
+        first_name: firstname,
+        last_name: lastname,
+        phone: phone,
+      },
+
       callback_url: "https://webuy-opal.vercel.app/verify",
     });
 
@@ -693,9 +701,10 @@ const payment = async (req, res) => {
       method: "POST",
       headers: {
         Authorization: `Bearer ${paystackKey}`,
-        // "Content-Type": "application/json",
+        "Content-Type": "application/json",
       },
     };
+    // client request to paystack API
     const reqpaystack = https
       .request(options, (reqpaystack) => {
         let data = "";
@@ -705,8 +714,7 @@ const payment = async (req, res) => {
         });
 
         reqpaystack.on("end", () => {
-          res.send(data);
-          // console.log(JSON.parse(data));
+          res.status(200).json(data);
         });
       })
       .on("error", (error) => {
@@ -716,13 +724,12 @@ const payment = async (req, res) => {
     reqpaystack.write(params);
     reqpaystack.end();
   } catch (error) {
-    console.log(error);
+    res.status(500).json({ error: "An error occurred" });
   }
 };
 
 const verifyPayment = async (req, res) => {
   const { reference } = req.body;
-
   const https = require("https");
 
   const options = {
@@ -749,12 +756,12 @@ const verifyPayment = async (req, res) => {
           const amountPaid = response.data.amount / 100;
 
           const newVerification = new paymentVerification({
-            firstname: response.data.customer.first_name,
-            lastname: response.data.customer.last_name,
+            firstname: response.data.metadata.first_name,
+            lastname: response.data.metadata.last_name,
             amount: amountPaid,
             email: response.data.customer.email,
             customer_code: response.data.customer.customer_code,
-            phone: response.data.customer.phone,
+            phone: response.data.metadata.phone,
             customer_id: response.data.customer.id,
             verification_id: response.data.id,
             reference: response.data.reference,
@@ -762,13 +769,11 @@ const verifyPayment = async (req, res) => {
           });
           newVerification.save();
         }
-        res.send(response);
+        res.status(200).json(response);
       });
     })
     .on("error", (error) => {
       res.send(JSON.parse(error));
-
-      // console.error(error);
     });
   reqpaystack.end();
 };
