@@ -13,6 +13,10 @@ const verificationSchema = new mongoose.Schema({
   amount: {
     type: Number,
   },
+  userId: {
+    type: String,
+    ref: "Users",
+  },
   verification_id: {
     type: Number,
   },
