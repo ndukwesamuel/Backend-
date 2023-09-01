@@ -50,11 +50,14 @@ const getData = async (req, res) => {
 
 const register = async (req, res) => {
   const { name, email, password } = req.body;
+
   const newUser = new User({
     fullName: name,
     email: email,
     password: password,
   });
+
+  // res.json({ name, email, password });
 
   try {
     savedUser = await newUser.save();

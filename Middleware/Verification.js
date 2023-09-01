@@ -63,6 +63,7 @@ const sendPasswordResetEmail = async ({ _id, email }, redirectUrl, res) => {
 
 // Email verification
 const sendVerificationEmail = async ({ _id, email }, res) => {
+  console.log(email);
   const uniqueString = uuidv4() + _id;
   const redirectUrl = "webuy-opal.vercel.app";
 
