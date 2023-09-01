@@ -1,52 +1,41 @@
 const { Router } = require("express");
-
 const upload = require("../Middleware/multer");
 const router = Router();
 const { verifyToken, verifyTokenAndAdmin } = require("../Middleware/auth");
 const {
+  getData,
   register,
   login,
   logout,
+  home,
+  createGroup,
   emailVerification,
   resendVerificationEmail,
+  getAllGroups,
+  joinGroup,
+  deleteGroup,
   passwordResetEmail,
   resetPassword,
-} = require("../Controllers/userController");
-const {
-  payment,
-  verifyPayment,
-  createCustomerAccount,
-} = require("../Controllers/paymentController");
-const {
-  addToCart,
-  getCart,
-  deleteFromCart,
-  decreaseCartItems,
-} = require("../Controllers/cartController");
-const {
   getCategory,
   getAllCategories,
   createCategory,
   deleteCategory,
   updateCategory,
-} = require("../Controllers/categoryController");
-
-const {
+  addToCart,
+  getCart,
+  deleteFromCart,
+  decreaseCartItems,
   getAllProducts,
   createProduct,
   deleteProduct,
   updateProduct,
   getProduct,
   getProductByCategory,
-  searchProduct,
-} = require("../Controllers/productController");
-const {
-  createGroup,
-  getAllGroups,
-  joinGroup,
-  deleteGroup,
-} = require("../Controllers/groupController");
+  payment,
+  verifyPayment,
+} = require("../Controller/Controller");
 
+router.route("/getdata").get(getData);
 router.route("/user/register").post(register);
 router.route("/user/login").post(login);
 router.route("/user/logout").get(verifyToken, logout);
@@ -61,7 +50,7 @@ router.route("/groups").get(getAllGroups);
 router.route("/groups/:groupName/join").post(verifyToken, joinGroup);
 router.route("/groups/:groupName/delete").delete(verifyToken, deleteGroup);
 
-router.route("/category/:name").get(getCategory);
+router.route("/category/:id").get(getCategory);
 router.route("/categories").get(getAllCategories);
 router
   .route("/category")
@@ -89,9 +78,9 @@ router.route("/cart/addItem").post(verifyToken, addToCart);
 router.route("/cart/decreaseItem").patch(verifyToken, decreaseCartItems);
 router.route("/cart/deleteItem").delete(verifyToken, deleteFromCart);
 
-router.route("/search").get(searchProduct);
-router.route("/payment").post(verifyToken, payment);
-router.route("/paymentVerification").post(verifyToken, verifyPayment);
-router.route("/customerAccount").post(createCustomerAccount);
+router.route("/payment").post(payment);
+router.route("/paymentVerification").post(verifyPayment);
+
+router.route("/home").get(verifyToken, home);
 
 module.exports = router;

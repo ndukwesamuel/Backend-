@@ -13,6 +13,7 @@ const userPasswordReset = require("../Models/passwordReset");
 
 const register = async (req, res) => {
   const { name, email, password } = req.body;
+  console.log("this is me");
   const newUser = new User({
     fullName: name,
     email: email,

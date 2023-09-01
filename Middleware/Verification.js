@@ -65,13 +65,16 @@ const sendPasswordResetEmail = async ({ _id, email }, redirectUrl, res) => {
 const sendVerificationEmail = async ({ _id, email }, res) => {
   console.log(email);
   const uniqueString = uuidv4() + _id;
-  const redirectUrl = "webuy-opal.vercel.app";
+  const redirectUrl = "https://webuy-opal.vercel.app";
+  // const redirectUrl = "  https://webuyam.com";
+
+  console.log(redirectUrl);
 
   const mailOptions = {
     from: process.env.EMAIL,
     to: email,
     subject: "Email Verification",
-    html: `<p>Please click the link to verify your email: <a href=${redirectUrl}/verify-email?userId=${_id}&uniqueString=${uniqueString}>here</a></p> \n <b>Verification link expires in 1 hour</b>`,
+    html: `<p>Please click the link to verify your email: <a href="${redirectUrl}/verify-email?userId=${_id}&uniqueString=${uniqueString}">here</a></p> \n <b>Verification link expires in 1 hour</b>`,
   };
 
   try {

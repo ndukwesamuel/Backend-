@@ -61,8 +61,8 @@ const register = async (req, res) => {
 
   try {
     savedUser = await newUser.save();
-    sendVerificationEmail(savedUser, res);
     // res.status(201).json({ savedUser });
+    sendVerificationEmail(savedUser, res);
   } catch (err) {
     const error = handleErrors(err);
     res.status(500).json({ message: error });
