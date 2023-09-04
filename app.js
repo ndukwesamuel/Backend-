@@ -1,10 +1,20 @@
 const express = require("express");
+require("express-async-errors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const Route = require("./Routes/Route");
+
 const bodyParser = require("body-parser");
 const multer = require("multer");
+
+// my route start here
+const Route = require("./Routes/Route");
+const user = require("./Routes/userRoute");
+const grouproute = require("./Routes/groupRoute");
+
+// my route ends here
+const notFoundMiddleware = require("./Middleware/not-found");
+const errorHandlerMiddleware = require("./Middleware/error-handler");
 
 dotenv.config();
 
@@ -24,13 +34,17 @@ app.use(express.json());
 
 // this is the  api route
 app.use("/api", Route);
+app.use("/api/user", user);
+app.use("/api/group", grouproute);
 
 app.post("/", (req, res) => {
   const { name, email, password } = req.body;
-  console.log(req.body);
 
   res.status(200).json({ name, email, password });
 });
+
+app.use(notFoundMiddleware);
+app.use(errorHandlerMiddleware);
 
 app.use(function (err, req, res, next) {
   if (err instanceof multer.MulterError) {

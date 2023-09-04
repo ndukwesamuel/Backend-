@@ -1,15 +1,19 @@
 const jwt = require("jsonwebtoken");
 const User = require("../Models/Users");
+const { UnauthenticatedError } = require("../errors");
 // create token for password hashing
 const createToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {});
 };
 
 const verifyToken = async (req, res, next) => {
-  const authHeader = req.headers.token;
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer")) {
+    throw new UnauthenticatedError("Authentication invalid");
+  }
+  const token = authHeader.split(" ")[1];
 
-  if (authHeader) {
-    const token = authHeader.split(" ")[1];
+  if (token) {
     // decodedToken will return the user payload in this case userId
     jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
       if (err) {

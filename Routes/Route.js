@@ -36,7 +36,7 @@ const {
 } = require("../Controller/Controller");
 
 router.route("/getdata").get(getData);
-router.route("/user/register").post(register);
+// router.route("/user/register").post(register);
 router.route("/user/login").post(login);
 router.route("/user/logout").get(verifyToken, logout);
 
