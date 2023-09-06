@@ -52,13 +52,53 @@ const createGroup = async (req, res) => {
     throw new BadRequestError("You cannot create a group as an admin");
   }
 
-  let newdata = { name, description, creator, admins: [creator] };
+  let newdata = {
+    name,
+    description,
+    creator,
+    members: [creator],
+    admins: [creator],
+  };
 
   const group = await groupmodel.create(newdata);
 
   res.status(StatusCodes.OK).json(group);
 };
 
+const getAllGroups = async (req, res) => {
+  try {
+    const groups = await groupmodel.find();
+    if (groups.length < 1) {
+      res.status(200).json({ message: "No group created yet" });
+    } else {
+      res.status(200).json({ message: groups });
+    }
+  } catch (err) {
+    const error = handleErrors(err);
+    res.status(500).json({ message: error });
+  }
+};
+
+const joinGroup = async (req, res) => {
+  const groupId = req.params.groupId;
+  const group = await Group.findById(groupId);
+  const userId = req.user.id;
+
+  if (!group) {
+    throw new BadRequestError("Group not found");
+  }
+
+  // Check if the user is already a member of the group
+  if (group.members.includes(userId)) {
+    throw new BadRequestError("You are already a member of this group");
+  }
+  group.members.push(userId);
+  await group.save();
+  res.status(StatusCodes.OK).json(group);
+};
+
 module.exports = {
   createGroup,
+  getAllGroups,
+  joinGroup,
 };

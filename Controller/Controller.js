@@ -74,7 +74,6 @@ const login = async (req, res) => {
 
   try {
     const user = await User.login(email, password);
-    console.log(user);
 
     if (user.verified) {
       const token = createToken(user._id);
@@ -92,6 +91,7 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
   const authHeader = req.headers.token;
+  console.log(authHeader);
   jwt.sign(
     authHeader,
     "",

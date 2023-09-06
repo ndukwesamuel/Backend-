@@ -38,7 +38,7 @@ const {
 router.route("/getdata").get(getData);
 // router.route("/user/register").post(register);
 router.route("/user/login").post(login);
-router.route("/user/logout").get(verifyToken, logout);
+// router.route("/user/logout").get(verifyToken, logout);
 
 router.route("/verify-email").post(emailVerification);
 router.route("/resendOTP").post(resendVerificationEmail);

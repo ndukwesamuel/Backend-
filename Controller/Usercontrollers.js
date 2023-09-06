@@ -78,9 +78,28 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+const logout = async (req, res) => {
+  const authHeader = req.headers.authorization;
+  console.log(authHeader);
+  jwt.sign(
+    authHeader,
+    "",
+    {
+      expiresIn: 1,
+    },
+    (logout, err) => {
+      if (logout) {
+        res.status(200).json({ message: "Logged out" });
+      } else {
+        res.status(401).json({ message: err });
+      }
+    }
+  );
+};
+
 module.exports = {
   updateUserProfile,
   getUserProfile,
-
   register,
+  logout,
 };
