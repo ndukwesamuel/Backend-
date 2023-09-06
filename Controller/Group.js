@@ -26,6 +26,7 @@ const UserProfile = require("../Models/UserProfile");
 const groupmodel = require("../Models/Group");
 
 const { BadRequestError } = require("../errors");
+const { log } = require("console");
 const upload = require("../Middleware/multer").single("image");
 
 dotenv.config();
@@ -33,7 +34,6 @@ dotenv.config();
 const paystackKey = process.env.PAYSTACK_SECRET_KEY;
 
 const createGroup = async (req, res) => {
-  console.log({ name: req.user });
   const { name, description } = req.body;
   const creator = req.user.id;
 
@@ -83,6 +83,8 @@ const joinGroup = async (req, res) => {
   const groupId = req.params.groupId;
   const group = await Group.findById(groupId);
   const userId = req.user.id;
+
+  console.log({ groupId, userId });
 
   if (!group) {
     throw new BadRequestError("Group not found");

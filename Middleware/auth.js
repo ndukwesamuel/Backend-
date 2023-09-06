@@ -7,7 +7,10 @@ const createToken = (id) => {
 };
 
 const verifyToken = async (req, res, next) => {
+  console.log(req.headers);
   const authHeader = req.headers.authorization;
+
+  console.log(authHeader);
   if (!authHeader || !authHeader.startsWith("Bearer")) {
     throw new UnauthenticatedError("Authentication invalid");
   }

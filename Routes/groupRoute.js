@@ -8,7 +8,7 @@ router
   .route("/")
   .post(verifyToken, createGroup)
   .get(verifyTokenAndAdmin, getAllGroups);
-router.route("/:groupId/join").post(verifyToken, joinGroup);
+router.route("/:groupId/join").get(verifyToken, joinGroup);
 //   .get(verifyTokenAndAdmin, getAllGroups);
 
 module.exports = router;
