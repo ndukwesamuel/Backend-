@@ -8,10 +8,10 @@ const categorySchema = new Schema({
     required: [true, "Please enter category name"],
     unique: [true, "Category name already exist"],
   },
-  image: {
-    type: String,
-    required: [true, "Please insert image"],
-  },
+  // image: {
+  //   type: String,
+  //   required: [true, "Please insert image"],
+  // },
   createdAt: {
     type: Date,
     default: Date.now(),
