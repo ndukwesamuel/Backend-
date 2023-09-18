@@ -20,7 +20,6 @@ const Product = require("../Models/Products");
 const Cart = require("../Models/Cart");
 const paymentVerification = require("../Models/paymentVerification");
 const cloudinary = require("../utils/Cloudinary");
-const { log } = require("console");
 const upload = require("../Middleware/multer").single("image");
 
 dotenv.config();
@@ -375,22 +374,22 @@ const deleteGroup = async (req, res) => {
   }
 };
 
-const createCategory = async (req, res) => {
-  try {
-    // const upload = await cloudinary.uploader.upload(req.file.path, {
-    //   folder: "webuyam",
-    // });
-    const newCategory = new Category({
-      name: req.body.name,
-      // image: upload.secure_url,
-    });
-    await newCategory.save();
-    res.status(200).json({ message: "Category created" });
-  } catch (err) {
-    const error = handleErrors(err);
-    res.status(500).json({ error: true, message: error });
-  }
-};
+// const createCategory = async (req, res) => {
+//   try {
+//     const upload = await cloudinary.uploader.upload(req.file.path, {
+//       folder: "webuyam",
+//     });
+//     const newCategory = new Category({
+//       name: req.body.name,
+//       image: upload.secure_url,
+//     });
+//     await newCategory.save();
+//     res.status(200).json({ message: "Category created" });
+//   } catch (err) {
+//     const error = handleErrors(err);
+//     res.status(500).json({ error: true, message: error });
+//   }
+// };
 
 const getCategory = async (req, res) => {
   try {
@@ -405,18 +404,18 @@ const getCategory = async (req, res) => {
   }
 };
 
-const getAllCategories = async (req, res) => {
-  try {
-    categories = await Category.find().sort({ createdAt: -1 });
-    if (categories.length < 1) {
-      res.status(200).json("No category created yet");
-    } else {
-      res.status(200).json(categories);
-    }
-  } catch (err) {
-    res.status(500).json({ message: err });
-  }
-};
+// const getAllCategories = async (req, res) => {
+//   try {
+//     categories = await Category.find().sort({ createdAt: -1 });
+//     if (categories.length < 1) {
+//       res.status(200).json("No category created yet");
+//     } else {
+//       res.status(200).json(categories);
+//     }
+//   } catch (err) {
+//     res.status(500).json({ message: err });
+//   }
+// };
 
 const deleteCategory = async (req, res) => {
   try {
@@ -562,10 +561,7 @@ const deleteFromCart = async (req, res) => {
 };
 
 const createProduct = async (req, res) => {
-  const categoryCheck = await Category.findOne({});
-
-  console.log(categoryCheck);
-
+  const categoryCheck = await Category.findOne({ name: req.body.category });
   if (!categoryCheck) {
     return res.status(400).json({ error: true, message: "Invalid category" });
   }
@@ -573,19 +569,17 @@ const createProduct = async (req, res) => {
     const upload = await cloudinary.uploader.upload(req.file.path, {
       folder: "webuyam",
     });
-
-    console.log(upload);
-    // const newProduct = new Product({
-    //   name: req.body.name,
-    //   price: req.body.price,
-    //   image: upload.secure_url,
-    //   description: req.body.description,
-    //   category: req.body.category,
-    // });
-    // savedProduct = await newProduct.save();
-    // res.status(200).json({
-    //   message: "Product saved",
-    // });
+    const newProduct = new Product({
+      name: req.body.name,
+      price: req.body.price,
+      image: upload.secure_url,
+      description: req.body.description,
+      category: req.body.category,
+    });
+    savedProduct = await newProduct.save();
+    res.status(200).json({
+      message: "Product saved",
+    });
   } catch (err) {
     const error = handleErrors(err);
     res.status(500).json({ error: true, message: error });
@@ -808,8 +802,8 @@ module.exports = {
   deleteGroup,
   passwordResetEmail,
   getCategory,
-  getAllCategories,
-  createCategory,
+  // getAllCategories,
+  // createCategory,
   deleteCategory,
   updateCategory,
   addToCart,

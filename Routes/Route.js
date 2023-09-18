@@ -18,7 +18,7 @@ const {
   resetPassword,
   getCategory,
   getAllCategories,
-  createCategory,
+  // createCategory,
   deleteCategory,
   updateCategory,
   addToCart,
@@ -51,10 +51,10 @@ router.route("/groups/:groupName/join").post(verifyToken, joinGroup);
 router.route("/groups/:groupName/delete").delete(verifyToken, deleteGroup);
 
 router.route("/category/:id").get(getCategory);
-router.route("/categories").get(getAllCategories);
-router
-  .route("/category")
-  .post(verifyTokenAndAdmin, upload.single("image"), createCategory);
+// router.route("/categories").get(getAllCategories);
+// router
+//   .route("/category")
+//   .post(verifyTokenAndAdmin, upload.single("image"), createCategory);
 router
   .route("/category/:id")
   .delete(verifyTokenAndAdmin, upload.single("image"), deleteCategory);

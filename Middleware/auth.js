@@ -12,7 +12,11 @@ const verifyToken = async (req, res, next) => {
 
   console.log(authHeader);
   if (!authHeader || !authHeader.startsWith("Bearer")) {
-    throw new UnauthenticatedError("Authentication invalid");
+    // throw new UnauthenticatedError("Authentication invalid");
+
+    return res
+      .status(401)
+      .json({ error: true, message: "Authentication invalid" });
   }
   const token = authHeader.split(" ")[1];
 
