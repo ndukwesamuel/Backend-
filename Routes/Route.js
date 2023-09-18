@@ -63,11 +63,11 @@ router
   .put(verifyTokenAndAdmin, upload.single("image"), updateCategory);
 router.route("/category-products/:name").get(getProductByCategory);
 
-router.route("/products").get(getAllProducts);
-router.route("/product/:id").get(getProduct);
-router
-  .route("/product")
-  .post(verifyTokenAndAdmin, upload.single("image"), createProduct);
+// router.route("/products").get(getAllProducts);
+// router.route("/product/:id").get(getProduct);
+// router
+//   .route("/product")
+//   .post(verifyTokenAndAdmin, upload.single("image"), createProduct);
 router.route("/product/:id").delete(deleteProduct);
 router
   .route("/product/:id")
