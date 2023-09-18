@@ -13,6 +13,18 @@ const groupSchema = new Schema(
       ref: "User",
       required: true,
     },
+    cart: [
+      {
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+        },
+        quantity: {
+          type: Number,
+          default: 1, // You can change this default value as needed.
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

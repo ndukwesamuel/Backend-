@@ -40,7 +40,6 @@ const getAllCategories = async (req, res) => {
 };
 
 const createCategory = async (req, res) => {
-  console.log(req.body);
   try {
     // const upload = await cloudinary.uploader.upload(req.file.path, {
     //   folder: "webuyam",

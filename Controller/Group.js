@@ -79,12 +79,126 @@ const getAllGroups = async (req, res) => {
   }
 };
 
+const getGroupCart = async (req, res) => {
+  // try {
+  const groupId = req.params.groupId;
+
+  const group = await groupmodel.findById(groupId); //.populate("cart.product");
+
+  // const groups = await groupmodel.find();
+
+  if (!group) {
+    throw new BadRequestError("Group not found");
+  }
+  res.status(200).json({ count: group.cart.length, data: group.cart });
+};
+
+const AddGroupCart = async (req, res) => {
+  // try {
+  const groupId = req.params.groupId;
+  const { productId, quantity } = req.body;
+
+  let product = await Product.find({ _id: productId });
+  if (!product) {
+    throw new BadRequestError("Procduct not found");
+  }
+  const group = await groupmodel.findById(groupId); //.populate("cart.product");
+
+  if (!group) {
+    throw new BadRequestError("Group not found");
+  }
+
+  // Check if the product is already in the cart
+  const existingProductIndex = group.cart.findIndex(
+    (item) => item.product.toString() === productId
+  );
+
+  if (existingProductIndex !== -1) {
+    // If the product is already in the cart, update the quantity
+    // group.cart[existingProductIndex].quantity += quantity;
+    return res.status(200).json({ message: "Product already in cart" });
+  } else {
+    // If the product is not in the cart, add it
+    group.cart.push({ product: productId, quantity });
+  }
+  await group.save();
+
+  res.status(200).json({ message: "Product added to the cart successfully" });
+};
+
+const updateSingleGroupCart = async (req, res) => {
+  // try {
+  const groupId = req.params.groupId;
+  const { productId, quantity } = req.body;
+
+  let product = await Product.find({ _id: productId });
+  if (!product) {
+    throw new BadRequestError("Procduct not found");
+  }
+  const group = await groupmodel.findById(groupId); //.populate("cart.product");
+
+  if (!group) {
+    throw new BadRequestError("Group not found");
+  }
+
+  // Check if the product is already in the cart
+  // Find the product in the cart by its productId
+  const cartItem = group.cart.find(
+    (item) => item.product.toString() === productId
+  );
+
+  if (!cartItem) {
+    return res.status(404).json({ message: "Product not found in the cart" });
+  }
+
+  // Update the quantity of the product
+  cartItem.quantity = quantity;
+  // Save the updated group document
+  await group.save();
+
+  res.status(200).json({ message: "Product quantity updated successfully" });
+};
+
+const DeleteSingleGroupCart = async (req, res) => {
+  // try {
+  const groupId = req.params.groupId;
+  const { productId, quantity } = req.body;
+
+  let product = await Product.find({ _id: productId });
+  if (!product) {
+    throw new BadRequestError("Procduct not found");
+  }
+  const group = await groupmodel.findById(groupId); //.populate("cart.product");
+
+  if (!group) {
+    throw new BadRequestError("Group not found");
+  }
+
+  const cartItem = group.cart.find(
+    (item) => item.product.toString() === productId
+  );
+
+  if (!cartItem) {
+    return res.status(404).json({ message: "Product not found in the cart" });
+  }
+
+  // Filter the cart to remove the cartItem by productId
+  group.cart = group.cart.filter(
+    (item) => item.product.toString() !== productId
+  );
+
+  // Save the updated group document with the cartItem removed
+  await group.save();
+  res.status(200).json({
+    message: "Product removed from the cart successfully",
+    data: group.cart,
+  });
+};
+
 const joinGroup = async (req, res) => {
   const groupId = req.params.groupId;
   const group = await Group.findById(groupId);
   const userId = req.user.id;
-
-  console.log({ groupId, userId });
 
   if (!group) {
     throw new BadRequestError("Group not found");
@@ -103,4 +217,8 @@ module.exports = {
   createGroup,
   getAllGroups,
   joinGroup,
+  getGroupCart,
+  AddGroupCart,
+  updateSingleGroupCart,
+  DeleteSingleGroupCart,
 };
