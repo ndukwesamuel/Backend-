@@ -10,12 +10,16 @@ const {
   AddGroupCart,
   updateSingleGroupCart,
   DeleteSingleGroupCart,
+  getMemberGroups,
 } = require("../Controller/Group");
 
 router
   .route("/")
   .post(verifyToken, createGroup)
   .get(verifyTokenAndAdmin, getAllGroups);
+
+router.route("/member").get(verifyToken, getMemberGroups);
+
 router.route("/:groupId/join").get(verifyToken, joinGroup);
 router
   .route("/:groupId/cart")

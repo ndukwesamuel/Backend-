@@ -79,6 +79,22 @@ const getAllGroups = async (req, res) => {
   }
 };
 
+const getMemberGroups = async (req, res) => {
+  console.log({ req: req.user });
+  try {
+    const groups = await groupmodel.find({ members: req.user.id });
+
+    if (!groups) {
+      res.status(200).json({ message: "You are not in any Group " });
+    } else {
+      res.status(200).json({ message: groups });
+    }
+  } catch (err) {
+    const error = handleErrors(err);
+    res.status(500).json({ message: error });
+  }
+};
+
 const getGroupCart = async (req, res) => {
   // try {
   const groupId = req.params.groupId;
@@ -90,6 +106,7 @@ const getGroupCart = async (req, res) => {
   if (!group) {
     throw new BadRequestError("Group not found");
   }
+
   res.status(200).json({ count: group.cart.length, data: group.cart });
 };
 
@@ -221,4 +238,5 @@ module.exports = {
   AddGroupCart,
   updateSingleGroupCart,
   DeleteSingleGroupCart,
+  getMemberGroups,
 };
