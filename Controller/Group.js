@@ -143,6 +143,83 @@ const AddGroupCart = async (req, res) => {
   res.status(200).json({ message: "Product added to the cart successfully" });
 };
 
+const CheckoutGroupCasrt = async (req, res) => {
+  // // try {
+  const groupId = req.params.groupId;
+  // const { productId, quantity } = req.body;
+  const group = await groupmodel.findById(groupId);
+  let cartitem = group?.cart;
+  console.log(cartitem);
+
+  let product = await Product.find({});
+
+  console.log({ product });
+
+  // if (!product) {
+  //   throw new BadRequestError("Procduct not found");
+  // }
+  // const group = await groupmodel.findById(groupId); //.populate("cart.product");
+
+  // if (!group) {
+  //   throw new BadRequestError("Group not found");
+  // }
+
+  // // Check if the product is already in the cart
+  // const existingProductIndex = group.cart.findIndex(
+  //   (item) => item.product.toString() === productId
+  // );
+
+  // if (existingProductIndex !== -1) {
+  //   // If the product is already in the cart, update the quantity
+  //   // group.cart[existingProductIndex].quantity += quantity;
+  //   return res.status(200).json({ message: "Product already in cart" });
+  // } else {
+  //   // If the product is not in the cart, add it
+  //   group.cart.push({ product: productId, quantity });
+  // }
+  // await group.save();
+
+  res.status(200).json({ message: "Product added to the cart successfully" });
+};
+
+const CheckoutGroupCart = async (req, res) => {
+  const groupId = req.params.groupId;
+  const group = await groupmodel.findById(groupId);
+
+  // Create an array to store product details
+  const productDetails = [];
+
+  // Loop through each item in group.cart and fetch product details
+  for (const cartItem of group.cart) {
+    const productId = cartItem.product;
+    const product = await Product.findById(productId); // Find product by its _id
+
+    if (product) {
+      let amount = product.price * cartItem.quantity;
+      // If the product is found, add its details to the array
+      productDetails.push({
+        cartItem: cartItem,
+        name: product.name,
+        price: product.price,
+        description: product.description,
+        category: product.category,
+        id: product._id,
+        amount,
+      });
+    }
+  }
+
+  // Calculate the total amount by summing up the 'amount' property of each product detail
+  const totalAmount = productDetails.reduce((total, productDetail) => {
+    return total + productDetail.amount;
+  }, 0);
+
+  res.status(200).json({
+    productDetails,
+    totalAmount,
+  });
+};
+
 const updateSingleGroupCart = async (req, res) => {
   // try {
   const groupId = req.params.groupId;
@@ -239,4 +316,5 @@ module.exports = {
   updateSingleGroupCart,
   DeleteSingleGroupCart,
   getMemberGroups,
+  CheckoutGroupCart,
 };

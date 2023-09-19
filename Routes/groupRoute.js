@@ -11,6 +11,7 @@ const {
   updateSingleGroupCart,
   DeleteSingleGroupCart,
   getMemberGroups,
+  CheckoutGroupCart,
 } = require("../Controller/Group");
 
 router
@@ -19,6 +20,7 @@ router
   .get(verifyTokenAndAdmin, getAllGroups);
 
 router.route("/member").get(verifyToken, getMemberGroups);
+router.route("/checkout/:groupId").get(verifyToken, CheckoutGroupCart);
 
 router.route("/:groupId/join").get(verifyToken, joinGroup);
 router
