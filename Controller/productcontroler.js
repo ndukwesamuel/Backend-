@@ -61,8 +61,8 @@ const getProduct = async (req, res) => {
       res.status(200).send(product);
     }
   } catch (err) {
-    const errors = handleErrors(err);
-    res.status(500).json({ error: errors, message: err });
+    // const errors = handleErrors(err);
+    res.status(500).json({ error: err });
   }
 };
 
