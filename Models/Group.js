@@ -13,6 +13,11 @@ const groupSchema = new Schema(
       ref: "User",
       required: true,
     },
+
+    wallet: {
+      type: Number,
+      default: 0, // Initial group wallet balance is 0
+    },
     cart: [
       {
         product: {

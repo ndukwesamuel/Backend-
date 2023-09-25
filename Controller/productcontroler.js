@@ -45,6 +45,7 @@ const createProduct = async (req, res) => {
     savedProduct = await newProduct.save();
     res.status(200).json({
       message: "Product saved",
+      product: savedProduct,
     });
   } catch (err) {
     const error = handleErrors(err);
