@@ -13,6 +13,7 @@ const user = require("./Routes/userRoute");
 const grouproute = require("./Routes/groupRoute");
 const categoryroute = require("./Routes/categoryroute");
 const productroute = require("./Routes/productroute");
+const cartRoute = require("./Routes/cartRoute");
 
 // my route ends here
 const notFoundMiddleware = require("./Middleware/not-found");
@@ -40,6 +41,7 @@ app.use("/api/user", user);
 app.use("/api/group", grouproute);
 app.use("/api/category", categoryroute);
 app.use("/api/products", productroute);
+app.use("/api/cart", cartRoute);
 
 app.post("/", (req, res) => {
   const { name, email, password } = req.body;

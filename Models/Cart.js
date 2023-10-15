@@ -17,15 +17,14 @@ const cartSchema = new Schema({
       },
       quantity: {
         type: Number,
-        default: 1,
+        default: 0,
       },
       price: {
         type: Number,
-        default: 1,
+        default: 0,
       },
       name: {
         type: String,
-        default: 1,
       },
     },
   ],

@@ -73,10 +73,10 @@ router
   .route("/product/:id")
   .put(verifyTokenAndAdmin, upload.single("image"), updateProduct);
 
-router.route("/cart").get(verifyToken, getCart);
-router.route("/cart/addItem").post(verifyToken, addToCart);
-router.route("/cart/decreaseItem").patch(verifyToken, decreaseCartItems);
-router.route("/cart/deleteItem").delete(verifyToken, deleteFromCart);
+// router.route("/cart").get(verifyToken, getCart);
+// router.route("/cart/addItem").post(verifyToken, addToCart);
+// router.route("/cart/decreaseItem").patch(verifyToken, decreaseCartItems);
+// router.route("/cart/deleteItem").delete(verifyToken, deleteFromCart);
 
 router.route("/payment").post(payment);
 router.route("/paymentVerification").post(verifyPayment);
