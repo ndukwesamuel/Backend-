@@ -1,7 +1,7 @@
 const https = require("https");
 const { StatusCodes } = require("http-status-codes");
 
-const dotenv = require("dotenv");
+require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const {
@@ -28,8 +28,7 @@ const groupmodel = require("../Models/Group");
 const { BadRequestError } = require("../errors");
 const { log } = require("console");
 const upload = require("../Middleware/multer").single("image");
-
-dotenv.config();
+const { isValidObjectId } = require("mongoose");
 
 const paystackKey = process.env.PAYSTACK_SECRET_KEY;
 
@@ -38,7 +37,7 @@ const createGroup = async (req, res) => {
   const creator = req.user.id;
 
   if (!name || !description) {
-    throw new BadRequestError("Please provide email and password");
+    throw new BadRequestError("Please provide name and description");
   }
 
   const isAdminOfAnyGroup = await groupmodel.exists({
@@ -111,36 +110,107 @@ const getGroupCart = async (req, res) => {
 };
 
 const AddGroupCart = async (req, res) => {
-  // try {
   const groupId = req.params.groupId;
-  const { productId, quantity } = req.body;
-
-  let product = await Product.find({ _id: productId });
-  if (!product) {
-    throw new BadRequestError("Procduct not found");
-  }
-  const group = await groupmodel.findById(groupId); //.populate("cart.product");
-
+  const group = await groupmodel.findById(groupId);
   if (!group) {
     throw new BadRequestError("Group not found");
   }
-
-  // Check if the product is already in the cart
-  const existingProductIndex = group.cart.findIndex(
-    (item) => item.product.toString() === productId
-  );
-
-  if (existingProductIndex !== -1) {
-    // If the product is already in the cart, update the quantity
-    // group.cart[existingProductIndex].quantity += quantity;
-    return res.status(200).json({ message: "Product already in cart" });
-  } else {
-    // If the product is not in the cart, add it
-    group.cart.push({ product: productId, quantity });
+  if (!group.members.includes(`${req.user.id}`)) {
+    throw new BadRequestError("You are not a member of this Group");
   }
-  await group.save();
+  const userCart = await Cart.findOne({ userId: req.user.id });
+  if (!userCart || userCart.items.length === 0) {
+    throw new BadRequestError("Your cart is empty: Add items");
+  }
 
-  res.status(200).json({ message: "Product added to the cart successfully" });
+  if (userCart) {
+    userCart.items.forEach((userCartItem) => {
+      const existingProductIndex = group.cart.findIndex(
+        (groupItem) => groupItem.productId.toString() === userCartItem.productId
+      );
+      if (existingProductIndex !== -1) {
+        // check if a user already added an item to cart before
+        const userExistWithProductId = group.cart[
+          existingProductIndex
+        ].userProductInfo.some(
+          (userProductIdentity) =>
+            userProductIdentity.userId.toString() === req.user.id
+        );
+        if (userExistWithProductId) {
+          const userProductIndex = group.cart[
+            existingProductIndex
+          ].userProductInfo.findIndex(
+            (userProductIdentity) =>
+              userProductIdentity.userId.toString() === req.user.id
+          );
+
+          // Update the quantity and amount for the matching userProductInfo object
+          group.cart[existingProductIndex].userProductInfo[
+            userProductIndex
+          ].quantity += userCartItem.quantity;
+
+          group.cart[existingProductIndex].userProductInfo[
+            userProductIndex
+          ].amount += userCartItem.price * userCartItem.quantity;
+          const calTotalAmount = group.cart[
+            existingProductIndex
+          ].userProductInfo.reduce((total, curr) => {
+            return total + curr.amount;
+          }, 0);
+          const calTotalQuantity = group.cart[
+            existingProductIndex
+          ].userProductInfo.reduce((total, curr) => {
+            return total + curr.quantity;
+          }, 0);
+          group.cart[existingProductIndex].totalQuantity = calTotalQuantity;
+          group.cart[existingProductIndex].totalAmount = calTotalAmount;
+          return group;
+        }
+        group.cart[existingProductIndex].userProductInfo.push({
+          userId: req.user.id,
+          quantity: userCartItem.quantity,
+          amount: userCartItem.price * userCartItem.quantity,
+        });
+        // Calculate total quantity and total amount for each productId
+        const calTotalAmount = group.cart[
+          existingProductIndex
+        ].userProductInfo.reduce((total, curr) => {
+          return total + curr.amount;
+        }, 0);
+
+        const calTotalQuantity = group.cart[
+          existingProductIndex
+        ].userProductInfo.reduce((total, curr) => {
+          return total + curr.quantity;
+        }, 0);
+
+        group.cart[existingProductIndex].totalQuantity = calTotalQuantity;
+        group.cart[existingProductIndex].totalAmount = calTotalAmount;
+
+        return group;
+      } else {
+        group.cart.push({
+          userProductInfo: [
+            {
+              userId: req.user.id,
+              quantity: userCartItem.quantity,
+              amount: userCartItem.price * userCartItem.quantity,
+            },
+          ],
+          productId: userCartItem.productId,
+          totalQuantity: userCartItem.quantity,
+          totalAmount: userCartItem.price * userCartItem.quantity,
+        });
+      }
+    });
+    // Calculate the grand amount for each group
+    groupBill = group.cart.reduce((total, curr) => {
+      return total + curr.totalAmount;
+    }, 0);
+    group.bill = groupBill;
+    await group.save();
+    return res.status(200).json({ message: "Product added to group cart" });
+  }
 };
 
 const CheckoutGroupCasrt = async (req, res) => {

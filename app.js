@@ -13,6 +13,7 @@ const user = require("./Routes/userRoute");
 const grouproute = require("./Routes/groupRoute");
 const categoryroute = require("./Routes/categoryroute");
 const productroute = require("./Routes/productroute");
+const cartRoute = require("./Routes/cartRoute");
 const walletRoute = require("./Routes/walletRoute");
 
 // my route ends here
@@ -42,6 +43,7 @@ app.use("/api/user", user);
 app.use("/api/group", grouproute);
 app.use("/api/category", categoryroute);
 app.use("/api/products", productroute);
+app.use("/api/cart", cartRoute);
 app.use("/api/wallet", walletRoute);
 
 app.post("/", (req, res) => {

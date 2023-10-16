@@ -20,16 +20,38 @@ const groupSchema = new Schema(
     },
     cart: [
       {
-        product: {
+        userProductInfo: [
+          {
+            userId: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "Users",
+            },
+            quantity: {
+              type: Number,
+            },
+            amount: {
+              type: Number,
+            },
+          },
+        ],
+        productId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
+          ref: "Products",
         },
-        quantity: {
+        totalQuantity: {
           type: Number,
-          default: 1, // You can change this default value as needed.
+          default: 0,
+        },
+        totalAmount: {
+          type: Number,
+          default: 0,
         },
       },
     ],
+    bill: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
