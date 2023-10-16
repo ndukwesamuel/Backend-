@@ -36,6 +36,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 
 // this is the  api route
+
 app.use("/api", Route);
 app.use("/api/user", user);
 app.use("/api/group", grouproute);
