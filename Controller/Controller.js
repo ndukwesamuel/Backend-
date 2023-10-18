@@ -69,25 +69,25 @@ const register = async (req, res) => {
   }
 };
 
-const login = async (req, res) => {
-  const { password, email } = req.body;
+// const login = async (req, res) => {
+//   const { password, email } = req.body;
 
-  try {
-    const user = await User.login(email, password);
+//   try {
+//     const user = await User.login(email, password);
 
-    if (user.verified) {
-      const token = createToken(user._id);
+//     if (user.verified) {
+//       const token = createToken(user._id);
 
-      const { password, ...others } = user._doc;
-      res.status(200).json({ ...others, token });
-    } else {
-      res.status(401).json({ message: "Verify email to login" });
-    }
-  } catch (err) {
-    const error = handleErrors(err);
-    res.status(400).json({ error });
-  }
-};
+//       const { password, ...others } = user._doc;
+//       res.status(200).json({ ...others, token });
+//     } else {
+//       res.status(401).json({ message: "Verify email to login" });
+//     }
+//   } catch (err) {
+//     const error = handleErrors(err);
+//     res.status(400).json({ error });
+//   }
+// };
 
 const logout = async (req, res) => {
   const authHeader = req.headers.token;
@@ -614,73 +614,74 @@ const updateCategory = async (req, res) => {
 //   }
 // };
 
-const deleteProduct = async (req, res) => {
-  try {
-    const deletedProduct = await Product.findByIdAndDelete(req.params.id);
-    const imageURL = deletedProduct.image;
-    const imageId = getImageId(imageURL);
-    if (deletedProduct) {
-      await cloudinary.uploader.destroy(`webuyam/${imageId}`);
-      res.status(200).json({ message: "Product successfully deleted" });
-    } else {
-      res.status(404).json({ message: "Product not found" });
-    }
-  } catch (err) {
-    const errors = handleErrors(err);
-    res.status(500).json({ error: errors, message: "Product deletion failed" });
-  }
-};
+// const deleteProduct = async (req, res) => {
+//   try {
+//     const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+//     const imageURL = deletedProduct.image;
+//     const imageId = getImageId(imageURL);
+//     if (deletedProduct) {
+//       await cloudinary.uploader.destroy(`webuyam/${imageId}`);
+//       res.status(200).json({ message: "Product successfully deleted" });
+//     } else {
+//       res.status(404).json({ message: "Product not found" });
+//     }
+//   } catch (err) {
+//     const errors = handleErrors(err);
+//     res.status(500).json({ error: errors, message: "Product deletion failed" });
+//   }
+// };
 
-const updateProduct = async (req, res) => {
-  try {
-    const currentProduct = await Product.findById(req.params.id);
-    const imageId = getImageId(currentProduct.image);
-    await cloudinary.uploader.destroy(`webuyam/${imageId}`);
+// const updateProduct = async (req, res) => {
+//   try {
+//     const currentProduct = await Product.findById(req.params.id);
+//     const imageId = getImageId(currentProduct.image);
+//     await cloudinary.uploader.destroy(`webuyam/${imageId}`);
 
-    const upload = await cloudinary.uploader.upload(req.file.path, {
-      folder: "webuyam",
-    });
-    const data = {
-      name: req.body.name,
-      price: req.body.price,
-      image: upload.secure_url,
-      description: req.body.description,
-      category: req.body.category,
-    };
-    const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      data,
-      { new: true }
-    );
-    if (updatedProduct) {
-      res.status(200).json({ message: "Product successfully updated" });
-    } else {
-      res.status(404).json({ message: "Product not found" });
-    }
-  } catch (err) {
-    // const errors = handleErrors(err);
-    res.status(500).json({ error: err, message: "Product update failed" });
-  }
-};
+//     const upload = await cloudinary.uploader.upload(req.file.path, {
+//       folder: "webuyam",
+//     });
+//     const data = {
+//       name: req.body.name,
+//       price: req.body.price,
+//       image: upload.secure_url,
+//       description: req.body.description,
+//       category: req.body.category,
+//     };
+//     const updatedProduct = await Product.findByIdAndUpdate(
+//       req.params.id,
+//       data,
+//       { new: true }
+//     );
+//     if (updatedProduct) {
+//       res.status(200).json({ message: "Product successfully updated" });
+//     } else {
+//       res.status(404).json({ message: "Product not found" });
+//     }
+//   } catch (err) {
+//     // const errors = handleErrors(err);
+//     console.log(err);
+//     res.status(500).json({ error: err, message: "Product update failed" });
+//   }
+// };
 
-const getProductByCategory = async (req, res) => {
-  try {
-    productsInCategory = await Product.find({
-      category: req.params.name,
-    }).sort({ createdAt: -1 });
-    if (productsInCategory.length < 1) {
-      res.status(200).json({
-        error: true,
-        message: "No product available in this category",
-      });
-    } else {
-      res.status(200).json(productsInCategory);
-    }
-  } catch (err) {
-    const errors = handleErrors(err);
-    res.status(500).json({ error: true, message: errors });
-  }
-};
+// const getProductByCategory = async (req, res) => {
+//   try {
+//     productsInCategory = await Product.find({
+//       category: req.params.name,
+//     }).sort({ createdAt: -1 });
+//     if (productsInCategory.length < 1) {
+//       res.status(200).json({
+//         error: true,
+//         message: "No product available in this category",
+//       });
+//     } else {
+//       res.status(200).json(productsInCategory);
+//     }
+//   } catch (err) {
+//     const errors = handleErrors(err);
+//     res.status(500).json({ error: true, message: errors });
+//   }
+// };
 
 const payment = async (req, res) => {
   const { email, amount, firstname, lastname, phone } = req.body;
@@ -790,7 +791,7 @@ const home = async (req, res) => {
 module.exports = {
   getData,
   register,
-  login,
+  // login,
   logout,
   createGroup,
   emailVerification,
@@ -812,10 +813,10 @@ module.exports = {
   // decreaseCartItems,
   // getAllProducts,
   // createProduct,
-  deleteProduct,
-  updateProduct,
+  // deleteProduct,
+  // updateProduct,
   // getProduct,
-  getProductByCategory,
+  // getProductByCategory,
   payment,
   verifyPayment,
 };

@@ -1,34 +1,14 @@
-const https = require("https");
 const { StatusCodes } = require("http-status-codes");
-
-const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
 const {
   handleErrors,
   getImageId,
 } = require("../Middleware/errorHandler/function");
-const {
-  sendVerificationEmail,
-  sendPasswordResetEmail,
-} = require("../Middleware/Verification");
-const { createToken, verifyToken } = require("../Middleware/auth");
+const { sendVerificationEmail } = require("../Middleware/Verification");
 const User = require("../Models/Users");
-const Group = require("../Models/Group");
-const Email = require("../Models/emailVerification");
-const userPasswordReset = require("../Models/passwordReset");
-const Category = require("../Models/Category");
-const Product = require("../Models/Products");
-const Cart = require("../Models/Cart");
-const paymentVerification = require("../Models/paymentVerification");
 const cloudinary = require("../utils/Cloudinary");
 const UserProfile = require("../Models/UserProfile");
 const { BadRequestError } = require("../errors");
-const upload = require("../Middleware/multer").single("image");
-
-dotenv.config();
-
-const paystackKey = process.env.PAYSTACK_SECRET_KEY;
 
 const register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -52,7 +32,8 @@ const register = async (req, res) => {
 
   const newProfile = new UserProfile({
     user: savedUser._id, // Reference to the user document
-    firstName: req.body.name,
+    name: req.body.name,
+    email: req.body.email,
   });
 
   savedUserprofile = await newProfile.save();
@@ -60,17 +41,62 @@ const register = async (req, res) => {
   sendVerificationEmail(savedUser, res);
 };
 
+const login = async (req, res) => {
+  const { password, email } = req.body;
+
+  try {
+    const user = await User.login(email, password);
+
+    if (user.verified) {
+      const token = createToken(user._id);
+
+      const { password, ...others } = user._doc;
+      res.status(200).json({ ...others, token });
+    } else {
+      res.status(401).json({ message: "Verify email to login" });
+    }
+  } catch (err) {
+    const error = handleErrors(err);
+    res.status(400).json({ error });
+  }
+};
+
 const updateUserProfile = async (req, res) => {
-  console.log(req);
-  res.status(StatusCodes.OK).json({ name: "this " });
+  const { name, email, phone, address } = req.body;
+  try {
+    const profile = await UserProfile.findOne({ user: req.user.id });
+    if (profile.profileImage) {
+      const imageId = getImageId(profile.profileImage);
+      await cloudinary.uploader.destroy(`webuyam/profile/${imageId}`);
+    }
+    const upload = await cloudinary.uploader.upload(req.file.path, {
+      folder: "webuyam/profile",
+    });
+    data = {
+      name: name,
+      email: email,
+      phone: phone,
+      address: address,
+      profileImage: upload.secure_url,
+    };
+    await UserProfile.findByIdAndUpdate(profile._id, data, {
+      new: true,
+    });
+
+    res
+      .status(StatusCodes.OK)
+      .json({ message: "Profile successfully updated" });
+  } catch (err) {
+    // const errors = handleErrors(err);
+    res.status(500).json({ error: err, message: "Profile update failed" });
+  }
 };
 
 const getUserProfile = async (req, res) => {
-  console.log("req");
   try {
-    const profiles = await UserProfile.find().populate("user"); // Populate the 'user' field with user details
+    const profile = await UserProfile.findOne({ user: req.user.id });
 
-    res.status(StatusCodes.OK).json(profiles);
+    res.status(StatusCodes.OK).json(profile);
   } catch (error) {
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -101,5 +127,6 @@ module.exports = {
   updateUserProfile,
   getUserProfile,
   register,
+  login,
   logout,
 };

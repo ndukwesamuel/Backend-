@@ -6,6 +6,7 @@ const { createGroup, getAllGroups, joinGroup } = require("../Controller/Group");
 const {
   getAllCategories,
   createCategory,
+  getProductByCategory,
 } = require("../Controller/categorycontroler");
 
 router
@@ -13,4 +14,5 @@ router
   .get(getAllCategories)
   .post(verifyTokenAndAdmin, upload.single("image"), createCategory);
 
+router.route("/:categoryName").get(getProductByCategory);
 module.exports = router;

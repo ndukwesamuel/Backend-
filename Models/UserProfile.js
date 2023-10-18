@@ -13,10 +13,16 @@ const userProfileSchema = new Schema(
     profileImage: {
       type: String, // You can store the image URL or file path here
     },
-    bio: {
+    address: {
       type: String,
     },
-    firstName: {
+    name: {
+      type: String,
+    },
+    phone: {
+      type: String,
+    },
+    email: {
       type: String,
     },
     // Add other profile-related fields as needed

@@ -11,13 +11,18 @@ const {
   getAllProducts,
   getProduct,
   createProduct,
+  updateProduct,
+  deleteProduct,
 } = require("../Controller/productcontroler");
 
 router
   .route("/")
   .get(getAllProducts)
   .post(verifyTokenAndAdmin, upload.single("image"), createProduct);
-
-router.route("/:id").get(getProduct);
+router
+  .route("/:id")
+  .put(verifyTokenAndAdmin, upload.single("image"), updateProduct)
+  .get(verifyTokenAndAdmin, getProduct)
+  .delete(verifyTokenAndAdmin, deleteProduct);
 
 module.exports = router;

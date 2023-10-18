@@ -19,7 +19,7 @@ const productSchema = new Schema({
   },
   category: {
     type: String,
-    ref: "categories",
+    ref: "category",
   },
   brand: {
     type: String,

@@ -27,17 +27,17 @@ const {
   decreaseCartItems,
   getAllProducts,
   createProduct,
-  deleteProduct,
-  updateProduct,
+  // deleteProduct,
+  // updateProduct,
   getProduct,
-  getProductByCategory,
+  // getProductByCategory,
   payment,
   verifyPayment,
 } = require("../Controller/Controller");
 
 router.route("/getdata").get(getData);
 // router.route("/user/register").post(register);
-router.route("/user/login").post(login);
+// router.route("/user/login").post(login);
 // router.route("/user/logout").get(verifyToken, logout);
 
 router.route("/verify-email").post(emailVerification);
@@ -61,17 +61,17 @@ router
 router
   .route("/category/:id")
   .put(verifyTokenAndAdmin, upload.single("image"), updateCategory);
-router.route("/category-products/:name").get(getProductByCategory);
+// router.route("/category-products/:name").get(getProductByCategory);
 
 // router.route("/products").get(getAllProducts);
 // router.route("/product/:id").get(getProduct);
 // router
 //   .route("/product")
 //   .post(verifyTokenAndAdmin, upload.single("image"), createProduct);
-router.route("/product/:id").delete(deleteProduct);
-router
-  .route("/product/:id")
-  .put(verifyTokenAndAdmin, upload.single("image"), updateProduct);
+// router.route("/product/:id").delete(deleteProduct);
+// router
+//   .route("/product/:id")
+//   .put(verifyTokenAndAdmin, upload.single("image"), updateProduct);
 
 // router.route("/cart").get(verifyToken, getCart);
 // router.route("/cart/addItem").post(verifyToken, addToCart);
