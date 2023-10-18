@@ -51,6 +51,20 @@ const AddMoneyTo = async (req, res) => {
   });
 };
 
+const GetUserMoney = async (req, res) => {
+  let user = req.user.id;
+  let userwalet = await User.findById(user);
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  res.status(200).json({
+    message: "Wallet credited successfully",
+    wallet: userwalet.wallet,
+  });
+};
+
 const TransferMoneyToGroup = async (req, res) => {
   const { userId, groupId, amount, description } = req.body;
   const user = await User.findById(userId);
@@ -229,4 +243,5 @@ module.exports = {
   Get__user__Transaction__History,
   Get__group__Transaction__History,
   GroupPaysForAProduct,
+  GetUserMoney,
 };
