@@ -57,9 +57,9 @@ app.use(errorHandlerMiddleware);
 
 app.use(function (err, req, res, next) {
   if (err instanceof multer.MulterError) {
-    return res.status(400).send({ message: err.message });
+    res.status(400).send({ message: err.message });
   } else if (err) {
-    return res.status(400).send({ message: "invalid image type" });
+    res.status(400).send({ message: err.message });
   }
   next();
 });
