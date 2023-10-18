@@ -97,6 +97,7 @@ const AddGroupCart = async (req, res) => {
   if (!group.members.includes(`${req.user.id}`)) {
     throw new BadRequestError("You are not a member of this Group");
   }
+
   const userCart = await Cart.findOne({ userId: req.user.id });
   if (!userCart || userCart.items.length === 0) {
     throw new BadRequestError("Your cart is empty: Add items");

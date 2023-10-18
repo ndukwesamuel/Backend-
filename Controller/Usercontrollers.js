@@ -1,9 +1,11 @@
 const { StatusCodes } = require("http-status-codes");
 const jwt = require("jsonwebtoken");
+const { log } = require("console");
 const {
   handleErrors,
   getImageId,
 } = require("../Middleware/errorHandler/function");
+const { createToken } = require("../Middleware/auth");
 const { sendVerificationEmail } = require("../Middleware/Verification");
 const User = require("../Models/Users");
 const cloudinary = require("../utils/Cloudinary");
@@ -79,6 +81,13 @@ const updateUserProfile = async (req, res) => {
       address: address,
       profileImage: upload.secure_url,
     };
+    await User.findByIdAndUpdate(
+      req.user.id,
+      { name: name, email: email },
+      {
+        new: true,
+      }
+    );
     await UserProfile.findByIdAndUpdate(profile._id, data, {
       new: true,
     });
@@ -88,6 +97,7 @@ const updateUserProfile = async (req, res) => {
       .json({ message: "Profile successfully updated" });
   } catch (err) {
     // const errors = handleErrors(err);
+    console.log(err);
     res.status(500).json({ error: err, message: "Profile update failed" });
   }
 };
