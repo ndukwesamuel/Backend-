@@ -1,36 +1,15 @@
-const https = require("https");
 const { StatusCodes } = require("http-status-codes");
-
-require("dotenv").config();
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
 const {
   handleErrors,
   getImageId,
 } = require("../Middleware/errorHandler/function");
-const {
-  sendVerificationEmail,
-  sendPasswordResetEmail,
-} = require("../Middleware/Verification");
-const { createToken, verifyToken } = require("../Middleware/auth");
-const User = require("../Models/Users");
 const Group = require("../Models/Group");
-const Email = require("../Models/emailVerification");
-const userPasswordReset = require("../Models/passwordReset");
-const Category = require("../Models/Category");
 const Product = require("../Models/Products");
 const Cart = require("../Models/Cart");
-const paymentVerification = require("../Models/paymentVerification");
-const cloudinary = require("../utils/Cloudinary");
-const UserProfile = require("../Models/UserProfile");
 const groupmodel = require("../Models/Group");
-
 const { BadRequestError } = require("../errors");
 const { log } = require("console");
-const upload = require("../Middleware/multer").single("image");
 const { isValidObjectId } = require("mongoose");
-
-const paystackKey = process.env.PAYSTACK_SECRET_KEY;
 
 const createGroup = async (req, res) => {
   const { name, description } = req.body;
