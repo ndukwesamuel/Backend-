@@ -48,26 +48,26 @@ const getData = async (req, res) => {
   res.status(200).json(data);
 };
 
-const register = async (req, res) => {
-  const { name, email, password } = req.body;
+// const register = async (req, res) => {
+//   const { name, email, password } = req.body;
 
-  const newUser = new User({
-    fullName: name,
-    email: email,
-    password: password,
-  });
+//   const newUser = new User({
+//     fullName: name,
+//     email: email,
+//     password: password,
+//   });
 
-  // res.json({ name, email, password });
+//   // res.json({ name, email, password });
 
-  try {
-    savedUser = await newUser.save();
-    // res.status(201).json({ savedUser });
-    sendVerificationEmail(savedUser, res);
-  } catch (err) {
-    const error = handleErrors(err);
-    res.status(500).json({ message: error });
-  }
-};
+//   try {
+//     savedUser = await newUser.save();
+//     // res.status(201).json({ savedUser });
+//     sendVerificationEmail(savedUser, res);
+//   } catch (err) {
+//     const error = handleErrors(err);
+//     res.status(500).json({ message: error });
+//   }
+// };
 
 // const login = async (req, res) => {
 //   const { password, email } = req.body;
@@ -89,290 +89,290 @@ const register = async (req, res) => {
 //   }
 // };
 
-const logout = async (req, res) => {
-  const authHeader = req.headers.token;
-  console.log(authHeader);
-  jwt.sign(
-    authHeader,
-    "",
-    {
-      expiresIn: 1,
-    },
-    (logout, err) => {
-      if (logout) {
-        res.status(200).json({ message: "Logged out" });
-      } else {
-        res.status(401).json({ message: err });
-      }
-    }
-  );
-};
+// const logout = async (req, res) => {
+//   const authHeader = req.headers.token;
+//   console.log(authHeader);
+//   jwt.sign(
+//     authHeader,
+//     "",
+//     {
+//       expiresIn: 1,
+//     },
+//     (logout, err) => {
+//       if (logout) {
+//         res.status(200).json({ message: "Logged out" });
+//       } else {
+//         res.status(401).json({ message: err });
+//       }
+//     }
+//   );
+// };
 
-const emailVerification = async (req, res) => {
-  const { userId, uniqueString } = req.body;
+// const emailVerification = async (req, res) => {
+//   const { userId, uniqueString } = req.body;
 
-  try {
-    userData = await Email.findOne({ userId }).sort({ createdAt: -1 });
-    // console.log(userData);
-    if (userData) {
-      const expireAt = userData.expireAt;
+//   try {
+//     userData = await Email.findOne({ userId }).sort({ createdAt: -1 });
+//     // console.log(userData);
+//     if (userData) {
+//       const expireAt = userData.expireAt;
 
-      const hashedUniqueString = userData.uniqueString;
+//       const hashedUniqueString = userData.uniqueString;
 
-      // checking if the uniqueNumber has expired
-      if (expireAt < Date.now()) {
-        Email.deleteOne({ userId })
-          .then((result) => {
-            User.deleteOne({ _id: userId }).then(() => {
-              res.status(200).json({ message: "link expired, signup again" });
-            });
-          })
-          .catch((err) => {
-            res.status(500).json("error occurred while deleting this user");
-          });
-      } else {
-        // if unique string hasn't expire
-        // compare the unique number with the one in the database
+//       // checking if the uniqueNumber has expired
+//       if (expireAt < Date.now()) {
+//         Email.deleteOne({ userId })
+//           .then((result) => {
+//             User.deleteOne({ _id: userId }).then(() => {
+//               res.status(200).json({ message: "link expired, signup again" });
+//             });
+//           })
+//           .catch((err) => {
+//             res.status(500).json("error occurred while deleting this user");
+//           });
+//       } else {
+//         // if unique string hasn't expire
+//         // compare the unique number with the one in the database
 
-        bcrypt
-          .compare(uniqueString, hashedUniqueString)
-          .then((result) => {
-            if (result) {
-              User.updateOne({ _id: userId }, { verified: true })
-                .then(() => {
-                  Email.deleteOne({ userId })
-                    .then(() => {
-                      res.status(200).json({ message: "Email verified" });
-                    })
-                    .catch((err) => {
-                      res
-                        .status(500)
-                        .json("email Verification data not deleted");
-                    });
-                })
-                .catch((err) => {
-                  res.status(500).json({ message: "update error" });
-                });
-            }
-          })
-          .catch((err) => {
-            res.status(500).json({ message: "unique number not valid" });
-          });
-      }
-    } else {
-      res.json({
-        error: true,
-        message: "Email has been verified already!",
-      });
-    }
-  } catch (err) {
-    console.log(err);
-    res.status(200).json({ message: "Email has been verified already" });
-  }
-};
+//         bcrypt
+//           .compare(uniqueString, hashedUniqueString)
+//           .then((result) => {
+//             if (result) {
+//               User.updateOne({ _id: userId }, { verified: true })
+//                 .then(() => {
+//                   Email.deleteOne({ userId })
+//                     .then(() => {
+//                       res.status(200).json({ message: "Email verified" });
+//                     })
+//                     .catch((err) => {
+//                       res
+//                         .status(500)
+//                         .json("email Verification data not deleted");
+//                     });
+//                 })
+//                 .catch((err) => {
+//                   res.status(500).json({ message: "update error" });
+//                 });
+//             }
+//           })
+//           .catch((err) => {
+//             res.status(500).json({ message: "unique number not valid" });
+//           });
+//       }
+//     } else {
+//       res.json({
+//         error: true,
+//         message: "Email has been verified already!",
+//       });
+//     }
+//   } catch (err) {
+//     console.log(err);
+//     res.status(200).json({ message: "Email has been verified already" });
+//   }
+// };
 
-const resendVerificationEmail = async (req, res) => {
-  const { email } = req.body;
-  try {
-    userData = await User.findOne({ email: email });
-    if (userData === null) {
-      res.status(500).json({ error: true, Message: "Email not registered" });
-    } else {
-      sendVerificationEmail(userData, res);
-    }
-  } catch (error) {
-    res.status(500).json({ error: true, Message: "Email not registered" });
-  }
-};
+// const resendVerificationEmail = async (req, res) => {
+//   const { email } = req.body;
+//   try {
+//     userData = await User.findOne({ email: email });
+//     if (userData === null) {
+//       res.status(500).json({ error: true, Message: "Email not registered" });
+//     } else {
+//       sendVerificationEmail(userData, res);
+//     }
+//   } catch (error) {
+//     res.status(500).json({ error: true, Message: "Email not registered" });
+//   }
+// };
 
 // Requesting for password reset email
-const passwordResetEmail = async (req, res) => {
-  const { email, redirectUrl } = req.body;
-  try {
-    userData = await User.findOne({ email });
-    if (userData) {
-      // Check if the user has been verified before sending password reset email
-      if (userData.verified) {
-        sendPasswordResetEmail(userData, redirectUrl, res);
-      } else {
-        res.status(401).json({ message: "Email has not been verified" });
-      }
-    } else {
-      res.status(404).json({ message: "Email not registered" });
-    }
-  } catch (err) {
-    const errors = handleErrors(err);
-    res.status(400).json({ errors });
-  }
-};
+// const passwordResetEmail = async (req, res) => {
+//   const { email, redirectUrl } = req.body;
+//   try {
+//     userData = await User.findOne({ email });
+//     if (userData) {
+//       // Check if the user has been verified before sending password reset email
+//       if (userData.verified) {
+//         sendPasswordResetEmail(userData, redirectUrl, res);
+//       } else {
+//         res.status(401).json({ message: "Email has not been verified" });
+//       }
+//     } else {
+//       res.status(404).json({ message: "Email not registered" });
+//     }
+//   } catch (err) {
+//     const errors = handleErrors(err);
+//     res.status(400).json({ errors });
+//   }
+// };
 
-const resetPassword = async (req, res) => {
-  const { userId, uniqueString, newPassword } = req.body;
-  try {
-    userData = await userPasswordReset
-      .findOne({ userId })
-      .sort({ createdAt: -1 });
-    if (userData) {
-      const expireAt = userData.expireAt;
+// const resetPassword = async (req, res) => {
+//   const { userId, uniqueString, newPassword } = req.body;
+//   try {
+//     userData = await userPasswordReset
+//       .findOne({ userId })
+//       .sort({ createdAt: -1 });
+//     if (userData) {
+//       const expireAt = userData.expireAt;
 
-      const hashedUniqueString = userData.uniqueString;
+//       const hashedUniqueString = userData.uniqueString;
 
-      // checking if the uniqueString has expired
-      if (expireAt < Date.now()) {
-        userPasswordReset
-          .deleteOne({ userId })
-          .then((result) => {
-            res.status(200).json({
-              error: true,
-              message: "link expired, request for new link",
-            });
-          })
-          .catch((err) => {
-            res
-              .status(500)
-              .json("error occurred while deleting this user password reset");
-          });
-      } else {
-        // if unique string hasn't expire
-        // compare the unique string with the one in the database
-        bcrypt
-          .compare(uniqueString, hashedUniqueString)
-          .then((result) => {
-            if (result) {
-              //  Hass the new password
-              bcrypt
-                .hash(newPassword, 10)
-                .then((hashedPassword) => {
-                  // Update password
-                  User.updateOne(
-                    { _id: userId },
-                    { password: hashedPassword }
-                  ).then(() => {
-                    // delete reset data from db
-                    userPasswordReset
-                      .deleteOne({ userId })
-                      .then((response) => {
-                        res.json({ message: "password reset successfully" });
-                      })
-                      .catch((err) => {
-                        res.json({ message: "deleting reset data failed" });
-                      });
-                  });
-                })
-                .then((result) => {})
-                .catch((err) => {
-                  res.json({ message: "password not updated" });
-                })
-                .catch((err) => {
-                  res.json({ message: "Error while hashing password" });
-                });
-            } else {
-              res.json({
-                error: true,
-                message: "Invalid password reset details",
-              });
-            }
-          })
-          .catch((err) => {
-            res.status(500).json({ message: "unique string not valid" });
-          });
-      }
-    } else
-      res
-        .status(404)
-        .json({ message: "Invalid details: Use the link in your mail!" });
-  } catch (err) {
-    console.log(err);
-    res.status(404).json("Invalid id");
-  }
-};
+//       // checking if the uniqueString has expired
+//       if (expireAt < Date.now()) {
+//         userPasswordReset
+//           .deleteOne({ userId })
+//           .then((result) => {
+//             res.status(200).json({
+//               error: true,
+//               message: "link expired, request for new link",
+//             });
+//           })
+//           .catch((err) => {
+//             res
+//               .status(500)
+//               .json("error occurred while deleting this user password reset");
+//           });
+//       } else {
+//         // if unique string hasn't expire
+//         // compare the unique string with the one in the database
+//         bcrypt
+//           .compare(uniqueString, hashedUniqueString)
+//           .then((result) => {
+//             if (result) {
+//               //  Hass the new password
+//               bcrypt
+//                 .hash(newPassword, 10)
+//                 .then((hashedPassword) => {
+//                   // Update password
+//                   User.updateOne(
+//                     { _id: userId },
+//                     { password: hashedPassword }
+//                   ).then(() => {
+//                     // delete reset data from db
+//                     userPasswordReset
+//                       .deleteOne({ userId })
+//                       .then((response) => {
+//                         res.json({ message: "password reset successfully" });
+//                       })
+//                       .catch((err) => {
+//                         res.json({ message: "deleting reset data failed" });
+//                       });
+//                   });
+//                 })
+//                 .then((result) => {})
+//                 .catch((err) => {
+//                   res.json({ message: "password not updated" });
+//                 })
+//                 .catch((err) => {
+//                   res.json({ message: "Error while hashing password" });
+//                 });
+//             } else {
+//               res.json({
+//                 error: true,
+//                 message: "Invalid password reset details",
+//               });
+//             }
+//           })
+//           .catch((err) => {
+//             res.status(500).json({ message: "unique string not valid" });
+//           });
+//       }
+//     } else
+//       res
+//         .status(404)
+//         .json({ message: "Invalid details: Use the link in your mail!" });
+//   } catch (err) {
+//     console.log(err);
+//     res.status(404).json("Invalid id");
+//   }
+// };
 
-const createGroup = async (req, res) => {
-  const name = req.body.name.toLowerCase();
-  const userId = req.user.id;
+// const createGroup = async (req, res) => {
+//   const name = req.body.name.toLowerCase();
+//   const userId = req.user.id;
 
-  try {
-    const user = await User.findOne({ _id: userId });
-    if (user) {
-      const isUserAdmin = await Group.findOne({ userAdminId: userId });
-      if (isUserAdmin) {
-        res.status(200).json({ message: "You created a group already" });
-      } else {
-        const groupCreated = await Group.create({ name, userAdminId: userId });
+//   try {
+//     const user = await User.findOne({ _id: userId });
+//     if (user) {
+//       const isUserAdmin = await Group.findOne({ userAdminId: userId });
+//       if (isUserAdmin) {
+//         res.status(200).json({ message: "You created a group already" });
+//       } else {
+//         const groupCreated = await Group.create({ name, userAdminId: userId });
 
-        if (groupCreated) {
-          User.updateOne({ _id: userId }, { isUserAdmin: true })
-            .then((data) => {})
-            .catch((error) => {});
-          res.status(200).json({ message: "Group created" });
-        } else {
-          res.status(500).json({ error: true, message: "Group not created" });
-        }
-      }
-    }
-  } catch (err) {
-    const error = handleErrors(err);
-    res.status(500).json({ message: error });
-  }
-};
+//         if (groupCreated) {
+//           User.updateOne({ _id: userId }, { isUserAdmin: true })
+//             .then((data) => {})
+//             .catch((error) => {});
+//           res.status(200).json({ message: "Group created" });
+//         } else {
+//           res.status(500).json({ error: true, message: "Group not created" });
+//         }
+//       }
+//     }
+//   } catch (err) {
+//     const error = handleErrors(err);
+//     res.status(500).json({ message: error });
+//   }
+// };
 
-const joinGroup = async (req, res) => {
-  const userId = req.user.id;
-  try {
-    const isUserAdmin = await Group.findOne({ userAdminId: userId });
-    if (!isUserAdmin) {
-      const groups = await Group.find();
-      const existingMemebers = [];
-      groups.forEach((group) => {
-        existingMemebers.push(...group.members);
-      });
-      const group = await Group.findOne({ name: req.params.groupName });
-      if (!group) {
-        res.status(404).json({ message: "Group not found" });
-      } else if (existingMemebers.includes(userId)) {
-        res.json({ message: "You already joined a group" });
-      } else {
-        group.members.push(userId);
-        await group.save();
-        res.status(200).json({ message: `Joined ${group.name} group` });
-      }
-    } else {
-      res.status(404).json({ message: "You already created a group" });
-    }
-  } catch (err) {
-    const error = handleErrors({ message: err });
-    res.json({ message: error });
-  }
-};
+// const joinGroup = async (req, res) => {
+//   const userId = req.user.id;
+//   try {
+//     const isUserAdmin = await Group.findOne({ userAdminId: userId });
+//     if (!isUserAdmin) {
+//       const groups = await Group.find();
+//       const existingMemebers = [];
+//       groups.forEach((group) => {
+//         existingMemebers.push(...group.members);
+//       });
+//       const group = await Group.findOne({ name: req.params.groupName });
+//       if (!group) {
+//         res.status(404).json({ message: "Group not found" });
+//       } else if (existingMemebers.includes(userId)) {
+//         res.json({ message: "You already joined a group" });
+//       } else {
+//         group.members.push(userId);
+//         await group.save();
+//         res.status(200).json({ message: `Joined ${group.name} group` });
+//       }
+//     } else {
+//       res.status(404).json({ message: "You already created a group" });
+//     }
+//   } catch (err) {
+//     const error = handleErrors({ message: err });
+//     res.json({ message: error });
+//   }
+// };
 
-const getAllGroups = async (req, res) => {
-  try {
-    const groups = await Group.find();
-    if (groups.length < 1) {
-      res.status(200).json({ message: "No group created yet" });
-    } else {
-      res.status(200).json({ message: groups });
-    }
-  } catch (err) {
-    const error = handleErrors(err);
-    res.status(500).json({ message: error });
-  }
-};
+// const getAllGroups = async (req, res) => {
+//   try {
+//     const groups = await Group.find();
+//     if (groups.length < 1) {
+//       res.status(200).json({ message: "No group created yet" });
+//     } else {
+//       res.status(200).json({ message: groups });
+//     }
+//   } catch (err) {
+//     const error = handleErrors(err);
+//     res.status(500).json({ message: error });
+//   }
+// };
 
-const deleteGroup = async (req, res) => {
-  const userId = req.user.id;
-  try {
-    const isUserAdmin = await Group.findOne({ userAdminId: userId });
-    if (isUserAdmin) {
-      await Group.deleteOne({ name: req.params.groupName });
-      res.status(200).json({ message: "Group deleted" });
-    } else {
-      res.status(401).json({ message: "Action not permitted" });
-    }
-  } catch (error) {
-    res.json({ message: error });
-  }
-};
+// const deleteGroup = async (req, res) => {
+//   const userId = req.user.id;
+//   try {
+//     const isUserAdmin = await Group.findOne({ userAdminId: userId });
+//     if (isUserAdmin) {
+//       await Group.deleteOne({ name: req.params.groupName });
+//       res.status(200).json({ message: "Group deleted" });
+//     } else {
+//       res.status(401).json({ message: "Action not permitted" });
+//     }
+//   } catch (error) {
+//     res.json({ message: error });
+//   }
+// };
 
 // const createCategory = async (req, res) => {
 //   try {
@@ -391,18 +391,18 @@ const deleteGroup = async (req, res) => {
 //   }
 // };
 
-const getCategory = async (req, res) => {
-  try {
-    category = await Category.find({ _id: req.params.id });
-    if (category.length < 1) {
-      res.status(200).json({ message: "Category empty" });
-    } else {
-      res.status(200).json(category);
-    }
-  } catch (err) {
-    res.status(500).json({ message: err });
-  }
-};
+// const getCategory = async (req, res) => {
+//   try {
+//     category = await Category.find({ _id: req.params.id });
+//     if (category.length < 1) {
+//       res.status(200).json({ message: "Category empty" });
+//     } else {
+//       res.status(200).json(category);
+//     }
+//   } catch (err) {
+//     res.status(500).json({ message: err });
+//   }
+// };
 
 // const getAllCategories = async (req, res) => {
 //   try {
@@ -417,55 +417,55 @@ const getCategory = async (req, res) => {
 //   }
 // };
 
-const deleteCategory = async (req, res) => {
-  try {
-    const deletedCategory = await Category.findByIdAndDelete(req.params.id);
-    const imageURL = deletedCategory.image;
-    const imageId = getImageId(imageURL);
-    if (deletedCategory) {
-      await cloudinary.uploader.destroy(`webuyam/${imageId}`);
-      res.status(200).json({ message: "category successfully deleted" });
-    } else {
-      res.status(404).json({ message: "category not found" });
-    }
-  } catch (err) {
-    const errors = handleErrors(err);
-    res
-      .status(500)
-      .json({ error: errors, message: "Category deletion failed" });
-  }
-};
+// const deleteCategory = async (req, res) => {
+//   try {
+//     const deletedCategory = await Category.findByIdAndDelete(req.params.id);
+//     const imageURL = deletedCategory.image;
+//     const imageId = getImageId(imageURL);
+//     if (deletedCategory) {
+//       await cloudinary.uploader.destroy(`webuyam/${imageId}`);
+//       res.status(200).json({ message: "category successfully deleted" });
+//     } else {
+//       res.status(404).json({ message: "category not found" });
+//     }
+//   } catch (err) {
+//     const errors = handleErrors(err);
+//     res
+//       .status(500)
+//       .json({ error: errors, message: "Category deletion failed" });
+//   }
+// };
 
-const updateCategory = async (req, res) => {
-  try {
-    const currentCategory = await Category.findById(req.params.id);
-    const imageId = getImageId(currentCategory.image);
-    await cloudinary.uploader.destroy(`webuyam/${imageId}`);
+// const updateCategory = async (req, res) => {
+//   try {
+//     const currentCategory = await Category.findById(req.params.id);
+//     const imageId = getImageId(currentCategory.image);
+//     await cloudinary.uploader.destroy(`webuyam/${imageId}`);
 
-    const upload = await cloudinary.uploader.upload(req.file.path, {
-      folder: "webuyam",
-    });
-    const data = {
-      name: req.body.name,
-      image: upload.secure_url,
-    };
-    const updatedCategory = await Category.findByIdAndUpdate(
-      req.params.id,
-      data,
-      {
-        new: true,
-      }
-    );
-    if (updatedCategory) {
-      res.status(200).json({ message: "Category successfully updated" });
-    } else {
-      res.status(404).json({ error: true, message: "Category not found" });
-    }
-  } catch (err) {
-    const error = handleErrors(err);
-    res.status(500).json({ error: true, message: error });
-  }
-};
+//     const upload = await cloudinary.uploader.upload(req.file.path, {
+//       folder: "webuyam",
+//     });
+//     const data = {
+//       name: req.body.name,
+//       image: upload.secure_url,
+//     };
+//     const updatedCategory = await Category.findByIdAndUpdate(
+//       req.params.id,
+//       data,
+//       {
+//         new: true,
+//       }
+//     );
+//     if (updatedCategory) {
+//       res.status(200).json({ message: "Category successfully updated" });
+//     } else {
+//       res.status(404).json({ error: true, message: "Category not found" });
+//     }
+//   } catch (err) {
+//     const error = handleErrors(err);
+//     res.status(500).json({ error: true, message: error });
+//   }
+// };
 
 // // GET cart for a user
 // const getCart = async (req, res) => {
@@ -790,23 +790,23 @@ const home = async (req, res) => {
 };
 module.exports = {
   getData,
-  register,
+  // register,
   // login,
-  logout,
-  createGroup,
-  emailVerification,
+  // logout,
+  // createGroup,
+  // emailVerification,
   home,
-  resendVerificationEmail,
-  resetPassword,
-  getAllGroups,
-  joinGroup,
-  deleteGroup,
-  passwordResetEmail,
-  getCategory,
+  // resendVerificationEmail,
+  // resetPassword,
+  // getAllGroups,
+  // joinGroup,
+  // deleteGroup,
+  // passwordResetEmail,
+  // getCategory,
   // getAllCategories,
   // createCategory,
-  deleteCategory,
-  updateCategory,
+  // deleteCategory,
+  // updateCategory,
   // addToCart,
   // getCart,
   // deleteFromCart,

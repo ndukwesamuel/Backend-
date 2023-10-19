@@ -26,14 +26,15 @@ transporter.verify((error, message) => {
 });
 
 // Configuration for Password reset email
-const sendPasswordResetEmail = async ({ _id, email }, redirectUrl, res) => {
+const sendPasswordResetEmail = async ({ _id, email }, res) => {
   const uniqueString = uuidv4() + _id;
+  const redirectUrl = "https://webuyam.com";
 
   const mailOptions = {
     from: process.env.EMAIL,
     to: email,
     subject: "Password Reset",
-    html: `<p>Please click the link to reset your password: <a href=${redirectUrl}?userId=${_id}&uniqueString=${uniqueString}>here</a></p>
+    html: `<p>Please click the link to reset your password: <a href="${redirectUrl}?userId=${_id}&uniqueString=${uniqueString}">here</a></p>
   \n <b>Verification code expires in 1 hour</b>`,
   };
 
@@ -63,12 +64,9 @@ const sendPasswordResetEmail = async ({ _id, email }, redirectUrl, res) => {
 
 // Email verification
 const sendVerificationEmail = async ({ _id, email }, res) => {
-  console.log(email);
   const uniqueString = uuidv4() + _id;
-  const redirectUrl = "https://webuy-opal.vercel.app";
-  // const redirectUrl = "  https://webuyam.com";
-
-  console.log(redirectUrl);
+  // const redirectUrl = "https://webuy-opal.vercel.app";
+  const redirectUrl = "https://webuyam.com";
 
   const mailOptions = {
     from: process.env.EMAIL,

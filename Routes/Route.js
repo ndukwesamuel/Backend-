@@ -30,7 +30,7 @@ const {
   // deleteProduct,
   // updateProduct,
   getProduct,
-  // getProductByCategory,
+  getProductByCategory,
   payment,
   verifyPayment,
 } = require("../Controller/Controller");
@@ -40,27 +40,27 @@ router.route("/getdata").get(getData);
 // router.route("/user/login").post(login);
 // router.route("/user/logout").get(verifyToken, logout);
 
-router.route("/verify-email").post(emailVerification);
-router.route("/resendOTP").post(resendVerificationEmail);
-router.route("/passwordResetEmail").post(passwordResetEmail);
-router.route("/resetPassword").post(resetPassword);
+// router.route("/verify-email").post(emailVerification);
+// router.route("/resendOTP").post(resendVerificationEmail);
+// router.route("/passwordResetEmail").post(passwordResetEmail);
+// router.route("/resetPassword").post(resetPassword);
 
-router.route("/create-group").post(verifyToken, createGroup);
-router.route("/groups").get(getAllGroups);
-router.route("/groups/:groupName/join").post(verifyToken, joinGroup);
-router.route("/groups/:groupName/delete").delete(verifyToken, deleteGroup);
+// router.route("/create-group").post(verifyToken, createGroup);
+// router.route("/groups").get(getAllGroups);
+// router.route("/groups/:groupName/join").post(verifyToken, joinGroup);
+// router.route("/groups/:groupName/delete").delete(verifyToken, deleteGroup);
 
-router.route("/category/:id").get(getCategory);
+// router.route("/category/:id").get(getCategory);
 // router.route("/categories").get(getAllCategories);
 // router
 //   .route("/category")
 //   .post(verifyTokenAndAdmin, upload.single("image"), createCategory);
-router
-  .route("/category/:id")
-  .delete(verifyTokenAndAdmin, upload.single("image"), deleteCategory);
-router
-  .route("/category/:id")
-  .put(verifyTokenAndAdmin, upload.single("image"), updateCategory);
+// router
+//   .route("/category/:id")
+//   .delete(verifyTokenAndAdmin, upload.single("image"), deleteCategory);
+// router
+//   .route("/category/:id")
+//   .put(verifyTokenAndAdmin, upload.single("image"), updateCategory);
 // router.route("/category-products/:name").get(getProductByCategory);
 
 // router.route("/products").get(getAllProducts);
