@@ -7,6 +7,9 @@ const Group = require("../Models/Group");
 const Product = require("../Models/Products");
 const Cart = require("../Models/Cart");
 const groupmodel = require("../Models/Group");
+
+const Users = require("../Models/Users");
+
 const { BadRequestError } = require("../errors");
 const { log } = require("console");
 const { isValidObjectId } = require("mongoose");
@@ -89,108 +92,113 @@ const getGroupCart = async (req, res) => {
 };
 
 const AddGroupCart = async (req, res) => {
+  const { productId, cartItemId } = req.body;
+
+  const userId = req.user.id;
+
+  const user = await Users.findById(userId);
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
   const groupId = req.params.groupId;
   const group = await groupmodel.findById(groupId);
+
   if (!group) {
     throw new BadRequestError("Group not found");
   }
-  if (!group.members.includes(`${req.user.id}`)) {
+
+  if (!group.members.includes(`${user._id}`)) {
     throw new BadRequestError("You are not a member of this Group");
   }
 
-  const userCart = await Cart.findOne({ userId: req.user.id });
-  if (!userCart || userCart.items.length === 0) {
-    throw new BadRequestError("Your cart is empty: Add items");
+  const userCart = await Cart.findOne({ userId: userId });
+  if (!userCart) {
+    return res.status(404).json({ error: "User's cart not found" });
+  }
+  const itemToTransfer = userCart.items.find(
+    (item) => item._id.toString() === cartItemId && item.productId === productId
+  );
+
+  if (!itemToTransfer) {
+    return res
+      .status(404)
+      .json({ error: "Product not found in the user's cart" });
   }
 
-  if (userCart) {
-    userCart.items.forEach((userCartItem) => {
-      const existingProductIndex = group.cart.findIndex(
-        (groupItem) => groupItem.productId.toString() === userCartItem.productId
-      );
-      if (existingProductIndex !== -1) {
-        // check if a user already added an item to cart before
-        const userExistWithProductId = group.cart[
-          existingProductIndex
-        ].userProductInfo.some(
-          (userProductIdentity) =>
-            userProductIdentity.userId.toString() === req.user.id
-        );
-        if (userExistWithProductId) {
-          const userProductIndex = group.cart[
-            existingProductIndex
-          ].userProductInfo.findIndex(
-            (userProductIdentity) =>
-              userProductIdentity.userId.toString() === req.user.id
-          );
+  const totalPrice = itemToTransfer.price * itemToTransfer.quantity;
 
-          // Update the quantity and amount for the matching userProductInfo object
-          group.cart[existingProductIndex].userProductInfo[
-            userProductIndex
-          ].quantity += userCartItem.quantity;
+  if (user.wallet < totalPrice) {
+    return res.status(400).json({ error: "Insufficient funds in the wallet" });
+  }
+  const isProductInGroupCartForUser = group.cart.some((item) =>
+    item.userProductInfo.some((info) => info.userId.toString() === userId)
+  );
 
-          group.cart[existingProductIndex].userProductInfo[
-            userProductIndex
-          ].amount += userCartItem.price * userCartItem.quantity;
-          const calTotalAmount = group.cart[
-            existingProductIndex
-          ].userProductInfo.reduce((total, curr) => {
-            return total + curr.amount;
-          }, 0);
-          const calTotalQuantity = group.cart[
-            existingProductIndex
-          ].userProductInfo.reduce((total, curr) => {
-            return total + curr.quantity;
-          }, 0);
-          group.cart[existingProductIndex].totalQuantity = calTotalQuantity;
-          group.cart[existingProductIndex].totalAmount = calTotalAmount;
-          return group;
-        }
-        group.cart[existingProductIndex].userProductInfo.push({
-          userId: req.user.id,
-          quantity: userCartItem.quantity,
-          amount: userCartItem.price * userCartItem.quantity,
-        });
-        // Calculate total quantity and total amount for each productId
-        const calTotalAmount = group.cart[
-          existingProductIndex
-        ].userProductInfo.reduce((total, curr) => {
-          return total + curr.amount;
-        }, 0);
+  if (isProductInGroupCartForUser) {
+    return res
+      .status(400)
+      .json({ error: "You have already added this product to the group cart" });
+  }
 
-        const calTotalQuantity = group.cart[
-          existingProductIndex
-        ].userProductInfo.reduce((total, curr) => {
-          return total + curr.quantity;
-        }, 0);
+  const quantityToTransfer = itemToTransfer.quantity; // Calculate the quantity to transfer
 
-        group.cart[existingProductIndex].totalQuantity = calTotalQuantity;
-        group.cart[existingProductIndex].totalAmount = calTotalAmount;
+  // Find the item in the group's cart based on productId
+  const groupCartItem = group.cart.find((item) => item.productId === productId);
 
-        return group;
-      } else {
-        group.cart.push({
-          userProductInfo: [
-            {
-              userId: req.user.id,
-              quantity: userCartItem.quantity,
-              amount: userCartItem.price * userCartItem.quantity,
-            },
-          ],
-          productId: userCartItem.productId,
-          totalQuantity: userCartItem.quantity,
-          totalAmount: userCartItem.price * userCartItem.quantity,
-        });
-      }
+  if (groupCartItem) {
+    // Update totalQuantity and totalAmount
+    groupCartItem.totalQuantity += quantityToTransfer;
+    groupCartItem.totalAmount += itemToTransfer.price * quantityToTransfer;
+
+    // Add user-specific info to the existing product in the group's cart
+    groupCartItem.userProductInfo.push({
+      userId: userId,
+      quantity: quantityToTransfer,
+      amount: itemToTransfer.price * quantityToTransfer,
     });
-    // Calculate the grand amount for each group
-    groupBill = group.cart.reduce((total, curr) => {
-      return total + curr.totalAmount;
-    }, 0);
-    group.bill = groupBill;
-    await group.save();
-    return res.status(200).json({ message: "Product added to group cart" });
+
+    // Remove the product from the user's cart
+    userCart.items = userCart.items.filter(
+      (item) => item.productId !== productId
+    );
+  } else {
+    // Create a new item in the group's cart
+    group.cart.push({
+      userId,
+      userProductInfo: [
+        {
+          userId: userId,
+          quantity: quantityToTransfer,
+          amount: itemToTransfer.price * quantityToTransfer,
+        },
+      ],
+      productId,
+      totalQuantity: quantityToTransfer,
+      totalAmount: itemToTransfer.price * quantityToTransfer,
+    });
   }
+
+  await group.save();
+  user.wallet -= totalPrice;
+  await user.save();
+
+  // Update the user's cart
+  itemToTransfer.quantity -= itemToTransfer.quantity;
+  itemToTransfer.price -= totalPrice;
+
+  userCart.items = userCart.items.filter(
+    (item) => item._id.toString() !== cartItemId
+  );
+  await userCart.save();
+
+  res.status(200).json({
+    message: "Product added to group cart",
+    userCart: itemToTransfer,
+    productId,
+    cartItemId,
+    group: group.cart,
+  });
 };
 
 const CheckoutGroupCasrt = async (req, res) => {
