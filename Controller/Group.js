@@ -365,10 +365,26 @@ const joinGroup = async (req, res) => {
   res.status(StatusCodes.OK).json(group);
 };
 
+const deleteGroup = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const isUserAdmin = await Group.findOne({ userAdminId: userId });
+    if (isUserAdmin) {
+      await Group.deleteOne({ name: req.params.groupName });
+      res.status(200).json({ message: "Group deleted" });
+    } else {
+      res.status(401).json({ message: "Action not permitted" });
+    }
+  } catch (error) {
+    res.json({ message: error });
+  }
+};
+
 module.exports = {
   createGroup,
   getAllGroups,
   joinGroup,
+  deleteGroup,
   getGroupCart,
   AddGroupCart,
   updateSingleGroupCart,
