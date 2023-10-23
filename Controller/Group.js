@@ -68,7 +68,7 @@ const getMemberGroups = async (req, res) => {
     if (!groups) {
       res.status(200).json({ message: "You are not in any Group " });
     } else {
-      res.status(200).json({ message: groups });
+      res.status(200).json({ groups });
     }
   } catch (err) {
     const error = handleErrors(err);
