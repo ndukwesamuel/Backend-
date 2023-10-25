@@ -103,7 +103,7 @@ const getGroupCart = async (req, res) => {
 };
 
 const AddGroupCart = async (req, res) => {
-  const { productId, cartItemId } = req.body;
+  const { productId, cartItemId, groupId } = req.body;
 
   const userId = req.user.id;
 
@@ -112,7 +112,6 @@ const AddGroupCart = async (req, res) => {
     return res.status(404).json({ error: "User not found" });
   }
 
-  const groupId = req.params.groupId;
   const group = await groupmodel.findById(groupId);
 
   if (!group) {

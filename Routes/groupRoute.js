@@ -23,10 +23,11 @@ router.route("/member").get(verifyToken, getMemberGroups);
 router.route("/checkout/:groupId").get(verifyToken, CheckoutGroupCart);
 
 router.route("/:groupId/join").get(verifyToken, joinGroup);
+router.route("/addToCart").post(verifyToken, AddGroupCart);
+
 router
   .route("/:groupId/cart")
   .get(verifyToken, getGroupCart)
-  .post(verifyToken, AddGroupCart)
   .put(verifyToken, updateSingleGroupCart)
   .delete(verifyToken, DeleteSingleGroupCart);
 //   .get(verifyTokenAndAdmin, getAllGroups);
