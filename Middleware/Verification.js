@@ -3,7 +3,6 @@ const nodemailer = require("nodemailer");
 const emailVerification = require("../Models/emailVerification");
 const userPasswordReset = require("../Models/passwordReset");
 const { v4: uuidv4 } = require("uuid");
-const jwt = require("jsonwebtoken");
 
 // Nodemailer
 var transporter = nodemailer.createTransport({

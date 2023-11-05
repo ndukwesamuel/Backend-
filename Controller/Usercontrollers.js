@@ -45,7 +45,9 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   const { password, email } = req.body;
-
+  if (!email || !password) {
+    throw new BadRequestError("Please provide email and password");
+  }
   try {
     const user = await User.login(email, password);
 
@@ -116,7 +118,6 @@ const getUserProfile = async (req, res) => {
 
 const logout = async (req, res) => {
   const authHeader = req.headers.authorization;
-  console.log(authHeader);
   jwt.sign(
     authHeader,
     "",
