@@ -28,7 +28,7 @@ transporter.verify((error, message) => {
 const sendPasswordResetEmail = async ({ _id, email }, res) => {
   const uniqueString = uuidv4() + _id;
   const redirectUrl =
-    "https://webuy-waitinglist-xod5-p6bezqve9-ndukwesamuel.vercel.app/";
+    "https://webuy-waitinglist-xod5-p6bezqve9-ndukwesamuel.vercel.app";
 
   const mailOptions = {
     from: process.env.EMAIL,
@@ -67,7 +67,7 @@ const sendVerificationEmail = async ({ _id, email }, res) => {
   const uniqueString = uuidv4() + _id;
   // const redirectUrl = "https://webuy-opal.vercel.app";
   const redirectUrl =
-    "https://webuy-waitinglist-xod5-p6bezqve9-ndukwesamuel.vercel.app/";
+    "https://webuy-waitinglist-xod5-p6bezqve9-ndukwesamuel.vercel.app";
 
   const mailOptions = {
     from: process.env.EMAIL,
