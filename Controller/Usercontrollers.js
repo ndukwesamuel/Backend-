@@ -106,9 +106,11 @@ const updateUserProfile = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
   try {
-    const profile = await UserProfile.findOne({ user: req.user.id });
-
-    res.status(StatusCodes.OK).json(profile);
+    const profile = await UserProfile.findOne({ user: req.user.id }).populate({
+      path: "user",
+      select: ["-password", "-isAdmin"], // Exclude the 'password' and "isAdmin" field
+    });
+    res.status(StatusCodes.OK).json({ message: profile });
   } catch (error) {
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)

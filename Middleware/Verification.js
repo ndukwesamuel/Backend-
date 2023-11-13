@@ -34,7 +34,7 @@ const sendPasswordResetEmail = async ({ _id, email }, res) => {
     from: process.env.EMAIL,
     to: email,
     subject: "Password Reset",
-    html: `<p>Please click the link to reset your password: <a href="${redirectUrl}?userId=${_id}&uniqueString=${uniqueString}">here</a></p>
+    html: `<p>Please click the link to reset your password: <a href="${redirectUrl}/reset-password?userId=${_id}&uniqueString=${uniqueString}">here</a></p>
   \n <b>Verification code expires in 1 hour</b>`,
   };
 
