@@ -82,6 +82,7 @@ const getGroupCart = async (req, res) => {
   const userId = req.user.id;
 
   const user = await Users.findById(userId);
+
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
@@ -89,21 +90,13 @@ const getGroupCart = async (req, res) => {
   const groupId = req.params.groupId;
 
   const group = await groupmodel.findById(groupId);
-
-  //   .populate({
-  //   path: "cart.productId", // This should match the name of the field in your 'group' model
-  //   model: "product", // The name of your product model
-  // });
-
-  const cart = group.cart;
-
   if (!group) {
     throw new BadRequestError("Group not found");
   }
 
-  // res.status(200).json({ count: group.cart.length, data: group.cart });
+  const cart = group.cart;
 
-  res.status(200).json({ cart });
+  res.status(200).json({ count: cart.length, data: cart });
 };
 
 const AddGroupCart = async (req, res) => {
