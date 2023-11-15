@@ -63,7 +63,9 @@ const getAllGroups = async (req, res) => {
 const getMemberGroups = async (req, res) => {
   console.log({ req: req.user });
   try {
-    const groups = await groupmodel.find({ members: req.user.id });
+    const groups = await groupmodel.findOne({ members: req.user.id });
+
+    console.log({ groups });
 
     if (!groups) {
       res.status(200).json({ message: "You are not in any Group " });
@@ -189,8 +191,10 @@ const AddGroupCart = async (req, res) => {
     });
   }
 
-  await group.save();
   user.wallet -= totalPrice;
+  group.wallet += totalPrice;
+  await group.save();
+
   await user.save();
 
   // Update the user's cart
