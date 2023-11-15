@@ -21,7 +21,7 @@ const register = async (req, res) => {
 
   const emailAlreadyExists = await User.findOne({ email });
   if (emailAlreadyExists) {
-    throw new BadRequestError("Email already exists");
+    throw new BadRequestError("Email already exist");
   }
 
   const newUser = new User({
@@ -45,7 +45,9 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   const { password, email } = req.body;
-
+  if (!email || !password) {
+    throw new BadRequestError("Please provide email and password");
+  }
   try {
     const user = await User.login(email, password);
 
@@ -104,9 +106,11 @@ const updateUserProfile = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
   try {
-    const profile = await UserProfile.findOne({ user: req.user.id });
-
-    res.status(StatusCodes.OK).json(profile);
+    const profile = await UserProfile.findOne({ user: req.user.id }).populate({
+      path: "user",
+      select: ["-password", "-isAdmin"], // Exclude the 'password' and "isAdmin" field
+    });
+    res.status(StatusCodes.OK).json({ message: profile });
   } catch (error) {
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -116,7 +120,6 @@ const getUserProfile = async (req, res) => {
 
 const logout = async (req, res) => {
   const authHeader = req.headers.authorization;
-  console.log(authHeader);
   jwt.sign(
     authHeader,
     "",

@@ -3,7 +3,6 @@ const nodemailer = require("nodemailer");
 const emailVerification = require("../Models/emailVerification");
 const userPasswordReset = require("../Models/passwordReset");
 const { v4: uuidv4 } = require("uuid");
-const jwt = require("jsonwebtoken");
 
 // Nodemailer
 var transporter = nodemailer.createTransport({
@@ -28,13 +27,14 @@ transporter.verify((error, message) => {
 // Configuration for Password reset email
 const sendPasswordResetEmail = async ({ _id, email }, res) => {
   const uniqueString = uuidv4() + _id;
-  const redirectUrl = "https://webuyam.com";
+  const redirectUrl =
+    "https://webuy-waitinglist-xod5-p6bezqve9-ndukwesamuel.vercel.app";
 
   const mailOptions = {
     from: process.env.EMAIL,
     to: email,
     subject: "Password Reset",
-    html: `<p>Please click the link to reset your password: <a href="${redirectUrl}?userId=${_id}&uniqueString=${uniqueString}">here</a></p>
+    html: `<p>Please click the link to reset your password: <a href="${redirectUrl}/reset-password?userId=${_id}&uniqueString=${uniqueString}">here</a></p>
   \n <b>Verification code expires in 1 hour</b>`,
   };
 
@@ -66,7 +66,8 @@ const sendPasswordResetEmail = async ({ _id, email }, res) => {
 const sendVerificationEmail = async ({ _id, email }, res) => {
   const uniqueString = uuidv4() + _id;
   // const redirectUrl = "https://webuy-opal.vercel.app";
-  const redirectUrl = "https://webuyam.com";
+  const redirectUrl =
+    "https://webuy-waitinglist-xod5-p6bezqve9-ndukwesamuel.vercel.app";
 
   const mailOptions = {
     from: process.env.EMAIL,

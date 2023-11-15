@@ -88,10 +88,12 @@ const getGroupCart = async (req, res) => {
   // try {
   const groupId = req.params.groupId;
 
-  const group = await groupmodel.findById(groupId).populate({
-    path: "cart.productId", // This should match the name of the field in your 'group' model
-    model: "product", // The name of your product model
-  });
+  const group = await groupmodel.findById(groupId);
+
+  //   .populate({
+  //   path: "cart.productId", // This should match the name of the field in your 'group' model
+  //   model: "product", // The name of your product model
+  // });
 
   const cart = group.cart;
 
