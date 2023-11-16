@@ -16,20 +16,15 @@ const groupTransferSchema = new mongoose.Schema(
     sender: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      // required: true,
+      required: true,
     }, // Reference to the user sending money
     group: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Group",
-      // required: true,
+      required: true,
     }, // Reference to the group receiving the money
     amount: { type: Number, required: true },
     description: String,
-    type: {
-      type: String,
-      enum: ["sendToGroup", "groupPurchase"],
-      required: true,
-    },
   },
 
   { timestamps: true }
