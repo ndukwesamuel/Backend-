@@ -8,7 +8,6 @@ const createToken = (id) => {
 
 const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-
   if (!authHeader || !authHeader.startsWith("Bearer")) {
     // throw new UnauthenticatedError("Authentication invalid");
 

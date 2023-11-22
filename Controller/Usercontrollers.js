@@ -67,21 +67,14 @@ const login = async (req, res) => {
 
 const updateUserProfile = async (req, res) => {
   const { name, email, phone, address } = req.body;
+  const profile = await UserProfile.findOne({ user: req.user.id });
+
   try {
-    const profile = await UserProfile.findOne({ user: req.user.id });
-    if (profile.profileImage) {
-      const imageId = getImageId(profile.profileImage);
-      await cloudinary.uploader.destroy(`webuyam/profile/${imageId}`);
-    }
-    const upload = await cloudinary.uploader.upload(req.file.path, {
-      folder: "webuyam/profile",
-    });
     data = {
       name: name,
       email: email,
       phone: phone,
       address: address,
-      profileImage: upload.secure_url,
     };
     await User.findByIdAndUpdate(
       req.user.id,
@@ -93,7 +86,6 @@ const updateUserProfile = async (req, res) => {
     await UserProfile.findByIdAndUpdate(profile._id, data, {
       new: true,
     });
-
     res
       .status(StatusCodes.OK)
       .json({ message: "Profile successfully updated" });
@@ -112,6 +104,31 @@ const getUserProfile = async (req, res) => {
     });
     res.status(StatusCodes.OK).json({ message: profile });
   } catch (error) {
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Internal Server Error" });
+  }
+};
+
+const uploadProfileImage = async (req, res) => {
+  const profile = await UserProfile.findOne({ user: req.user.id });
+  try {
+    if (profile.profileImage) {
+      const imageId = getImageId(profile.profileImage);
+      await cloudinary.uploader.destroy(`webuyam/profile/${imageId}`);
+    }
+    const upload = await cloudinary.uploader.upload(req.file.path, {
+      folder: "webuyam/profile",
+    });
+    const data = { profileImage: upload.secure_url };
+
+    await UserProfile.findByIdAndUpdate(profile._id, data, {
+      new: true,
+    });
+
+    res.status(200).json({ message: "Image uploaded" });
+  } catch (error) {
+    console.log(error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Internal Server Error" });
@@ -139,6 +156,7 @@ const logout = async (req, res) => {
 module.exports = {
   updateUserProfile,
   getUserProfile,
+  uploadProfileImage,
   register,
   login,
   logout,

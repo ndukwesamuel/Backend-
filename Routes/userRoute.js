@@ -9,6 +9,7 @@ const {
 const {
   getUserProfile,
   updateUserProfile,
+  uploadProfileImage,
   register,
   login,
   logout,
@@ -19,8 +20,11 @@ const {
 } = require("../Controller/verificationController");
 router
   .route("/profile")
-  .put(verifyToken, upload.single("image"), updateUserProfile)
+  .put(verifyToken, updateUserProfile)
   .get(verifyToken, getUserProfile);
+router
+  .route("/upload-image")
+  .put(verifyToken, upload.single("image"), uploadProfileImage);
 router.route("/register").post(register);
 router.route("/login").post(login);
 router.route("/logout").get(verifyToken, logout);
