@@ -1,26 +1,23 @@
 const express = require("express");
 require("express-async-errors");
 const mongoose = require("mongoose");
-const dotenv = require("dotenv");
+require("dotenv").config();
 const cors = require("cors");
-
-const bodyParser = require("body-parser");
 const multer = require("multer");
-
+const { job } = require("./helper");
 // my route start here
-const Route = require("./Routes/Route");
 const user = require("./Routes/userRoute");
 const grouproute = require("./Routes/groupRoute");
 const categoryroute = require("./Routes/categoryroute");
 const productroute = require("./Routes/productroute");
 const cartRoute = require("./Routes/cartRoute");
 const walletRoute = require("./Routes/walletRoute");
+const paymentRoute = require("./Routes/paymentRoute");
+const Route = require("./Routes/Route");
 
 // my route ends here
 const notFoundMiddleware = require("./Middleware/not-found");
 const errorHandlerMiddleware = require("./Middleware/error-handler");
-
-dotenv.config();
 
 mongoose.set("strictQuery", true);
 mongoose
@@ -29,13 +26,9 @@ mongoose
   .catch((err) => console.log(err));
 
 const app = express();
-
+job.start();
 app.use(cors());
-app.use(bodyParser.json());
-
-app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.urlencoded({ extended: false }));
-
 app.use(express.json());
 
 // this is the  api route
@@ -47,6 +40,7 @@ app.use("/api/category", categoryroute);
 app.use("/api/products", productroute);
 app.use("/api/cart", cartRoute);
 app.use("/api/wallet", walletRoute);
+app.use("/api/checkout", paymentRoute);
 
 app.post("/", (req, res) => {
   const { name, email, password } = req.body;
