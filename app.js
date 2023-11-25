@@ -14,6 +14,7 @@ const cartRoute = require("./Routes/cartRoute");
 const walletRoute = require("./Routes/walletRoute");
 const paymentRoute = require("./Routes/paymentRoute");
 const Route = require("./Routes/Route");
+const orderRoute = require("./Routes/OrderRoute");
 
 // my route ends here
 const notFoundMiddleware = require("./Middleware/not-found");
@@ -41,6 +42,7 @@ app.use("/api/products", productroute);
 app.use("/api/cart", cartRoute);
 app.use("/api/wallet", walletRoute);
 app.use("/api/checkout", paymentRoute);
+app.use("/api/orders", orderRoute);
 
 app.post("/", (req, res) => {
   const { name, email, password } = req.body;
