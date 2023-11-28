@@ -1,7 +1,16 @@
 const { Router } = require("express");
 const router = Router();
-const { order } = require("../Controller/OrderController");
+const {
+  orderList,
+  orderById,
+  creatOrder,
+  updateOrder,
+  deleteOrder,
+  userOrder,
+} = require("../Controller/OrderController");
 
-router.route("/").get(order);
+router.route("/").get(orderList).post(creatOrder);
+router.route("/:id").get(orderById).put(updateOrder).delete(deleteOrder);
+router.route("/user-order/:userId").get(userOrder);
 
 module.exports = router;

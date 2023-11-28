@@ -4,25 +4,7 @@ const paymentVerification = require("../Models/paymentVerification");
 const paystackKey = process.env.PAYSTACK_SECRET_KEY;
 
 const payment = async (req, res) => {
-  const {
-    email,
-    amount,
-    firstname,
-    lastname,
-    phone,
-    country,
-    state,
-    city,
-    zip_code,
-    address,
-    name,
-    image,
-    price,
-    description,
-    brand,
-    quantity,
-    subTotal,
-  } = req.body;
+  const { email, amount, firstname, lastname, phone } = req.body;
   try {
     const params = JSON.stringify({
       email: `${email}`,
@@ -31,18 +13,6 @@ const payment = async (req, res) => {
         first_name: firstname,
         last_name: lastname,
         phone: phone,
-        country: country,
-        state: state,
-        city: city,
-        zip_code: zip_code,
-        address: address,
-        product_name: name,
-        image: image,
-        price: price,
-        description: description,
-        brand: brand,
-        quantity: quantity,
-        subTotal: subTotal,
       },
 
       callback_url: "https://webuyam.com/verify",
@@ -109,31 +79,10 @@ const verifyPayment = async (req, res) => {
         if (response.message && response.status === true) {
           const amountPaid = response.data.amount / 100;
 
-          const productDetails = [];
-          productDetails.push({
-            product: [
-              {
-                product_name: response.data.metadata.name,
-                image: response.data.metadata.image,
-                price: response.data.metadata.price,
-                description: response.data.metadata.description,
-                brand: response.data.metadata.brand,
-                quantity: response.data.metadata.quantity,
-              },
-            ],
-            subTotal: response.data.metadata.subTotal,
-          });
-
           const newVerification = new paymentVerification({
             firstname: response.data.metadata.first_name,
             lastname: response.data.metadata.last_name,
             phone: response.data.metadata.phone,
-            country: response.data.metadata.country,
-            state: response.data.metadata.state,
-            city: response.data.metadata.city,
-            zip_code: response.data.metadata.zip_code,
-            address: response.data.metadata.address,
-            order: productDetails,
             amount: amountPaid,
             email: response.data.customer.email,
             customer_code: response.data.customer.customer_code,
