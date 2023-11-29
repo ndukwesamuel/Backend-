@@ -1,11 +1,25 @@
 const Cart = require("../Models/Cart");
+const product = require("../Models/Products");
 // GET cart for a user
 const getCart = async (req, res) => {
-  const cart = await Cart.findOne({ userId: req.user.id });
-  if (!cart) {
-    res.status(404).json({ message: "Cart is empty" });
-  } else {
-    res.status(200).json(cart);
+  try {
+    let userId = req.user.id;
+
+    // Find the user's cart based on userId and populate product details including image
+    const userCart = await Cart.findOne({ userId }).populate({
+      path: "items.productId",
+      model: product,
+      select: "name price image", // Include the "image" field from the product
+    });
+
+    if (!userCart) {
+      return res.status(200).json({ message: "Cart is empty" });
+    } else {
+      return res.status(200).json({ userCart });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -47,11 +61,17 @@ const addToCart = async (req, res) => {
 };
 // Decrease items quantity
 const decreaseCartItems = async (req, res) => {
+  console.log(req.user.id);
   try {
-    const cart = await Cart.findOne({ userId: req.user.id });
+    const cart = await Cart.find();
+    // const cart = await Cart.findOne({ userId: req.user.id });
+    console.log({ cart });
     const index = cart.items.findIndex(
       (item) => item.productId == req.body.productId
     );
+
+    // console.log({ cart, index });
+
     if (index === -1) {
       return res.status(404).json({ message: "Item not found in cart" });
     } else {
