@@ -62,34 +62,95 @@ const addToCart = async (req, res) => {
 // Decrease items quantity
 const decreaseCartItems = async (req, res) => {
   console.log(req.user.id);
+  const { productId, quantity } = req.body;
+
+  const userId = req.user.id;
+  const quantityToRemove = quantity || 1;
+
   try {
-    const cart = await Cart.find();
-    // const cart = await Cart.findOne({ userId: req.user.id });
-    console.log({ cart });
-    const index = cart.items.findIndex(
-      (item) => item.productId == req.body.productId
+    const userCart = await Cart.findOne({ userId });
+
+    if (!userCart) {
+      return res.status(404).json({ message: "User cart not found" });
+    }
+
+    // Find the product based on productId
+    const productDetails = await product.findById(productId);
+
+    if (!productDetails) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Find the item in the cart
+    const cartItemIndex = userCart.items.findIndex(
+      (item) => item.productId.toString() === productId
     );
 
-    // console.log({ cart, index });
-
-    if (index === -1) {
-      return res.status(404).json({ message: "Item not found in cart" });
-    } else {
-      if (cart.items[index].quantity > 1) {
-        cart.items[index].quantity -= 1;
-        cart.bill -= cart.items[index].price;
-        await cart.save();
-        res.status(200).json(cart);
-      } else {
-        cart.items.splice(index, 1);
-        cart.bill = 0;
-        await cart.save();
-        res.status(200).json(cart);
-      }
+    if (cartItemIndex === -1) {
+      return res.status(404).json({ message: "Product not found in the cart" });
     }
+
+    // Check if the quantity to remove is greater than the current quantity in the cart
+    if (quantityToRemove > userCart.items[cartItemIndex].quantity) {
+      return res.status(400).json({ message: "Invalid quantity to remove" });
+    }
+
+    // Update the quantity and price in the cart
+    userCart.items[cartItemIndex].quantity -= quantityToRemove;
+    userCart.items[cartItemIndex].price -=
+      quantityToRemove * productDetails.price;
+
+    // If the quantity becomes 0, remove the item from the cart
+    if (userCart.items[cartItemIndex].quantity === 0) {
+      userCart.items.splice(cartItemIndex, 1);
+    }
+
+    // Update the total bill in the cart
+    userCart.bill = userCart.items.reduce(
+      (total, item) => total + item.price,
+      0
+    );
+
+    // Save the updated cart
+    await userCart.save();
+
+    res.json({
+      message: "Quantity removed successfully",
+      item: userCart.items[cartItemIndex],
+    });
   } catch (error) {
-    res.status(404).json({ message: "Cart is empty" });
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
+
+  // try {
+  //   const cart = await Cart.find();
+  //   // const cart = await Cart.findOne({ userId: req.user.id });
+  //   console.log({ cart });
+  //   const index = cart.items.findIndex(
+  //     (item) => item.productId == req.body.productId
+  //   );
+
+  //   // console.log({ cart, index });
+
+  //   if (index === -1) {
+  //     return res.status(404).json({ message: "Item not found in cart" });
+  //   } else {
+  //     if (cart.items[index].quantity > 1) {
+  //       cart.items[index].quantity -= 1;
+  //       cart.bill -= cart.items[index].price;
+  //       await cart.save();
+  //       res.status(200).json(cart);
+  //     } else {
+  //       cart.items.splice(index, 1);
+  //       cart.bill = 0;
+  //       await cart.save();
+  //       res.status(200).json(cart);
+  //     }
+  //   }
+  // } catch (error) {
+  //   res.status(404).json({ message: "Cart is empty" });
+  // }
 };
 // REMOVES an item from cart at once
 const deleteFromCart = async (req, res) => {
