@@ -6,7 +6,7 @@ const OrderItem = require("../Models/OrderItems");
 const orderList = async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate("user")
+      .populate("user", "fullName")
       .sort({ dateOrdered: -1 });
 
     if (!orders || orders.length === 0) {
