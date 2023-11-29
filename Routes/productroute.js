@@ -22,7 +22,7 @@ router
 router
   .route("/:id")
   .put(verifyTokenAndAdmin, upload.single("image"), updateProduct)
-  .get(verifyTokenAndAdmin, getProduct)
+  .get(getProduct)
   .delete(verifyTokenAndAdmin, deleteProduct);
 
 module.exports = router;

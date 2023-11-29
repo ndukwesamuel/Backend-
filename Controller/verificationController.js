@@ -9,7 +9,6 @@ const emailVerification = async (req, res) => {
 
   try {
     userData = await Email.findOne({ userId }).sort({ createdAt: -1 });
-    // console.log(userData);
     if (userData) {
       const expireAt = userData.expireAt;
 

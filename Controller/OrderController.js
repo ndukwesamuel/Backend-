@@ -4,19 +4,28 @@ const OrderItem = require("../Models/OrderItems");
 // NOTE: NONE OF THIS ROUTE IS RESTRICTED AND SO I PASSED THE USER ID AS EITHER A BODY OR PARAMS. IF THIS IS WHAT WE WANT, I WILL RESTRICT THEM AND GET THE USER ID FROM req.user.id
 
 const orderList = async (req, res) => {
-  const orderList = await Order.find()
-    .populate("user", "name")
-    .sort({ dateOrdered: -1 });
+  try {
+    const orders = await Order.find()
+      .populate("user")
+      .sort({ dateOrdered: -1 });
 
-  if (!orderList) {
-    res.status(404).json({ success: false, message: "No order yet" });
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({ success: false, message: "No orders yet" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Orders retrieved successfully",
+      orders: orders,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
-  res.status(200).send(orderList);
 };
 
 const orderById = async (req, res) => {
   const order = await Order.findById(req.params.id)
-    .populate("user", "name")
+    .populate("user", "fullName")
     .populate({
       path: "orderItems",
       populate: {
@@ -30,54 +39,60 @@ const orderById = async (req, res) => {
   res.status(200).send(order);
 };
 
-const creatOrder = async (req, res) => {
-  const orderItemsIds = Promise.all(
-    req.body.orderItems.map(async (orderItem) => {
-      let newOrderItem = new OrderItem({
+const createOrder = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const orderItemsIds = [];
+
+    // Save order items
+    for (const orderItem of req.body.orderItems) {
+      const newOrderItem = new OrderItem({
         quantity: orderItem.quantity,
         product: orderItem.product,
       });
 
-      newOrderItem = await newOrderItem.save();
+      const savedOrderItem = await newOrderItem.save();
+      orderItemsIds.push(savedOrderItem._id);
+    }
 
-      return newOrderItem._id;
-    })
-  );
-  const orderItemsIdsResolved = await orderItemsIds;
-
-  const totalPrices = await Promise.all(
-    orderItemsIdsResolved.map(async (orderItemId) => {
+    // Calculate total prices
+    let totalPrice = 0;
+    for (const orderItemId of orderItemsIds) {
       const orderItem = await OrderItem.findById(orderItemId).populate(
         "product",
         "price"
       );
-      const totalPrice = orderItem.product.price * orderItem.quantity;
-      return totalPrice;
-    })
-  );
+      totalPrice += orderItem.product.price * orderItem.quantity;
+    }
 
-  const totalPrice = totalPrices.reduce((a, b) => a + b, 0);
+    // Create and save the order
+    const order = new Order({
+      orderItems: orderItemsIds,
+      shippingAddress1: req.body.shippingAddress1,
+      shippingAddress2: req.body.shippingAddress2,
+      city: req.body.city,
+      zip: req.body.zip,
+      country: req.body.country,
+      phone: req.body.phone,
+      status: req.body.status,
+      totalPrice: totalPrice,
+      user: userId,
+    });
 
-  let order = new Order({
-    orderItems: orderItemsIdsResolved,
-    shippingAddress1: req.body.shippingAddress1,
-    shippingAddress2: req.body.shippingAddress2,
-    city: req.body.city,
-    zip: req.body.zip,
-    country: req.body.country,
-    phone: req.body.phone,
-    status: req.body.status,
-    totalPrice: totalPrice,
-    user: req.body.user,
-  });
-  order = await order.save();
+    const savedOrder = await order.save();
 
-  if (!order) return res.status(400).send("the order cannot placed!");
+    if (!savedOrder) {
+      return res.status(400).send("The order cannot be placed!");
+    }
 
-  res.status(201).json({
-    message: "Order has been placed",
-    order,
-  });
+    res.status(201).json({
+      message: "Order has been placed",
+      order: savedOrder,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
 };
 
 const updateOrder = async (req, res) => {
@@ -139,7 +154,7 @@ const userOrder = async (req, res) => {
 module.exports = {
   orderList,
   orderById,
-  creatOrder,
+  createOrder,
   updateOrder,
   deleteOrder,
   userOrder,

@@ -6,11 +6,11 @@ const groupSchema = new Schema(
   {
     name: { type: String, required: true },
     description: { type: String },
-    members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    admins: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // Array of admin user IDs
+    members: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+    admins: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }], // Array of admin user IDs
     creator: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "user",
       required: true,
     },
 
@@ -24,7 +24,7 @@ const groupSchema = new Schema(
           {
             userId: {
               type: mongoose.Schema.Types.ObjectId,
-              ref: "Users",
+              ref: "user",
             },
             quantity: {
               type: Number,

@@ -97,7 +97,6 @@ const OldupdateProduct = async (req, res) => {
 };
 
 const updateProduct = async (req, res) => {
-  console.log(req.body);
   try {
     // Check if the category exists
     const categoryCheck = await Category.findOne({ name: req.body.category });

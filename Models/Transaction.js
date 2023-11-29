@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const creditSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Reference to the user making the credit
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true }, // Reference to the user making the credit
     amount: { type: Number, required: true },
     description: String,
   },
@@ -15,7 +15,7 @@ const groupTransferSchema = new mongoose.Schema(
   {
     sender: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "user",
       required: true,
     }, // Reference to the user sending money
     group: {
@@ -36,7 +36,7 @@ const groupPurchaseSchema = new mongoose.Schema({
   group: { type: mongoose.Schema.Types.ObjectId, ref: "Group", required: true }, // Reference to the group making the purchase
   productName: { type: String, required: true },
   productPrice: { type: Number, required: true },
-  buyer: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Reference to the user making the purchase on behalf of the group
+  buyer: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true }, // Reference to the user making the purchase on behalf of the group
   description: String,
   purchaseDate: { type: Date, default: Date.now },
 });

@@ -15,7 +15,7 @@ const verificationSchema = new mongoose.Schema({
   },
   userId: {
     type: String,
-    ref: "Users",
+    ref: "user",
   },
   verification_id: {
     type: Number,
@@ -29,55 +29,11 @@ const verificationSchema = new mongoose.Schema({
   phone: {
     type: Number,
   },
-  country: {
-    type: String,
-  },
-  state: {
-    type: String,
-  },
-  city: {
-    type: String,
-  },
-  zip_code: {
-    type: Number,
-  },
-  address: {
-    type: String,
-  },
+
   reference: {
     type: String,
   },
-  order: [
-    {
-      product: [
-        {
-          name: {
-            type: String,
-          },
-          image: {
-            type: String,
-          },
-          price: {
-            type: Number,
-            default: 0,
-          },
-          description: {
-            type: String,
-          },
-          brand: {
-            type: String,
-          },
-          quantity: {
-            type: String,
-          },
-        },
-      ],
-      subTotal: {
-        type: Number,
-        default: 0,
-      },
-    },
-  ],
+
   created_at: {
     type: String,
   },

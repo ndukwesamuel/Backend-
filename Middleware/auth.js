@@ -43,7 +43,6 @@ const verifyTokenAndAuthorization = (req, res, next) => {
 };
 
 const verifyTokenAndAdmin = (req, res, next) => {
-  console.log("verifyTokenAndAdmin");
   verifyToken(req, res, () => {
     User.findOne({ _id: req.user.id })
       .then((data) => {

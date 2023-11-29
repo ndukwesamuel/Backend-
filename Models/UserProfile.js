@@ -7,7 +7,7 @@ const userProfileSchema = new Schema(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: "User", // This should match the model name for the user schema
+      ref: "user", // This should match the model name for the user schema
       required: true,
     },
     profileImage: {

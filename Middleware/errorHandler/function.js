@@ -2,11 +2,11 @@ const handleErrors = (err) => {
   let errs = {};
 
   // handling err from login
-  if (err.message === "Incorrect email") {
-    return "Email not registered";
+  if (err.message === "Incorrect password or email ") {
+    return "Incorrect password or email";
   }
-  if (err.message === "Incorrect password") {
-    return "Incorrect password";
+  if (err.message === "Incorrect password or email") {
+    return "Incorrect password or email";
   }
 
   if (err.code === 11000 && err.keyPattern.name) {
