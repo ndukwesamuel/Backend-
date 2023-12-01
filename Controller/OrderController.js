@@ -1,3 +1,4 @@
+const Cart = require("../Models/Cart");
 const Order = require("../Models/Order");
 const OrderItem = require("../Models/OrderItems");
 
@@ -84,6 +85,21 @@ const createOrder = async (req, res) => {
     if (!savedOrder) {
       return res.status(400).send("The order cannot be placed!");
     }
+
+    const userCart = await Cart.findOne({ userId: userId });
+    if (userCart) {
+      // Remove ordered items from the cart
+      userCart.items = userCart.items.filter(
+        (cartItem) => !orderItemsIds.includes(cartItem.productId)
+      );
+
+      // Recalculate the bill (if needed)
+      // userCart.bill = // Your recalculation logic here
+
+      await userCart.save();
+    }
+
+    console.log({ userCart });
 
     res.status(201).json({
       message: "Order has been placed",
