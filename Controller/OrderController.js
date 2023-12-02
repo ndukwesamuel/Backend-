@@ -1,7 +1,6 @@
 const Cart = require("../Models/Cart");
 const Order = require("../Models/Order");
 const OrderItem = require("../Models/OrderItems");
-const Cart = require("../Models/Cart");
 
 // NOTE: NONE OF THIS ROUTE IS RESTRICTED AND SO I PASSED THE USER ID AS EITHER A BODY OR PARAMS. IF THIS IS WHAT WE WANT, I WILL RESTRICT THEM AND GET THE USER ID FROM req.user.id
 

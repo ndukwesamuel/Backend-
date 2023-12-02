@@ -153,6 +153,8 @@ const decreaseCartItems = async (req, res) => {
 };
 // REMOVES an item from cart at once
 const deleteFromCart = async (req, res) => {
+  console.log({ req: req.body });
+  // const { productId } = req.body;
   try {
     const cart = await Cart.findOne({ userId: req.user.id });
     const index = cart.items.findIndex(
@@ -166,6 +168,7 @@ const deleteFromCart = async (req, res) => {
     cart.items.splice(index, 1);
     cart.bill -= deletedItemBill;
     await cart.save();
+
     res.status(200).json(cart);
   } catch (err) {
     res.status(404).json({ message: "Cart is empty" });
