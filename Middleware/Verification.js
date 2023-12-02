@@ -3,14 +3,15 @@ const nodemailer = require("nodemailer");
 const emailVerification = require("../Models/emailVerification");
 const userPasswordReset = require("../Models/passwordReset");
 const { v4: uuidv4 } = require("uuid");
+require("dotenv").config();
 
 // Nodemailer
 var transporter = nodemailer.createTransport({
-  host: "smtp.mailtrap.io",
+  host: "smtp.elasticemail.com",
   port: 2525,
   auth: {
-    user: "290f5354fdc7e3",
-    pass: "f236d8722098c2",
+    user: process.env.EMAIL,
+    pass: process.env.ELASTIC_PASSWORD,
   },
 });
 
