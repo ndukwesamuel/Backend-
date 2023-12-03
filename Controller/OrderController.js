@@ -90,7 +90,7 @@ const createOrder = async (req, res) => {
     const savedOrder = await order.save();
 
     if (!savedOrder) {
-      return res.status(400).send("The order cannot be placed!");
+      return res.status(400).json({ message: "The order cannot be placed!" });
     }
     await Cart.deleteOne({ userId: userId });
     res.status(201).json({
@@ -99,7 +99,7 @@ const createOrder = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 
@@ -113,14 +113,15 @@ const updateOrder = async (req, res) => {
       { new: true }
     );
 
-    if (!order) {
-      return res.status(400).send("The order cannot be updated!");
+    if (!order || order.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found!" });
     }
 
-    res.status(200).send(order);
+    res.status(200).json({ success: true, message: "Order updated!" });
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 
@@ -147,7 +148,7 @@ const deleteOrder = (req, res) => {
 
 const userOrder = async (req, res) => {
   try {
-    const userOrderList = await Order.find({ user: req.params.userId })
+    const userOrderList = await Order.find({ user: req.user.id })
       .populate({
         path: "orderItems",
         populate: {
@@ -163,8 +164,16 @@ const userOrder = async (req, res) => {
       });
     }
 
-    const userOrders = userOrderList.map((order) => order.orderItems);
-    res.status(200).send(userOrders);
+    const userOrders = userOrderList.map((order) => {
+      return {
+        orderId: order._id,
+        status: order.status,
+        totalPrice: order.totalPrice,
+        dateOrdered: order.dateOrdered,
+        orderItems: order.orderItems,
+      };
+    });
+    res.status(200).json({ success: true, message: userOrders });
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");

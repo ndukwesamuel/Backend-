@@ -11,6 +11,7 @@ const {
   userOrder,
 } = require("../Controller/OrderController");
 
+router.route("/user-order").get(verifyToken, userOrder);
 router
   .route("/")
   .get(verifyTokenAndAdmin, orderList)
@@ -20,6 +21,5 @@ router
   .get(verifyTokenAndAdmin, orderById)
   .put(verifyTokenAndAdmin, updateOrder)
   .delete(verifyTokenAndAdmin, deleteOrder);
-router.route("/user-order/:userId").get(verifyToken, userOrder);
 
 module.exports = router;
