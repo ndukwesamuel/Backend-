@@ -14,8 +14,8 @@ const {
 router.route("/user-order").get(verifyToken, userOrder);
 router
   .route("/")
-  .get(verifyTokenAndAdmin, orderList)
-  .post(verifyToken, createOrder);
+  .post(verifyToken, createOrder)
+  .get(verifyTokenAndAdmin, orderList);
 router
   .route("/:id")
   .get(verifyTokenAndAdmin, orderById)

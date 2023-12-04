@@ -40,8 +40,10 @@ const orderById = async (req, res) => {
       },
     });
 
-  if (!order) {
-    res.status(404).json({ success: false, message: "Order can't be found" });
+  if (!order || order.length === 0) {
+    return res
+      .status(404)
+      .json({ success: false, message: "Order can't be found" });
   }
   res.status(200).send(order);
 };
@@ -121,7 +123,9 @@ const updateOrder = async (req, res) => {
 
     res.status(200).json({ success: true, message: "Order updated!" });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error " + error });
   }
 };
 
@@ -175,7 +179,6 @@ const userOrder = async (req, res) => {
     });
     res.status(200).json({ success: true, message: userOrders });
   } catch (error) {
-    console.error(error);
     res.status(500).send("Internal Server Error");
   }
 };
