@@ -101,7 +101,9 @@ const createOrder = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error " + error });
   }
 };
 
@@ -123,9 +125,7 @@ const updateOrder = async (req, res) => {
 
     res.status(200).json({ success: true, message: "Order updated!" });
   } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, message: "Internal Server Error " + error });
+    res.status(500).json({ success: false, message: "Internal Server Error " });
   }
 };
 
