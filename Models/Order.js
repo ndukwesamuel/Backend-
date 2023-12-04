@@ -37,6 +37,10 @@ const orderSchema = mongoose.Schema({
     required: true,
     default: "Pending",
   },
+  paymentStatus: {
+    type: String,
+    default: "Not initiated",
+  },
   totalPrice: {
     type: Number,
   },
