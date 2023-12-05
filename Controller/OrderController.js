@@ -69,8 +69,7 @@ const createOrder = async (req, res) => {
     let totalPrice = 0;
     for (const orderItemId of orderItemsIds) {
       const orderItem = await OrderItem.findById(orderItemId).populate(
-        "product",
-        "price"
+        "product"
       );
       totalPrice += orderItem.product.price * orderItem.quantity;
     }
@@ -100,7 +99,6 @@ const createOrder = async (req, res) => {
       order: savedOrder,
     });
   } catch (error) {
-    console.error(error);
     res
       .status(500)
       .json({ success: false, message: "Internal Server Error " + error });
