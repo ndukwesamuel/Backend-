@@ -174,6 +174,7 @@ const userOrder = async (req, res) => {
         totalPrice: order.totalPrice,
         dateOrdered: order.dateOrdered,
         orderItems: order.orderItems,
+        paymentStatus: order.paymentStatus,
       };
     });
     res.status(200).json({ success: true, message: userOrders });
