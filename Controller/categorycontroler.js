@@ -29,6 +29,14 @@ const getCategory = async (req, res) => {
 };
 const createCategory = async (req, res) => {
   try {
+    const existingCategory = await Category.findOne({
+      name: new RegExp("^" + req.body.name + "$", "i"),
+    });
+    if (existingCategory) {
+      return res
+        .status(400)
+        .json({ error: true, message: "Category name already exists" });
+    }
     const newCategory = new Category({
       name: req.body.name,
     });
@@ -81,6 +89,16 @@ const updateCategory = async (req, res) => {
     const data = {
       name: req.body.name,
     };
+    const existingCategory = await Category.findOne({
+      name: new RegExp("^" + req.body.name + "$", "i"),
+      _id: { $ne: req.params.id }, // Exclude the current category from the check
+    });
+
+    if (existingCategory) {
+      return res
+        .status(400)
+        .json({ error: true, message: "Category name already exists" });
+    }
     const updatedCategory = await Category.findByIdAndUpdate(
       req.params.id,
       data,
@@ -95,7 +113,6 @@ const updateCategory = async (req, res) => {
     }
   } catch (err) {
     const error = handleErrors(err);
-    console.log(err);
     res.status(500).json({ error: true, message: error });
   }
 };

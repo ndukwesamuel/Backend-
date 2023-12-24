@@ -30,7 +30,6 @@ const createProduct = async (req, res) => {
     });
   } catch (err) {
     const error = handleErrors(err);
-    console.log(err);
     res.status(500).json({ error: true, message: error });
   }
 };
@@ -44,7 +43,6 @@ const getProduct = async (req, res) => {
       res.status(200).send(product);
     }
   } catch (err) {
-    // const errors = handleErrors(err);
     res.status(500).json({ error: err });
   }
 };
