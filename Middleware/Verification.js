@@ -26,16 +26,29 @@ transporter.verify((error, message) => {
 });
 
 // Configuration for Password reset email
-const sendPasswordResetEmail = async ({ _id, email }, res) => {
+const sendPasswordResetEmail = async ({ _id, email, fullName }, res) => {
   const uniqueString = uuidv4() + _id;
   const redirectUrl = "https://www.webuyam.com";
+  const first_name = fullName.split(/\s+/)[0];
 
   const mailOptions = {
     from: process.env.EMAIL,
     to: email,
     subject: "Password Reset",
-    html: `<p>Please click the link to reset your password: <a href="${redirectUrl}/reset-password?userId=${_id}&uniqueString=${uniqueString}">here</a></p>
-  \n <b>Verification code expires in 1 hour</b>`,
+    html: `<p>
+    Hi ${first_name}, <br>
+
+ Trouble signing in? <br>
+ Resetting your password is easy.
+
+  Just click the link below and follow the instructions. We'll have you up and running in no time.
+   <a href="${redirectUrl}/reset-password?userId=${_id}&uniqueString=${uniqueString}">Click here</a>.</p>
+
+  If you did not make this request then please ignore this email. <br>
+    
+  \n <b>Password reset link expires in 1 hour</b>
+      <p>Kind Regards.</p>
+`,
   };
 
   try {
@@ -63,16 +76,20 @@ const sendPasswordResetEmail = async ({ _id, email }, res) => {
 };
 
 // Email verification
-const sendVerificationEmail = async ({ _id, email }, res) => {
+const sendVerificationEmail = async ({ _id, email, fullName }, res) => {
   const uniqueString = uuidv4() + _id;
-  // const redirectUrl = "https://webuy-opal.vercel.app";
   const redirectUrl = "https://www.webuyam.com";
+
+  const first_name = fullName.split(/\s+/)[0];
 
   const mailOptions = {
     from: process.env.EMAIL,
     to: email,
     subject: "Email Verification",
-    html: `<p>Please click the link to verify your email: <a href="${redirectUrl}/verify-email?userId=${_id}&uniqueString=${uniqueString}">here</a></p> \n <b>Verification link expires in 1 hour</b>`,
+    html: `<p>Hello ${first_name},<br> You registered an account on  <a href="https://www.webuyam.com">Webuyam</a> website, before being able to use your account you need to verify that this is your email address by clicking <a href="${redirectUrl}/verify-email?userId=${_id}&uniqueString=${uniqueString}">here</a>.</p> \n <b>Verification link expires in 1 hour.</b>
+    
+    <p>Kind Regards.</p>
+    `,
   };
 
   try {
