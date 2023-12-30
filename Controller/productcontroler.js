@@ -37,7 +37,7 @@ const createProduct = async (req, res) => {
 
 const getProduct = async (req, res) => {
   try {
-    let product = await Product.find({ _id: req.params.id });
+    let product = await Product.findOne({ _id: req.params.id });
     if (product.length < 1) {
       res.status(200).json({ message: "Out of stock" });
     } else {
