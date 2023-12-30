@@ -2,6 +2,7 @@ const https = require("https");
 require("dotenv").config();
 const paymentVerification = require("../Models/paymentVerification");
 const paystackKey = process.env.PAYSTACK_SECRET_KEY;
+const Order = require("../Models/Order");
 
 const payment = async (req, res) => {
   const { email, amount, firstname, lastname, phone } = req.body;
@@ -74,7 +75,7 @@ const verifyPayment = async (req, res) => {
         data += chunk;
       });
 
-      respaystack.on("end", () => {
+      respaystack.on("end", async () => {
         const response = JSON.parse(data);
         if (response.message && response.status === true) {
           const amountPaid = response.data.amount / 100;
@@ -93,6 +94,16 @@ const verifyPayment = async (req, res) => {
           });
           newVerification.save();
         }
+        const isOrder = await Order.findOne({ user: req.user.id });
+        if (!isOrder) {
+          return res
+            .status(404)
+            .json({ success: false, message: "No order yet:place one now!" });
+        }
+        await Order.findOneAndUpdate(
+          { _id: isOrder._id },
+          { $set: { paymentStatus: "completed" } }
+        );
         res.status(200).json(response);
       });
     })

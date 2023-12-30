@@ -7,9 +7,7 @@ const createToken = (id) => {
 };
 
 const verifyToken = async (req, res, next) => {
-  console.log(req.headers);
   const authHeader = req.headers.authorization;
-  console.log(authHeader);
   if (!authHeader || !authHeader.startsWith("Bearer")) {
     // throw new UnauthenticatedError("Authentication invalid");
 
@@ -18,7 +16,6 @@ const verifyToken = async (req, res, next) => {
       .json({ error: true, message: "Authentication invalid" });
   }
   const token = authHeader.split(" ")[1];
-
   if (token) {
     // decodedToken will return the user payload in this case userId
     jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
