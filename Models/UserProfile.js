@@ -21,6 +21,7 @@ const userProfileSchema = new Schema(
     },
     phone: {
       type: String,
+      default: "https://iau.edu.lc/wp-content/uploads/2016/09/dummy-image.jpg",
     },
     email: {
       type: String,
