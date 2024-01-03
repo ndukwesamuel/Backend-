@@ -106,7 +106,11 @@ const AddGroupCart = async (req, res) => {
     return res.status(404).json({ error: "User not found" });
   }
 
-  const group = await groupmodel.findById(groupId);
+  const group = await groupmodel.findById(groupId).populate({
+    path: "cart.userProductInfo.userId",
+    model: "user",
+    select: "fullName email",
+  });
 
   if (!group) {
     throw new BadRequestError("Group not found");

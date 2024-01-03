@@ -112,6 +112,7 @@ const getUserProfile = async (req, res) => {
 
 const uploadProfileImage = async (req, res) => {
   const profile = await UserProfile.findOne({ user: req.user.id });
+
   try {
     if (profile.profileImage) {
       const imageId = getImageId(profile.profileImage);
