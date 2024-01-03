@@ -61,11 +61,8 @@ const getAllGroups = async (req, res) => {
 };
 
 const getMemberGroups = async (req, res) => {
-  console.log({ req: req.user });
   try {
     const groups = await groupmodel.findOne({ members: req.user.id });
-
-    console.log({ groups });
 
     if (!groups) {
       res.status(200).json({ message: "You are not in any Group " });
@@ -369,6 +366,14 @@ const joinGroup = async (req, res) => {
   if (group.members.includes(userId)) {
     throw new BadRequestError("You are already a member of this group");
   }
+
+  // Check if the user is already a member of any group
+  const existingGroup = await Group.find({ members: userId });
+
+  if (existingGroup.length > 0) {
+    throw new BadRequestError("You are already a member of another group");
+  }
+
   group.members.push(userId);
   await group.save();
   res.status(StatusCodes.OK).json(group);
