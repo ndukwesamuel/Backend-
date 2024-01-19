@@ -49,15 +49,7 @@ const getProduct = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const pageSize = parseInt(req.query.pageSize) || 10;
-
-    const skip = (page - 1) * pageSize;
-
-    let products = await Product.find()
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(pageSize);
+    const products = await Product.find().sort({ createdAt: -1 });
 
     if (products.length < 1) {
       return res.status(200).json({ message: "No product created yet" });
