@@ -253,7 +253,7 @@ const CheckoutGroupCart = async (req, res) => {
     const group = await groupmodel.findById(groupId);
 
     if (!group) {
-      return res.status(404).json({ error: "Group not found" });
+      return res.status(404).json({ message: "Group not found" });
     }
 
     // Create an array to store product details
@@ -274,7 +274,7 @@ const CheckoutGroupCart = async (req, res) => {
           amount: amount,
         });
       } else {
-        return res.status(404).json({ error: "Product not found" });
+        return res.status(404).json({ message: "Product not found" });
       }
     }
 
@@ -282,13 +282,22 @@ const CheckoutGroupCart = async (req, res) => {
     const totalAmount = productDetails.reduce((total, productDetail) => {
       return total + productDetail.amount;
     }, 0);
+    // return console.log(group.wallet, totalAmount);
+
+    if (group.wallet < totalAmount) {
+      return res
+        .status(400)
+        .json({ message: "Insufficient funds in the wallet" });
+    }
+    group.wallet -= totalAmount;
+
+    await group.save();
 
     res.status(200).json({
-      productDetails,
-      totalAmount,
+      message: "Transaction successful",
     });
   } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
