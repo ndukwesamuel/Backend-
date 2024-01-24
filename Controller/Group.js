@@ -119,8 +119,11 @@ const AddGroupCart = async (req, res) => {
   if (!userCart) {
     return res.status(404).json({ error: "User's cart not found" });
   }
+  // return console.log(userCart.items);
   const itemToTransfer = userCart.items.find(
-    (item) => item._id.toString() === cartItemId && item.productId === productId
+    (item) =>
+      item._id.toString() === cartItemId &&
+      item.productId.toString() === productId
   );
 
   if (!itemToTransfer) {
@@ -134,14 +137,14 @@ const AddGroupCart = async (req, res) => {
   if (user.wallet < totalPrice) {
     return res.status(400).json({ error: "Insufficient funds in the wallet" });
   }
-  const isProductInGroupCartForUser = group.cart.some((item) =>
-    item.userProductInfo.some((info) => info.userId.toString() === userId)
-  );
-  if (isProductInGroupCartForUser) {
-    return res
-      .status(400)
-      .json({ error: "You have already added this product to the group cart" });
-  }
+  // const isProductInGroupCartForUser = group.cart.some((item) =>
+  //   item.userProductInfo.some((info) => info.userId.toString() === userId)
+  // );
+  // if (isProductInGroupCartForUser) {
+  //   return res
+  //     .status(400)
+  //     .json({ error: "You have already added this product to the group cart" });
+  // }
 
   const quantityToTransfer = itemToTransfer.quantity; // Calculate the quantity to transfer
 
@@ -245,41 +248,48 @@ const CheckoutGroupCasrt = async (req, res) => {
 };
 
 const CheckoutGroupCart = async (req, res) => {
-  const groupId = req.params.groupId;
-  const group = await groupmodel.findById(groupId);
+  try {
+    const groupId = req.params.groupId;
+    const group = await groupmodel.findById(groupId);
 
-  // Create an array to store product details
-  const productDetails = [];
-
-  // Loop through each item in group.cart and fetch product details
-  for (const cartItem of group.cart) {
-    const productId = cartItem.product;
-    const product = await Product.findById(productId); // Find product by its _id
-
-    if (product) {
-      let amount = product.price * cartItem.quantity;
-      // If the product is found, add its details to the array
-      productDetails.push({
-        cartItem: cartItem,
-        name: product.name,
-        price: product.price,
-        description: product.description,
-        category: product.category,
-        id: product._id,
-        amount,
-      });
+    if (!group) {
+      return res.status(404).json({ error: "Group not found" });
     }
+
+    // Create an array to store product details
+    const productDetails = [];
+
+    for (const cartItem of group.cart) {
+      const productId = cartItem.productId;
+      const product = await Product.findById(productId.toString());
+
+      if (product) {
+        let amount = product.price * cartItem.totalQuantity;
+        productDetails.push({
+          name: product.name,
+          price: product.price,
+          description: product.description,
+          category: product.category,
+          id: product._id,
+          amount: amount,
+        });
+      } else {
+        return res.status(404).json({ error: "Product not found" });
+      }
+    }
+
+    // Calculate the total amount by summing up the 'amount' property of each product detail
+    const totalAmount = productDetails.reduce((total, productDetail) => {
+      return total + productDetail.amount;
+    }, 0);
+
+    res.status(200).json({
+      productDetails,
+      totalAmount,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
   }
-
-  // Calculate the total amount by summing up the 'amount' property of each product detail
-  const totalAmount = productDetails.reduce((total, productDetail) => {
-    return total + productDetail.amount;
-  }, 0);
-
-  res.status(200).json({
-    productDetails,
-    totalAmount,
-  });
 };
 
 const updateSingleGroupCart = async (req, res) => {
