@@ -7,9 +7,8 @@ const Group = require("../Models/Group");
 const Product = require("../Models/Products");
 const Cart = require("../Models/Cart");
 const groupmodel = require("../Models/Group");
-
-const Users = require("../Models/Users");
-
+const User = require("../Models/Users");
+const { GroupTransfer } = require("../Models/Transaction");
 const { BadRequestError } = require("../errors");
 const { log } = require("console");
 const { isValidObjectId } = require("mongoose");
@@ -78,7 +77,7 @@ const getMemberGroups = async (req, res) => {
 const getGroupCart = async (req, res) => {
   const userId = req.user.id;
 
-  const user = await Users.findById(userId);
+  const user = await User.findById(userId);
 
   if (!user) {
     return res.status(404).json({ error: "User not found" });
@@ -101,7 +100,7 @@ const AddGroupCart = async (req, res) => {
 
   const userId = req.user.id;
 
-  const user = await Users.findById(userId);
+  const user = await User.findById(userId);
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
@@ -187,7 +186,13 @@ const AddGroupCart = async (req, res) => {
   user.wallet -= totalPrice;
   group.wallet += totalPrice;
   await group.save();
-
+  // creates a transaction history
+  const newTransaction = new GroupTransfer({
+    sender: userId,
+    group: groupId,
+    amount: totalPrice,
+  });
+  await newTransaction.save();
   await user.save();
 
   // Update the user's cart
@@ -249,11 +254,16 @@ const CheckoutGroupCasrt = async (req, res) => {
 
 const CheckoutGroupCart = async (req, res) => {
   try {
+    const userId = req.user.id;
     const groupId = req.params.groupId;
     const group = await groupmodel.findById(groupId);
+    const isUser = await User.findOne({ _id: userId });
 
     if (!group) {
       return res.status(404).json({ message: "Group not found" });
+    }
+    if (!isUser.isUserAdmin || !isUser.isAdmin) {
+      return res.status(401).json({ message: "You are not the group admin" });
     }
 
     // Create an array to store product details
