@@ -258,10 +258,14 @@ const CheckoutGroupCart = async (req, res) => {
     const groupId = req.params.groupId;
     const group = await groupmodel.findById(groupId);
     const isUser = await User.findOne({ _id: userId });
-
+    if (!isUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
     if (!group) {
       return res.status(404).json({ message: "Group not found" });
     }
+
+    // check chatgpt
     if (!isUser.isUserAdmin || !isUser.isAdmin) {
       return res.status(401).json({ message: "You are not the group admin" });
     }
@@ -300,6 +304,8 @@ const CheckoutGroupCart = async (req, res) => {
         .json({ message: "Insufficient funds in the wallet" });
     }
     group.wallet -= totalAmount;
+    // to store the total amount in the group cart
+    group.bill = totalAmount;
 
     await group.save();
 
@@ -307,6 +313,7 @@ const CheckoutGroupCart = async (req, res) => {
       message: "Transaction successful",
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
