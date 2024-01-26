@@ -265,7 +265,6 @@ const CheckoutGroupCart = async (req, res) => {
       return res.status(404).json({ message: "Group not found" });
     }
 
-    // check chatgpt
     if (!isUser.isUserAdmin && !isUser.isAdmin) {
       return res.status(401).json({ message: "You are not the group admin" });
     }
