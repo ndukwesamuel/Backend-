@@ -5,11 +5,7 @@ const getCart = async (req, res) => {
   try {
     let userId = req.user.id;
     // Find the user's cart based on userId and populate product details including image
-    const userCart = await Cart.findOne({ userId }).populate({
-      path: "items.productId",
-      model: product,
-      select: "name price image", // Include the "image" field from the product
-    });
+    const userCart = await Cart.findOne({ userId });
 
     if (!userCart) {
       return res.status(200).json({ message: "Cart is empty" });
@@ -17,7 +13,6 @@ const getCart = async (req, res) => {
       return res.status(200).json({ userCart });
     }
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

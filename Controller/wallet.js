@@ -109,50 +109,61 @@ const getAllUsersHistory = async (req, res) => {
 const Get__user__Transaction__History = async (req, res) => {
   console.log("Get__user__Transaction__History");
   let userId = req.user.id;
+  try {
+    const user = await User.findById(userId);
 
-  const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
+    const grouptransfer = await GroupTransfer.find({ sender: user._id });
+    const credited = await CreditUser.find({ user: user._id });
+
+    const grouptransferObjects = grouptransfer.map((item) => item.toObject());
+    const creditedObjects = credited.map((item) => item.toObject());
+
+    const combinedArray = [...grouptransferObjects, ...creditedObjects];
+
+    combinedArray.sort((a, b) => b.createdAt - a.createdAt);
+
+    res.json({ transactionHistory: combinedArray });
+
+    // res.json({ grouptransferObjects, creditedObjects });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: "Could not fetch transaction records" });
   }
-
-  const grouptransfer = await GroupTransfer.find({ sender: user._id });
-  const credited = await CreditUser.find({ user: user._id });
-
-  const grouptransferObjects = grouptransfer.map((item) => item.toObject());
-  const creditedObjects = credited.map((item) => item.toObject());
-
-  const combinedArray = [...grouptransferObjects, ...creditedObjects];
-
-  combinedArray.sort((a, b) => b.createdAt - a.createdAt);
-
-  res.json({ transactionHistory: combinedArray });
-
-  // res.json({ grouptransferObjects, creditedObjects });
 };
 
 const Get__group__Transaction__History = async (req, res) => {
   let groupId = req.params.groupId;
   let userId = req.user.id;
-  const user = await User.findById(userId);
 
-  const group = await Group.findById(groupId);
+  try {
+    const group = await Group.findById(groupId);
+    const check_member_in_group = group.members.includes(userId);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+    if (!check_member_in_group) {
+      return res
+        .status(404)
+        .json({ message: "You are not a member of this group" });
+    }
 
-  let check_member_in_group = group.members.includes(userId);
+    const grouptransfer = await GroupTransfer.find({
+      group: group._id,
+    })
+      .populate("sender", "fullName")
+      .populate("group", "name");
 
-  console.log({ check_member_in_group });
-
-  if (!check_member_in_group) {
+    res.json({ transactionHistory: grouptransfer });
+  } catch (error) {
     return res
-      .status(404)
-      .json({ message: "User is not a member of this group " });
+      .status(500)
+      .json({ error: "Could not fetch transaction records" });
   }
-
-  const grouptransfer = await GroupTransfer.find({ group: group._id });
-
-  console.log({ grouptransfer });
-
-  res.json({ transactionHistory: grouptransfer });
 };
 
 const GroupPaysForAProduct = async (req, res) => {

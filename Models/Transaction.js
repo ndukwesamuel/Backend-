@@ -24,7 +24,7 @@ const groupTransferSchema = new mongoose.Schema(
       required: true,
     }, // Reference to the group receiving the money
     amount: { type: Number, required: true },
-    description: String,
+    description: { type: String },
   },
 
   { timestamps: true }
@@ -37,7 +37,7 @@ const groupPurchaseSchema = new mongoose.Schema({
   productName: { type: String, required: true },
   productPrice: { type: Number, required: true },
   buyer: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true }, // Reference to the user making the purchase on behalf of the group
-  description: String,
+  description: { type: String },
   purchaseDate: { type: Date, default: Date.now },
 });
 
