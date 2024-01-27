@@ -288,6 +288,42 @@ const CheckoutGroupCart = async (req, res) => {
   });
 };
 
+const GroupcartCheckout = async (req, res) => {
+  console.log("hello");
+  let { cartItemId, productId, groupid } = req.body;
+  const group = await groupmodel.findById(groupid);
+  // Create an array to store product details
+  const productDetails = [];
+
+  for (const cartItem of group.cart) {
+    const productId = cartItem.productId;
+    const product = await Product.findById(productId); // Find product by its _id
+    if (product) {
+      let amount = product.price * cartItem.quantity;
+      // If the product is found, add its details to the array
+      productDetails.push({
+        cartItem: cartItem,
+        name: product.name,
+        price: product.price,
+        description: product.description,
+        category: product.category,
+        id: product._id,
+        amount,
+      });
+    }
+  }
+  const totalAmount = productDetails.reduce((total, productDetail) => {
+    return total + productDetail.amount;
+  }, 0);
+
+  res.status(200).json({
+    // productDetails,
+    // totalAmount,
+    productDetails,
+    totalAmount,
+  });
+};
+
 const updateSingleGroupCart = async (req, res) => {
   // try {
   const groupId = req.params.groupId;
@@ -409,4 +445,5 @@ module.exports = {
   DeleteSingleGroupCart,
   getMemberGroups,
   CheckoutGroupCart,
+  GroupcartCheckout,
 };

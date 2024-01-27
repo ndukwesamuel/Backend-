@@ -12,6 +12,7 @@ const {
   DeleteSingleGroupCart,
   getMemberGroups,
   CheckoutGroupCart,
+  GroupcartCheckout,
 } = require("../Controller/Group");
 
 router
@@ -21,6 +22,9 @@ router
 
 router.route("/member").get(verifyToken, getMemberGroups);
 router.route("/checkout/:groupId").get(verifyToken, CheckoutGroupCart);
+router.route("/checkout").post(verifyToken, GroupcartCheckout);
+
+GroupcartCheckout;
 
 router.route("/:groupId/join").get(verifyToken, joinGroup);
 router.route("/addToCart").post(verifyToken, AddGroupCart);
