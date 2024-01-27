@@ -20,7 +20,7 @@ router
   .get(verifyTokenAndAdmin, getAllGroups);
 
 router.route("/member").get(verifyToken, getMemberGroups);
-router.route("/checkout/:groupId").get(verifyToken, CheckoutGroupCart);
+router.route("/checkout").post(verifyToken, CheckoutGroupCart);
 
 router.route("/:groupId/join").get(verifyToken, joinGroup);
 router.route("/addToCart").post(verifyToken, AddGroupCart);

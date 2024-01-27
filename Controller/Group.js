@@ -118,7 +118,6 @@ const AddGroupCart = async (req, res) => {
   if (!userCart) {
     return res.status(404).json({ error: "User's cart not found" });
   }
-  // return console.log(userCart.items);
   const itemToTransfer = userCart.items.find(
     (item) =>
       item._id.toString() === cartItemId &&
@@ -254,13 +253,15 @@ const CheckoutGroupCasrt = async (req, res) => {
 
 const CheckoutGroupCart = async (req, res) => {
   try {
+    const { productId, cartItemId, groupId } = req.body;
     const userId = req.user.id;
-    const groupId = req.params.groupId;
     const group = await groupmodel.findById(groupId);
     const isUser = await User.findOne({ _id: userId });
+
     if (!isUser) {
       return res.status(404).json({ message: "User not found" });
     }
+
     if (!group) {
       return res.status(404).json({ message: "Group not found" });
     }
@@ -269,50 +270,44 @@ const CheckoutGroupCart = async (req, res) => {
       return res.status(401).json({ message: "You are not the group admin" });
     }
 
-    // Create an array to store product details
-    const productDetails = [];
-
-    for (const cartItem of group.cart) {
-      const productId = cartItem.productId;
-      const product = await Product.findById(productId.toString());
-
-      if (product) {
-        let amount = product.price * cartItem.totalQuantity;
-        productDetails.push({
-          name: product.name,
-          price: product.price,
-          description: product.description,
-          category: product.category,
-          id: product._id,
-          amount: amount,
-        });
-      } else {
-        return res.status(404).json({ message: "Product not found" });
-      }
+    // Find the cart item corresponding to the provided productId
+    const cartItem = group.cart.find(
+      (item) =>
+        item._id.toString() === cartItemId &&
+        item.productId.toString() === productId
+    );
+    if (!cartItem) {
+      return res.status(404).json({ message: "Product not found in the cart" });
     }
 
-    // Calculate the total amount by summing up the 'amount' property of each product detail
-    const totalAmount = productDetails.reduce((total, productDetail) => {
-      return total + productDetail.amount;
-    }, 0);
-    // return console.log(group.wallet, totalAmount);
+    const product = await Product.findById(productId);
 
-    if (group.wallet < totalAmount) {
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const amount = product.price * product.totalQuantity;
+    console.log(amount);
+    if (group.wallet < amount) {
       return res
         .status(400)
         .json({ message: "Insufficient funds in the wallet" });
     }
-    group.wallet -= totalAmount;
-    // to store the total amount in the group cart
-    group.bill = totalAmount;
+
+    // Deduct the amount from the group's wallet and update the group's bill
+    group.wallet -= amount;
+    group.bill = amount;
+
+    // Remove the checked out product from the cart
+    // group.cart = group.cart.filter(
+    //   (item) => item.productId.toString() !== productId
+    // );
 
     await group.save();
 
-    res.status(200).json({
-      message: "Transaction successful",
-    });
+    res.status(200).json({ message: "Product checked out successfully" });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
