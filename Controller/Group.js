@@ -285,9 +285,8 @@ const CheckoutGroupCart = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+    const amount = cartItem.totalAmount * cartItem.totalQuantity;
 
-    const amount = product.price * product.totalQuantity;
-    console.log(amount);
     if (group.wallet < amount) {
       return res
         .status(400)
@@ -299,9 +298,9 @@ const CheckoutGroupCart = async (req, res) => {
     group.bill = amount;
 
     // Remove the checked out product from the cart
-    // group.cart = group.cart.filter(
-    //   (item) => item.productId.toString() !== productId
-    // );
+    group.cart = group.cart.filter(
+      (item) => item.productId.toString() !== productId
+    );
 
     await group.save();
 
