@@ -230,7 +230,19 @@ const CheckoutGroupCart = async (req, res) => {
       return res.status(404).json({ message: "Group not found" });
     }
 
-    if (!isUser.isUserAdmin && !isUser.isAdmin) {
+    // Check if the user is the group admin
+
+    // Check if the user is a member of the group
+    if (!group.members.includes(userId)) {
+      return res
+        .status(401)
+        .json({ message: "You are not a member of the group" });
+    }
+
+    // Check if the user is an admin of the group
+    const isAdmin = group.admins.includes(userId);
+
+    if (!isAdmin) {
       return res.status(401).json({ message: "You are not the group admin" });
     }
 
@@ -269,6 +281,42 @@ const CheckoutGroupCart = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
   }
+};
+
+const GroupcartCheckout = async (req, res) => {
+  console.log("hello");
+  let { cartItemId, productId, groupid } = req.body;
+  const group = await groupmodel.findById(groupid);
+  // Create an array to store product details
+  const productDetails = [];
+
+  for (const cartItem of group.cart) {
+    const productId = cartItem.productId;
+    const product = await Product.findById(productId); // Find product by its _id
+    if (product) {
+      let amount = product.price * cartItem.quantity;
+      // If the product is found, add its details to the array
+      productDetails.push({
+        cartItem: cartItem,
+        name: product.name,
+        price: product.price,
+        description: product.description,
+        category: product.category,
+        id: product._id,
+        amount,
+      });
+    }
+  }
+  const totalAmount = productDetails.reduce((total, productDetail) => {
+    return total + productDetail.amount;
+  }, 0);
+
+  res.status(200).json({
+    // productDetails,
+    // totalAmount,
+    productDetails,
+    totalAmount,
+  });
 };
 
 const updateSingleGroupCart = async (req, res) => {
@@ -392,4 +440,5 @@ module.exports = {
   DeleteSingleGroupCart,
   getMemberGroups,
   CheckoutGroupCart,
+  GroupcartCheckout,
 };
