@@ -36,7 +36,7 @@ const userSchema = new Schema(
     },
     wallet: {
       type: Number,
-      default: 0, // Initial wallet balance is 0
+      default: 500000, // Initial wallet balance is 0
     },
   },
   { timestamps: true }
