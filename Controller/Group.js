@@ -10,8 +10,10 @@ const groupmodel = require("../Models/Group");
 const User = require("../Models/Users");
 const { GroupTransfer } = require("../Models/Transaction");
 const { BadRequestError } = require("../errors");
+const UserProfile = require("../Models/UserProfile");
 const { log } = require("console");
 const { isValidObjectId } = require("mongoose");
+const { get } = require("http");
 
 const createGroup = async (req, res) => {
   const { name, description } = req.body;
@@ -47,15 +49,18 @@ const createGroup = async (req, res) => {
 
 const getAllGroups = async (req, res) => {
   try {
-    const groups = await groupmodel.find();
-    if (groups.length < 1) {
-      res.status(200).json({ message: "No group created yet" });
+    const groups = await Group.find().populate({
+      path: "members",
+      select: "fullName wallet",
+    });
+    if (groups.length === 0) {
+      return res.status(200).json({ message: "No group created yet" });
     } else {
-      res.status(200).json({ message: groups });
+      return res.status(200).json({ groups });
     }
   } catch (err) {
     const error = handleErrors(err);
-    res.status(500).json({ message: error });
+    return res.status(500).json({ message: error });
   }
 };
 

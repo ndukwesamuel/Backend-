@@ -68,7 +68,9 @@ const login = async (req, res) => {
 const updateUserProfile = async (req, res) => {
   const { name, email, phone, address } = req.body;
   const profile = await UserProfile.findOne({ user: req.user.id });
-
+  if (!profile) {
+    res.status(401).json({ message: "You need to login" });
+  }
   try {
     data = {
       name: name,
@@ -76,22 +78,13 @@ const updateUserProfile = async (req, res) => {
       phone: phone,
       address: address,
     };
-    await User.findByIdAndUpdate(
-      req.user.id,
-      { name: name, email: email },
-      {
-        new: true,
-      }
-    );
-    await UserProfile.findByIdAndUpdate(profile._id, data, {
-      new: true,
-    });
+    await User.findByIdAndUpdate(req.user.id, { name: name, email: email });
+    await UserProfile.findByIdAndUpdate(profile._id, data);
     res
       .status(StatusCodes.OK)
       .json({ message: "Profile successfully updated" });
   } catch (err) {
     // const errors = handleErrors(err);
-    console.log(err);
     res.status(500).json({ error: err, message: "Profile update failed" });
   }
 };
@@ -102,6 +95,9 @@ const getUserProfile = async (req, res) => {
       path: "user",
       select: ["-password", "-isAdmin"], // Exclude the 'password' and "isAdmin" field
     });
+    if (!profile) {
+      res.status(401).json({ message: "You need to login" });
+    }
     res.status(StatusCodes.OK).json({ message: profile });
   } catch (error) {
     res

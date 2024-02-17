@@ -20,7 +20,7 @@ const {
 } = require("../Controller/verificationController");
 router
   .route("/profile")
-  .put(verifyToken, updateUserProfile)
+  .patch(verifyToken, updateUserProfile)
   .get(verifyToken, getUserProfile);
 router
   .route("/upload-image")
