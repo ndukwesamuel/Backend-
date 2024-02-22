@@ -41,13 +41,9 @@ const register = async (req, res) => {
     country: req.body.country,
   });
 
-  res
-    .status(200)
-    .json({ message: "User created successfully", newProfile, newUser });
+  savedUserprofile = await newProfile.save();
 
-  // savedUserprofile = await newProfile.save();
-
-  // sendVerificationEmail(savedUser, res);
+  sendVerificationEmail(savedUser, res);
 };
 
 const login = async (req, res) => {
