@@ -49,13 +49,25 @@ const createGroup = async (req, res) => {
 
 const getAllGroups = async (req, res) => {
   try {
-    const groups = await Group.find().populate({
-      path: "members",
-      select: "fullName wallet",
-    });
+    const groups = await Group.find()
+      .populate({
+        path: "members",
+        select: "fullName wallet",
+      })
+      .lean();
+
     if (groups.length === 0) {
       return res.status(200).json({ message: "No group created yet" });
     } else {
+      // Iterate through each member of the group
+      for (let group of groups) {
+        for (let member of group.members) {
+          const userProfile = await UserProfile.find({ user: member._id });
+
+          member.address = userProfile ? userProfile[0].address : null;
+        }
+      }
+
       return res.status(200).json({ groups });
     }
   } catch (err) {
