@@ -63,7 +63,7 @@ const getAllGroups = async (req, res) => {
         for (let member of group.members) {
           const userProfile = await UserProfile.find({ user: member._id });
 
-          member.address = userProfile ? userProfile[0].address : null;
+          // member.address = userProfile ? userProfile[0].address : null;
         }
       }
 

@@ -26,6 +26,11 @@ const userProfileSchema = new Schema(
     email: {
       type: String,
     },
+    country: {
+      type: String,
+      required: [true, "Please select your country"],
+      enum: ["Nigeria", "Ghana", "Benin"], // Ensure the value is one of the predefined countries
+    },
     // Add other profile-related fields as needed
   },
   { timestamps: true }

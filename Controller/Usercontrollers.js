@@ -13,10 +13,12 @@ const UserProfile = require("../Models/UserProfile");
 const { BadRequestError } = require("../errors");
 
 const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, country } = req.body;
 
-  if (!email || !password || !name) {
-    throw new BadRequestError("Please provide email, name and password");
+  if (!email || !password || !name || !country) {
+    throw new BadRequestError(
+      "Please provide email, name, password, and country"
+    );
   }
 
   const emailAlreadyExists = await User.findOne({ email });
@@ -36,11 +38,16 @@ const register = async (req, res) => {
     user: savedUser._id, // Reference to the user document
     name: req.body.name,
     email: req.body.email,
+    country: req.body.country,
   });
 
-  savedUserprofile = await newProfile.save();
+  res
+    .status(200)
+    .json({ message: "User created successfully", newProfile, newUser });
 
-  sendVerificationEmail(savedUser, res);
+  // savedUserprofile = await newProfile.save();
+
+  // sendVerificationEmail(savedUser, res);
 };
 
 const login = async (req, res) => {
