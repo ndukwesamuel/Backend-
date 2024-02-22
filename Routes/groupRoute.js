@@ -15,10 +15,7 @@ const {
   GroupcartCheckout,
 } = require("../Controller/Group");
 
-router
-  .route("/")
-  .post(verifyToken, createGroup)
-  .get(verifyTokenAndAdmin, getAllGroups);
+router.route("/").post(verifyToken, createGroup).get(verifyToken, getAllGroups);
 
 router.route("/member").get(verifyToken, getMemberGroups);
 router.route("/checkout").post(verifyToken, CheckoutGroupCart);
