@@ -38,6 +38,11 @@ const userSchema = new Schema(
       type: Number,
       default: 500000, // Initial wallet balance is 0
     },
+    country: {
+      type: String,
+      required: [true, "Please select your country"],
+      enum: ["Nigeria", "Ghana", "Benin"], // Ensure the value is one of the predefined countries
+    },
   },
   { timestamps: true }
 );

@@ -59,12 +59,6 @@ const getAllGroups = async (req, res) => {
     if (groups.length === 0) {
       return res.status(200).json({ message: "No group created yet" });
     } else {
-      for (let group of groups) {
-        for (let member of group.members) {
-          const userProfile = await UserProfile.find({ user: member._id });
-        }
-      }
-
       return res.status(200).json({ groups });
     }
   } catch (err) {
@@ -73,6 +67,32 @@ const getAllGroups = async (req, res) => {
   }
 };
 
+const getAllGroupMembers = async (req, res) => {
+  try {
+    const groups = await Group.find()
+      .populate({
+        path: "members",
+        select: "fullName wallet",
+      })
+      .lean();
+    if (groups.length === 0) {
+      return res.status(200).json({ message: "No group created yet" });
+    } else {
+      for (let group of groups) {
+        for (let member of group.members) {
+          const userProfile = await UserProfile.find({ user: member._id });
+          member.address = userProfile ? userProfile[0]?.address : null;
+        }
+      }
+
+      return res.status(200).json({ groups });
+    }
+  } catch (err) {
+    // const error = handleErrors(err);
+    console.log(err);
+    return res.status(500).json({ message: err });
+  }
+};
 const getMemberGroups = async (req, res) => {
   try {
     const groups = await groupmodel.findOne({ members: req.user.id });
@@ -446,6 +466,7 @@ const deleteGroup = async (req, res) => {
 module.exports = {
   createGroup,
   getAllGroups,
+  getAllGroupMembers,
   joinGroup,
   deleteGroup,
   getGroupCart,
