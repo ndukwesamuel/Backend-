@@ -18,6 +18,7 @@ const { get } = require("http");
 const createGroup = async (req, res) => {
   const { name, description } = req.body;
   const creator = req.user.id;
+  const creatorCountry = req.user.country;
 
   if (!name || !description) {
     throw new BadRequestError("Please provide name and description");
@@ -40,6 +41,7 @@ const createGroup = async (req, res) => {
     creator,
     members: [creator],
     admins: [creator],
+    country: creatorCountry,
   };
 
   const group = await groupmodel.create(newdata);
@@ -426,6 +428,7 @@ const joinGroup = async (req, res) => {
   const groupId = req.params.groupId;
   const group = await Group.findById(groupId);
   const userId = req.user.id;
+  const userCountry = req.user.country; // Get user's country
 
   if (!group) {
     throw new BadRequestError("Group not found");
@@ -436,11 +439,18 @@ const joinGroup = async (req, res) => {
     throw new BadRequestError("You are already a member of this group");
   }
 
-  // Check if the user is already a member of any group
-  const existingGroup = await Group.find({ members: userId });
+  if (group.country !== userCountry) {
+    throw new BadRequestError("You can only join groups from your country");
+  }
+
+  // Check if the user is already a member of any group (assuming same country restriction)
+  const existingGroup = await Group.find({
+    members: userId,
+    country: userCountry,
+  });
 
   if (existingGroup.length > 0) {
-    throw new BadRequestError("You are already a member of another group");
+    throw new BadRequestError("You are already a member of another group!");
   }
 
   group.members.push(userId);
