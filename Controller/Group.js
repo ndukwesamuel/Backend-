@@ -18,6 +18,7 @@ const { get } = require("http");
 const createGroup = async (req, res) => {
   const { name, description } = req.body;
   const creator = req.user.id;
+  const creatorCountry = req.user.country;
 
   if (!name || !description) {
     throw new BadRequestError("Please provide name and description");
@@ -40,6 +41,7 @@ const createGroup = async (req, res) => {
     creator,
     members: [creator],
     admins: [creator],
+    country: creatorCountry,
   };
 
   const group = await groupmodel.create(newdata);
@@ -59,12 +61,6 @@ const getAllGroups = async (req, res) => {
     if (groups.length === 0) {
       return res.status(200).json({ message: "No group created yet" });
     } else {
-      for (let group of groups) {
-        for (let member of group.members) {
-          const userProfile = await UserProfile.find({ user: member._id });
-        }
-      }
-
       return res.status(200).json({ groups });
     }
   } catch (err) {
@@ -73,6 +69,32 @@ const getAllGroups = async (req, res) => {
   }
 };
 
+const getAllGroupMembers = async (req, res) => {
+  try {
+    const groups = await Group.find()
+      .populate({
+        path: "members",
+        select: "fullName wallet",
+      })
+      .lean();
+    if (groups.length === 0) {
+      return res.status(200).json({ message: "No group created yet" });
+    } else {
+      for (let group of groups) {
+        for (let member of group.members) {
+          const userProfile = await UserProfile.find({ user: member._id });
+          member.address = userProfile ? userProfile[0]?.address : null;
+        }
+      }
+
+      return res.status(200).json({ groups });
+    }
+  } catch (err) {
+    // const error = handleErrors(err);
+    console.log(err);
+    return res.status(500).json({ message: err });
+  }
+};
 const getMemberGroups = async (req, res) => {
   try {
     const groups = await groupmodel.findOne({ members: req.user.id });
@@ -406,6 +428,7 @@ const joinGroup = async (req, res) => {
   const groupId = req.params.groupId;
   const group = await Group.findById(groupId);
   const userId = req.user.id;
+  const userCountry = req.user.country; // Get user's country
 
   if (!group) {
     throw new BadRequestError("Group not found");
@@ -416,11 +439,18 @@ const joinGroup = async (req, res) => {
     throw new BadRequestError("You are already a member of this group");
   }
 
-  // Check if the user is already a member of any group
-  const existingGroup = await Group.find({ members: userId });
+  if (group.country !== userCountry) {
+    throw new BadRequestError("You can only join groups from your country");
+  }
+
+  // Check if the user is already a member of any group (assuming same country restriction)
+  const existingGroup = await Group.find({
+    members: userId,
+    country: userCountry,
+  });
 
   if (existingGroup.length > 0) {
-    throw new BadRequestError("You are already a member of another group");
+    throw new BadRequestError("You are already a member of another group!");
   }
 
   group.members.push(userId);
@@ -446,6 +476,7 @@ const deleteGroup = async (req, res) => {
 module.exports = {
   createGroup,
   getAllGroups,
+  getAllGroupMembers,
   joinGroup,
   deleteGroup,
   getGroupCart,

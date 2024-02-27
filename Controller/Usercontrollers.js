@@ -14,7 +14,6 @@ const { BadRequestError } = require("../errors");
 
 const register = async (req, res) => {
   const { name, email, password, country } = req.body;
-
   if (!email || !password || !name || !country) {
     throw new BadRequestError(
       "Please provide email, name, password, and country"
@@ -30,6 +29,7 @@ const register = async (req, res) => {
     fullName: name,
     email: email,
     password: password,
+    country: country,
   });
 
   savedUser = await newUser.save();

@@ -5,6 +5,7 @@ const { verifyToken, verifyTokenAndAdmin } = require("../Middleware/auth");
 const {
   createGroup,
   getAllGroups,
+  getAllGroupMembers,
   joinGroup,
   getGroupCart,
   AddGroupCart,
@@ -16,7 +17,7 @@ const {
 } = require("../Controller/Group");
 
 router.route("/").post(verifyToken, createGroup).get(verifyToken, getAllGroups);
-
+router.route("/all").get(verifyTokenAndAdmin, getAllGroupMembers);
 router.route("/member").get(verifyToken, getMemberGroups);
 router.route("/checkout").post(verifyToken, CheckoutGroupCart);
 
