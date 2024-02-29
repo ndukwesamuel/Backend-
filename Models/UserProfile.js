@@ -12,6 +12,7 @@ const userProfileSchema = new Schema(
     },
     profileImage: {
       type: String, // You can store the image URL or file path here
+      default: "https://iau.edu.lc/wp-content/uploads/2016/09/dummy-image.jpg",
     },
     address: {
       type: String,
@@ -21,7 +22,6 @@ const userProfileSchema = new Schema(
     },
     phone: {
       type: String,
-      default: "https://iau.edu.lc/wp-content/uploads/2016/09/dummy-image.jpg",
     },
     email: {
       type: String,
