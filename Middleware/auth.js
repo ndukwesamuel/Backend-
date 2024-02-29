@@ -45,8 +45,13 @@ const verifyTokenAndAdmin = (req, res, next) => {
   verifyToken(req, res, () => {
     User.findOne({ _id: req.user.id })
       .then((data) => {
-        data.isAdmin;
-        next();
+        if (data.isAdmin) {
+          next();
+        } else {
+          res
+            .status(403)
+            .json({ error: true, message: "You are not authorized!" });
+        }
       })
       .catch((error) => {
         res

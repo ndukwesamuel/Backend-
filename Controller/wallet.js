@@ -1,7 +1,59 @@
 const User = require("../Models/Users");
 const Group = require("../Models/Group");
-
+const cloudinary = require("../utils/Cloudinary");
+const { getImageId } = require("../Middleware/errorHandler/function");
 const { CreditUser, GroupTransfer } = require("../Models/Transaction");
+const Receipt = require("../Models/receipt");
+
+const receiptUploader = async (req, res) => {
+  try {
+    const upload = await cloudinary.uploader.upload(req.file.path, {
+      folder: "webuyam/receipts",
+    });
+
+    const newReceipt = new Receipt({
+      user: req.user.id,
+      receipt: upload.secure_url,
+      amount: req.body.amount,
+    });
+
+    newReceipt.save();
+    res.status(200).json({ message: "Receipt uploaded" });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Internal Server Error" });
+  }
+};
+const getReceiptById = async (req, res) => {
+  const receipts = await Receipt.findById(req.params.id).populate(
+    "user",
+    "fullName"
+  );
+  try {
+    res.status(200).json({ message: receipts });
+  } catch (error) {
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Internal Server Error" });
+  }
+};
+const getAllReceipt = async (req, res) => {
+  const receipts = await Receipt.find().populate("user", "fullName");
+  try {
+    if (receipts.length === 0) {
+      return res
+        .status(200)
+        .json({ message: "No receipt has been uploaded yet!" });
+    }
+    res.status(200).json({ message: receipts });
+  } catch (error) {
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Internal Server Error" });
+  }
+};
 
 const AddMoneyTo = async (req, res) => {
   const { userId, amount, description } = req.body;
@@ -225,6 +277,9 @@ const GroupPaysForAProduct = async (req, res) => {
 };
 
 module.exports = {
+  receiptUploader,
+  getAllReceipt,
+  getReceiptById,
   AddMoneyTo,
   TransferMoneyToGroup,
   Get__user__Transaction__History,

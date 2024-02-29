@@ -25,6 +25,10 @@ const getCart = async (req, res) => {
 // ADD item to cart
 const addToCart = async (req, res) => {
   const { productId, quantity, price, name } = req.body;
+
+  if (!req.user.id) {
+    throw new BadRequestError("You are not logged in!");
+  }
   const cart = await Cart.findOne({ userId: req.user.id });
   if (!cart) {
     // create a new cart if one doesn't exist for the user
