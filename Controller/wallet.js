@@ -7,6 +7,11 @@ const Receipt = require("../Models/receipt");
 const { StatusCodes } = require("http-status-codes");
 
 const receiptUploader = async (req, res) => {
+  const { amount } = req.body;
+  if (!amount || !req.file) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
   try {
     const upload = await cloudinary.uploader.upload(req.file.path, {
       folder: "webuyam/receipts",
@@ -15,13 +20,12 @@ const receiptUploader = async (req, res) => {
     const newReceipt = new Receipt({
       user: req.user.id,
       receipt: upload.secure_url,
-      amount: req.body.amount,
+      amount: amount,
     });
 
     newReceipt.save();
     res.status(200).json({ message: "Receipt uploaded" });
   } catch (error) {
-    console.log(error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Internal Server Error" });
