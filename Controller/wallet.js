@@ -4,6 +4,7 @@ const cloudinary = require("../utils/Cloudinary");
 const { getImageId } = require("../Middleware/errorHandler/function");
 const { CreditUser, GroupTransfer } = require("../Models/Transaction");
 const Receipt = require("../Models/receipt");
+const { StatusCodes } = require("http-status-codes");
 
 const receiptUploader = async (req, res) => {
   try {
