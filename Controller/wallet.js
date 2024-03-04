@@ -40,6 +40,52 @@ const getReceiptById = async (req, res) => {
       .json({ message: "Internal Server Error" });
   }
 };
+
+const UpdateUserWalletwithReceipt = async (req, res) => {
+  const { status, receiptId } = req.body;
+
+  // Check if the status is valid
+  if (status !== "approved" && status !== "declined") {
+    return res
+      .status(400)
+      .json({ message: "Invalid status. Use 'approved' or 'declined'" });
+  }
+
+  try {
+    // Find the receipt by ID
+    const receipt = await Receipt.findById(receiptId).populate("user");
+
+    // Check if the receipt exists
+    if (!receipt) {
+      return res.status(404).json({ message: "Receipt not found" });
+    }
+
+    // Check if the receipt is pending
+    if (receipt.status !== "pending") {
+      return res
+        .status(400)
+        .json({ message: `Receipt is not pending and cannot be modified` });
+    }
+    // Update the receipt status
+    receipt.status = status;
+    await receipt.save();
+
+    // Update user's wallet if approved
+    if (status === "approved") {
+      // Assuming the receipt amount should be added to the existing wallet balance
+      receipt.user.wallet += receipt.amount;
+      await receipt.user.save();
+    }
+    res
+      .status(200)
+      .json({ data: receipt, message: "Receipt updated successfully" });
+  } catch (error) {
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Internal Server Error" });
+  }
+};
+
 const getAllReceipt = async (req, res) => {
   const receipts = await Receipt.find().populate("user", "fullName");
   try {
@@ -287,4 +333,5 @@ module.exports = {
   Get__group__Transaction__History,
   GroupPaysForAProduct,
   GetUserMoney,
+  UpdateUserWalletwithReceipt,
 };

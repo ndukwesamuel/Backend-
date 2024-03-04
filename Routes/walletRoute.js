@@ -10,13 +10,18 @@ const {
   Get__group__Transaction__History,
   GroupPaysForAProduct,
   GetUserMoney,
+  UpdateUserWalletwithReceipt,
 } = require("../Controller/wallet");
 const upload = require("../Middleware/multer");
 const router = Router();
 
 router.route("/").post(verifyToken, AddMoneyTo).get(verifyToken, GetUserMoney);
 
-router.route("/receipt").get(verifyTokenAndAdmin, getAllReceipt);
+router
+  .route("/receipt")
+  .get(verifyTokenAndAdmin, getAllReceipt)
+  .post(verifyTokenAndAdmin, UpdateUserWalletwithReceipt);
+
 router.route("/receipt/:id").get(verifyTokenAndAdmin, getReceiptById);
 
 router
