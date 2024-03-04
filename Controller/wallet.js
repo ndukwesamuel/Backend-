@@ -60,6 +60,33 @@ const getAllReceipt = async (req, res) => {
   }
 };
 
+const updateUserWallet = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { amount } = req.body;
+
+    if (!amount) {
+      return res.status(400).json({ message: "Amount is required" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      { $inc: { wallet: parseFloat(amount) } },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json({ message: "User wallet updated successfully", user });
+  } catch (error) {
+    console.error("Error updating user wallet:", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Internal Server Error" });
+  }
+};
+
 const AddMoneyTo = async (req, res) => {
   const { userId, amount, description } = req.body;
   const user = await User.findById(userId);
@@ -285,6 +312,7 @@ module.exports = {
   receiptUploader,
   getAllReceipt,
   getReceiptById,
+  updateUserWallet,
   AddMoneyTo,
   TransferMoneyToGroup,
   Get__user__Transaction__History,

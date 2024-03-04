@@ -9,6 +9,7 @@ const {
 const {
   getUserProfile,
   updateUserProfile,
+  getAllUser,
   uploadProfileImage,
   register,
   login,
@@ -22,6 +23,8 @@ router
   .route("/profile")
   .patch(verifyToken, updateUserProfile)
   .get(verifyToken, getUserProfile);
+
+router.route("/").get(verifyTokenAndAdmin, getAllUser);
 router
   .route("/upload-image")
   .put(verifyToken, upload.single("image"), uploadProfileImage);

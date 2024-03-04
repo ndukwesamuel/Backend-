@@ -4,6 +4,7 @@ const {
   receiptUploader,
   getAllReceipt,
   getReceiptById,
+  updateUserWallet,
   AddMoneyTo,
   Get__user__Transaction__History,
   TransferMoneyToGroup,
@@ -15,7 +16,7 @@ const upload = require("../Middleware/multer");
 const router = Router();
 
 router.route("/").post(verifyToken, AddMoneyTo).get(verifyToken, GetUserMoney);
-
+router.route("/update/:id").patch(verifyTokenAndAdmin, updateUserWallet);
 router.route("/receipt").get(verifyTokenAndAdmin, getAllReceipt);
 router.route("/receipt/:id").get(verifyTokenAndAdmin, getReceiptById);
 

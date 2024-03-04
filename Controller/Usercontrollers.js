@@ -91,6 +91,17 @@ const updateUserProfile = async (req, res) => {
     res.status(500).json({ error: err, message: "Profile update failed" });
   }
 };
+const getAllUser = async (req, res) => {
+  const users = await User.find();
+  if (!users) {
+    return res.status(404).json({ message: "No user has registered!" });
+  }
+  try {
+    res.status(200).json({ message: users });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 const getUserProfile = async (req, res) => {
   try {
@@ -156,6 +167,7 @@ const logout = async (req, res) => {
 module.exports = {
   updateUserProfile,
   getUserProfile,
+  getAllUser,
   uploadProfileImage,
   register,
   login,

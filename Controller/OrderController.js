@@ -163,7 +163,7 @@ const userOrder = async (req, res) => {
     if (!userOrderList || userOrderList.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No orders found for this user. Place an order now!",
+        message: "No orders yet: Place an order now!",
       });
     }
 
