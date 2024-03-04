@@ -15,6 +15,11 @@ const receiptSchema = new Schema(
     amount: {
       type: Number,
     },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "declined"],
+      default: "pending",
+    },
   },
   { timestamps: true }
 );
