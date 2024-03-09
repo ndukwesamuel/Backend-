@@ -22,6 +22,9 @@ const createProduct = async (req, res) => {
       image: upload.secure_url,
       description: req.body.description,
       category: req.body.category,
+      frenchName: req.body.frenchName,
+      Frenchdescription: req.body.Frenchdescription,
+      otherprice: req.body.otherprice,
     });
     savedProduct = await newProduct.save();
     res.status(200).json({
@@ -52,7 +55,7 @@ const getAllProducts = async (req, res) => {
     const products = await Product.find().sort({ createdAt: -1 });
 
     if (products.length < 1) {
-      return res.status(200).json({ message: "No product created yet" });
+      return res.status(200).json({ products: [] });
     }
 
     res.status(200).json(products);

@@ -7,12 +7,23 @@ const productSchema = new Schema({
     type: String,
     required: [true, "Please enter product name"],
   },
+  frenchName: {
+    type: String,
+  },
   image: {
     type: String,
   },
   price: {
     type: Number,
     default: 0,
+  },
+
+  otherprice: {
+    type: Number,
+    default: 0,
+  },
+  Frenchdescription: {
+    type: String,
   },
   description: {
     type: String,
