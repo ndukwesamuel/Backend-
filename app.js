@@ -31,7 +31,7 @@ mongoose
 const app = express();
 job.start();
 app.use(cors());
-app.use(helmet());
+// app.use(helmet());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 

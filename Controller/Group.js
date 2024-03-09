@@ -27,6 +27,7 @@ const createGroup = async (req, res) => {
     throw new BadRequestError("You need to login");
   }
   const creatorCountry = creator.country;
+  console.log(creatorCountry);
 
   const isAdminOfAnyGroup = await groupmodel.exists({
     $or: [
@@ -61,6 +62,7 @@ const joinGroup = async (req, res) => {
     throw new BadRequestError("You need to login");
   }
   const userCountry = user.country;
+  console.log(userCountry);
 
   if (!group) {
     throw new BadRequestError("Group not found");
