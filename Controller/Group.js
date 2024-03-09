@@ -43,9 +43,46 @@ const createGroup = async (req, res) => {
     admins: [creator],
     country: creatorCountry,
   };
-
   const group = await groupmodel.create(newdata);
+  res.status(StatusCodes.OK).json(group);
+};
 
+const joinGroup = async (req, res) => {
+  const groupId = req.params.groupId;
+  const group = await Group.findById(groupId);
+  const userId = req.user.id;
+
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new BadRequestError("You need to login");
+  }
+  const userCountry = user.country;
+
+  if (!group) {
+    throw new BadRequestError("Group not found");
+  }
+
+  // Check if the user is already a member of the group
+  if (group.members.includes(userId)) {
+    throw new BadRequestError("You are already a member of this group");
+  }
+
+  if (group.country !== userCountry) {
+    throw new BadRequestError("You can only join groups from your country");
+  }
+
+  // Check if the user is already a member of any group (assuming same country restriction)
+  const existingGroup = await Group.find({
+    members: userId,
+    country: userCountry,
+  });
+
+  if (existingGroup.length > 0) {
+    throw new BadRequestError("You are already a member of another group!");
+  }
+
+  group.members.push(userId);
+  await group.save();
   res.status(StatusCodes.OK).json(group);
 };
 
@@ -422,40 +459,6 @@ const DeleteSingleGroupCart = async (req, res) => {
     message: "Product removed from the cart successfully",
     data: group.cart,
   });
-};
-
-const joinGroup = async (req, res) => {
-  const groupId = req.params.groupId;
-  const group = await Group.findById(groupId);
-  const userId = req.user.id;
-  const userCountry = req.user.country; // Get user's country
-
-  if (!group) {
-    throw new BadRequestError("Group not found");
-  }
-
-  // Check if the user is already a member of the group
-  if (group.members.includes(userId)) {
-    throw new BadRequestError("You are already a member of this group");
-  }
-
-  if (group.country !== userCountry) {
-    throw new BadRequestError("You can only join groups from your country");
-  }
-
-  // Check if the user is already a member of any group (assuming same country restriction)
-  const existingGroup = await Group.find({
-    members: userId,
-    country: userCountry,
-  });
-
-  if (existingGroup.length > 0) {
-    throw new BadRequestError("You are already a member of another group!");
-  }
-
-  group.members.push(userId);
-  await group.save();
-  res.status(StatusCodes.OK).json(group);
 };
 
 const deleteGroup = async (req, res) => {

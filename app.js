@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const cors = require("cors");
 const multer = require("multer");
+const helmet = require("helmet");
 const { job } = require("./helper");
 // my route start here
 const user = require("./Routes/userRoute");
@@ -30,6 +31,7 @@ mongoose
 const app = express();
 job.start();
 app.use(cors());
+// app.use(helmet());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 

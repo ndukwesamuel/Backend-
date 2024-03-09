@@ -17,17 +17,14 @@ const upload = require("../Middleware/multer");
 const router = Router();
 
 router.route("/").post(verifyToken, AddMoneyTo).get(verifyToken, GetUserMoney);
-<<<<<<< HEAD
 router.route("/update/:id").patch(verifyTokenAndAdmin, updateUserWallet);
 router.route("/receipt").get(verifyTokenAndAdmin, getAllReceipt);
-=======
 
 router
   .route("/receipt")
   .get(verifyTokenAndAdmin, getAllReceipt)
   .post(verifyTokenAndAdmin, UpdateUserWalletwithReceipt);
 
->>>>>>> 4e1981b5ded852a360d6b78367ba846d620878b6
 router.route("/receipt/:id").get(verifyTokenAndAdmin, getReceiptById);
 
 router
