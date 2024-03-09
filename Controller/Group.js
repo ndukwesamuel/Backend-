@@ -17,12 +17,16 @@ const { get } = require("http");
 
 const createGroup = async (req, res) => {
   const { name, description } = req.body;
-  const creator = req.user.id;
-  const creatorCountry = req.user.country;
+  const userId = req.user.id;
 
   if (!name || !description) {
     throw new BadRequestError("Please provide name and description");
   }
+  const creator = await User.findById(userId);
+  if (!creator) {
+    throw new BadRequestError("You need to login");
+  }
+  const creatorCountry = creator.country;
 
   const isAdminOfAnyGroup = await groupmodel.exists({
     $or: [
