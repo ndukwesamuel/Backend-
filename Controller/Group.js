@@ -111,7 +111,7 @@ const getAllGroupMembers = async (req, res) => {
     const groups = await Group.find()
       .populate({
         path: "members",
-        select: "fullName wallet",
+        select: "fullName wallet country",
       })
       .lean();
     if (groups.length === 0) {
