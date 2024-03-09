@@ -117,9 +117,16 @@ const decreaseCartItems = async (req, res) => {
     // Save the updated cart
     await userCart.save();
 
+    // res.status(200).json({
+    //   message: "Item quantity decreased successfully",
+    //   productId,
+    //   productDetails,
+    //   quantityToRemove
+    // });
+
     res.json({
       message: "Quantity removed successfully",
-      item: userCart.items[cartItemIndex],
+      item: userCart,
     });
   } catch (error) {
     console.error(error);
