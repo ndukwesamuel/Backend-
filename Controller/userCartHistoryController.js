@@ -59,9 +59,12 @@ const getCartHistoryByGroupId = async (req, res) => {
       groupId: id,
     }).populate("groupId", "name");
     if (groupCartHistory.length === 0) {
-      return res.status(404).json({ message: "No cart history yet!" });
+      return res
+        .status(200)
+        .json({ message: "No cart history yet!", data: groupCartHistory });
+    } else {
+      res.status(200).json({ data: groupCartHistory });
     }
-    res.status(200).json({ message: groupCartHistory });
   } catch (error) {
     res
       .status(500)
