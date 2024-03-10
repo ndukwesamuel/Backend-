@@ -16,6 +16,7 @@ const paymentRoute = require("./Routes/paymentRoute");
 const Route = require("./Routes/Route");
 const orderRoute = require("./Routes/OrderRoute");
 const BankRoute = require("./Routes//BankRoute");
+const cartHistoryRoute = require("./Routes/cartHistoryRoute");
 
 // my route ends here
 const notFoundMiddleware = require("./Middleware/not-found");
@@ -45,6 +46,7 @@ app.use("/api/wallet", walletRoute);
 app.use("/api/checkout", paymentRoute);
 app.use("/api/orders", orderRoute);
 app.use("/api/bank", BankRoute);
+app.use("/api/history", cartHistoryRoute);
 
 app.post("/", (req, res) => {
   const { name, email, password } = req.body;

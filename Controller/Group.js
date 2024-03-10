@@ -11,9 +11,8 @@ const User = require("../Models/Users");
 const { GroupTransfer } = require("../Models/Transaction");
 const { BadRequestError } = require("../errors");
 const UserProfile = require("../Models/UserProfile");
-const { log } = require("console");
-const { isValidObjectId } = require("mongoose");
-const { get } = require("http");
+const UserCartHistory = require("../Models/userCartHistory");
+const GroupCartHistory = require("../Models/groupCartHistory");
 
 const createGroup = async (req, res) => {
   const { name, description } = req.body;
@@ -217,7 +216,6 @@ const AddGroupCart = async (req, res) => {
       .status(404)
       .json({ error: "Product not found in the user's cart" });
   }
-
   const totalPrice = itemToTransfer.price * itemToTransfer.quantity;
 
   if (user.wallet < totalPrice) {
@@ -285,9 +283,16 @@ const AddGroupCart = async (req, res) => {
     amount: totalPrice,
   });
   await newTransaction.save();
-
+  // create cart history before deleting
+  const cartHistory = new UserCartHistory({
+    userId: userId,
+    productId: itemToTransfer.productId,
+    quantity: itemToTransfer.quantity,
+    price: itemToTransfer.price,
+    name: itemToTransfer.name,
+  });
+  await cartHistory.save();
   // Update user's cart and remove transferred item
-
   userCart.items = userCart.items.filter(
     (item) => item.productId.toString() !== productId
   );
@@ -320,8 +325,6 @@ const CheckoutGroupCart = async (req, res) => {
       return res.status(404).json({ message: "Group not found" });
     }
 
-    // Check if the user is the group admin
-
     // Check if the user is a member of the group
     if (!group.members.includes(userId)) {
       return res
@@ -349,6 +352,7 @@ const CheckoutGroupCart = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+    console.log(cartItem);
     const amount = cartItem.totalAmount;
     if (group.wallet < amount) {
       return res
@@ -360,6 +364,13 @@ const CheckoutGroupCart = async (req, res) => {
     group.wallet -= amount;
     group.bill = amount;
 
+    const groupHistory = new GroupCartHistory({
+      groupId: groupId,
+      productId: cartItem.productId,
+      totalQuantity: cartItem.totalQuantity,
+      totalAmount: cartItem.totalAmount,
+    });
+    await groupHistory.save();
     // Remove the checked out product from the cart
     group.cart = group.cart.filter(
       (item) => item.productId.toString() !== productId
@@ -369,7 +380,9 @@ const CheckoutGroupCart = async (req, res) => {
 
     res.status(200).json({ message: "Product checked out successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
+    res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
   }
 };
 

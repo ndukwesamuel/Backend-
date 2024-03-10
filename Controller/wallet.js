@@ -33,6 +33,9 @@ const getReceiptById = async (req, res) => {
     "fullName"
   );
   try {
+    if (receipts.length === 0 || receipts.length < 1) {
+      return res.status(404).json({ message: "No receipt found!" });
+    }
     res.status(200).json({ message: receipts });
   } catch (error) {
     res
@@ -89,9 +92,9 @@ const UpdateUserWalletwithReceipt = async (req, res) => {
 const getAllReceipt = async (req, res) => {
   const receipts = await Receipt.find().populate("user", "fullName");
   try {
-    if (receipts.length === 0) {
+    if (receipts.length === 0 || receipts.length < 1) {
       return res
-        .status(200)
+        .status(404)
         .json({ message: "No receipt has been uploaded yet!" });
     }
     res.status(200).json({ message: receipts });
