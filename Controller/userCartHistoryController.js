@@ -7,7 +7,7 @@ const getAllUserCartHistory = async (req, res) => {
       "fullName"
     );
     if (cartHistory.length === 0) {
-      return res.status(404).json({ message: "No cart history yet!" });
+      return res.status(200).json({ message: "No cart history yet!" });
     }
     res.status(200).json({ message: cartHistory });
   } catch (error) {
@@ -25,7 +25,7 @@ const getCartHistoryByUserId = async (req, res) => {
       userId: userId,
     }).populate("userId", "fullName");
     if (userCartHistory.length === 0) {
-      return res.status(404).json({ message: "Cart history is empty" });
+      return res.status(200).json({ message: "Cart history is empty" });
     }
     res.status(200).json({ message: userCartHistory });
   } catch (error) {
@@ -42,7 +42,7 @@ const getAllGroupCartHistory = async (req, res) => {
       "name"
     );
     if (groupCartHistory.length === 0) {
-      return res.status(404).json({ message: "No cart history yet!" });
+      return res.status(200).json({ message: "No cart history yet!" });
     }
     res.status(200).json({ message: groupCartHistory });
   } catch (error) {
