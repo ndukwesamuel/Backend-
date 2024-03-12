@@ -44,7 +44,7 @@ const register = async (req, res) => {
     password: password,
     country: country,
     referralCode: refCode,
-    referredBy: referrer._id,
+    referredBy: referrer ? referrer._id : null,
   });
   savedUser = await newUser.save();
 
