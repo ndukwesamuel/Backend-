@@ -4,6 +4,7 @@ const { log } = require("console");
 const {
   handleErrors,
   getImageId,
+  generateReferralCode,
 } = require("../Middleware/errorHandler/function");
 const { createToken } = require("../Middleware/auth");
 const { sendVerificationEmail } = require("../Middleware/Verification");
@@ -13,7 +14,9 @@ const UserProfile = require("../Models/UserProfile");
 const { BadRequestError } = require("../errors");
 
 const register = async (req, res) => {
-  const { name, email, password, country } = req.body;
+  const { name, email, password, country, referralCode } = req.body;
+  let referrer;
+
   if (!email || !password || !name || !country) {
     throw new BadRequestError(
       "Please provide email, name, password, and country"
@@ -22,41 +25,58 @@ const register = async (req, res) => {
 
   const emailAlreadyExists = await User.findOne({ email });
   if (emailAlreadyExists) {
-    throw new BadRequestError("Email already exist");
+    throw new BadRequestError("Email already exists");
   }
 
+  if (referralCode) {
+    referrer = await User.findOne({ referralCode });
+    if (referrer) {
+      // Add 1000 to the referrer's wallet balance
+      referrer.wallet += 1000;
+    } else {
+      return res.status(200).json({ message: "Invalid referral code" });
+    }
+  }
+  const refCode = await generateReferralCode();
   const newUser = new User({
     fullName: name,
     email: email,
     password: password,
     country: country,
+    referralCode: refCode,
+    referredBy: referrer._id,
   });
-
   savedUser = await newUser.save();
 
+  // Update referrer's referredUsers array after savedUser has been saved
+  if (referralCode && referrer) {
+    referrer.referredUsers.push(savedUser._id);
+    await referrer.save();
+  }
+
   const newProfile = new UserProfile({
-    user: savedUser._id, // Reference to the user document
+    user: savedUser._id,
     name: req.body.name,
     email: req.body.email,
     country: req.body.country,
   });
 
-  savedUserprofile = await newProfile.save();
+  savedUserProfile = await newProfile.save();
 
   sendVerificationEmail(savedUser, res);
 };
 
 const login = async (req, res) => {
   const { password, email } = req.body;
+
   if (!email || !password) {
     throw new BadRequestError("Please provide email and password");
   }
+
   try {
     const user = await User.login(email, password);
-
     if (user.verified) {
       const token = createToken(user._id);
-
       const { password, ...others } = user._doc;
       res.status(200).json({ ...others, token });
     } else {
