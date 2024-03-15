@@ -11,7 +11,7 @@ const groupCartHistorySchema = new Schema({
 
   productId: {
     type: String,
-    ref: "products",
+    ref: "product",
     required: true,
   },
   totalQuantity: {
@@ -33,8 +33,8 @@ const groupCartHistorySchema = new Schema({
   },
 });
 
-const userCartHistory = mongoose.model(
+const groupCartHistory = mongoose.model(
   "groupCartHistory",
   groupCartHistorySchema
 );
-module.exports = userCartHistory;
+module.exports = groupCartHistory;

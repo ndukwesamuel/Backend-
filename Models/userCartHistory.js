@@ -11,7 +11,7 @@ const userCartHistorySchema = new Schema({
 
   productId: {
     type: String,
-    ref: "products",
+    ref: "product",
     required: true,
   },
   quantity: {

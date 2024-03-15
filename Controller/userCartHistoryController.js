@@ -2,10 +2,9 @@ const UserCartHistory = require("../Models/userCartHistory");
 const GroupCartHistory = require("../Models/groupCartHistory");
 const getAllUserCartHistory = async (req, res) => {
   try {
-    const cartHistory = await UserCartHistory.find().populate(
-      "userId",
-      "fullName"
-    );
+    const cartHistory = await UserCartHistory.find()
+      .populate("userId", "fullName")
+      .populate("productId");
     if (cartHistory.length === 0) {
       return res.status(200).json({ message: "No cart history yet!" });
     }
@@ -23,7 +22,9 @@ const getCartHistoryByUserId = async (req, res) => {
   try {
     const userCartHistory = await UserCartHistory.find({
       userId: userId,
-    }).populate("userId", "fullName");
+    })
+      .populate("userId", "fullName")
+      .populate("productId");
     if (userCartHistory.length === 0) {
       return res.status(200).json({ message: "Cart history is empty" });
     }
@@ -37,10 +38,17 @@ const getCartHistoryByUserId = async (req, res) => {
 
 const getAllGroupCartHistory = async (req, res) => {
   try {
-    const groupCartHistory = await GroupCartHistory.find().populate(
-      "groupId",
-      "name"
-    );
+    const groupCartHistory = await GroupCartHistory.find()
+      .populate("groupId")
+      .populate({
+        path: "groupId",
+        populate: { path: "members", select: "fullName" },
+      })
+      .populate({
+        path: "groupId",
+        populate: { path: "admins", select: "fullName" },
+      })
+      .populate("productId");
     if (groupCartHistory.length === 0) {
       return res.status(200).json({ message: "No cart history yet!" });
     }
@@ -57,7 +65,17 @@ const getCartHistoryByGroupId = async (req, res) => {
   try {
     const groupCartHistory = await GroupCartHistory.find({
       groupId: id,
-    }).populate("groupId", "name");
+    })
+      .populate("groupId")
+      .populate({
+        path: "groupId",
+        populate: { path: "members", select: "fullName" },
+      })
+      .populate({
+        path: "groupId",
+        populate: { path: "admins", select: "fullName" },
+      })
+      .populate("productId");
     if (groupCartHistory.length === 0) {
       return res
         .status(200)
