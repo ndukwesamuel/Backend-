@@ -22,7 +22,11 @@ const groupCartHistorySchema = new Schema({
     type: Number,
     default: 0,
   },
-
+  status: {
+    type: String,
+    enum: ["pending", "processing", "completed"],
+    default: "pending",
+  },
   createdAt: {
     type: Date,
     default: Date.now,

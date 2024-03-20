@@ -52,6 +52,7 @@ const groupSchema = new Schema(
       type: Number,
       default: 0,
     },
+
     country: {
       type: String,
       required: [true, "Country cannot be empty"],

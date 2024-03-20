@@ -120,7 +120,7 @@ const updateUserWallet = async (req, res) => {
       { new: true }
     );
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found", data: user });
     }
 
     return res.json({ message: "User wallet updated successfully", user });
@@ -136,7 +136,7 @@ const AddMoneyTo = async (req, res) => {
   const { userId, amount, description } = req.body;
   const user = await User.findById(userId);
   if (!user) {
-    return res.status(404).json({ message: "User not found" });
+    return res.status(404).json({ message: "User not found", data: user });
   }
   const newamount = parseFloat(amount);
   user.wallet += newamount;
@@ -161,7 +161,7 @@ const GetUserMoney = async (req, res) => {
   let userwalet = await User.findById(user);
 
   if (!user) {
-    return res.status(404).json({ message: "User not found" });
+    return res.status(404).json({ message: "User not found", data: user });
   }
 
   res.status(200).json({
