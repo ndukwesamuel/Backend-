@@ -112,12 +112,14 @@ const updateUserProfile = async (req, res) => {
   }
 };
 const getAllUser = async (req, res) => {
-  const users = await User.find();
-  if (!users) {
-    return res.status(404).json({ message: "No user has registered!" });
-  }
+  const users = await User.find().populate("referredUsers", "fullName");
   try {
-    res.status(200).json({ message: users });
+    if (!users) {
+      return res
+        .status(404)
+        .json({ message: "No user has registered!", data: users });
+    }
+    res.status(200).json({ data: users });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

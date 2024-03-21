@@ -106,7 +106,6 @@ const getCartHistoryByGroupId = async (req, res) => {
 
 const UpdateGroupOrderStatus = async (req, res) => {
   const { status, orderId } = req.body;
-
   if (status !== "processing" && status !== "completed") {
     return res
       .status(400)
