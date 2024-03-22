@@ -8,7 +8,7 @@ const groupCartHistorySchema = new Schema({
   },
   productId: {
     type: Schema.Types.ObjectId,
-    ref: "Product",
+    ref: "product",
     required: true,
   },
   totalQuantity: {
