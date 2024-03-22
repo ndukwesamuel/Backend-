@@ -58,21 +58,19 @@ const getAllGroupCartHistory = async (req, res) => {
         .status(200)
         .json({ message: "No cart history yet!", data: groupCartHistory });
     }
-    let overAllTotal = 0;
-    groupCartHistory.forEach((data) => {
-      overAllTotal += data.totalAmount;
-    });
-    console.log(overAllTotal);
-    res
-      .status(200)
-      .json({ message: groupCartHistory, totalRevenue: overAllTotal });
+
+    res.status(200).json({ message: groupCartHistory });
   } catch (error) {
     res
       .status(500)
       .json({ error: error.message, message: "Internal server error" });
   }
 };
-
+//  let overAllTotal = 0;
+// groupCartHistory.forEach((data) => {
+//   overAllTotal += data.totalAmount;
+// });
+// console.log(overAllTotal);
 const getCartHistoryByGroupId = async (req, res) => {
   const { id } = req.params;
   try {
@@ -136,10 +134,56 @@ const UpdateGroupOrderStatus = async (req, res) => {
       .json({ message: "Internal Server Error" });
   }
 };
+
+const getRevenues = async (req, res) => {
+  try {
+    const groupCartHistory = await GroupCartHistory.find();
+
+    let totalRevenue = 0;
+    groupCartHistory.forEach((data) => {
+      totalRevenue += data.totalAmount;
+    });
+
+    // Calculate revenue per day and month
+    const revenuePerDay = {};
+    const revenuePerMonth = {};
+    groupCartHistory.forEach((data) => {
+      const date = new Date(data.createdAt);
+      const dayKey = `${date.getFullYear()}-${
+        date.getMonth() + 1
+      }-${date.getDate()}`;
+      const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+
+      // Revenue per day
+      if (!revenuePerDay[dayKey]) {
+        revenuePerDay[dayKey] = 0;
+      }
+      revenuePerDay[dayKey] += data.totalAmount;
+
+      // Revenue per month
+      if (!revenuePerMonth[monthKey]) {
+        revenuePerMonth[monthKey] = 0;
+      }
+      revenuePerMonth[monthKey] += data.totalAmount;
+    });
+    res.status(200).json({
+      message: "Revenue fetched successfully",
+      totalRevenue: totalRevenue,
+      revenuePerDay: revenuePerDay,
+      revenuePerMonth: revenuePerMonth,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: error.message, message: "Internal server error" });
+  }
+};
+
 module.exports = {
   getAllUserCartHistory,
   getCartHistoryByUserId,
   getAllGroupCartHistory,
   getCartHistoryByGroupId,
   UpdateGroupOrderStatus,
+  getRevenues,
 };

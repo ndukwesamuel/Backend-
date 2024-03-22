@@ -1,17 +1,14 @@
 const mongoose = require("mongoose");
-
 const Schema = mongoose.Schema;
-
 const groupCartHistorySchema = new Schema({
   groupId: {
-    type: String,
+    type: Schema.Types.ObjectId,
     ref: "Group",
     required: true,
   },
-
   productId: {
-    type: String,
-    ref: "product",
+    type: Schema.Types.ObjectId,
+    ref: "Product",
     required: true,
   },
   totalQuantity: {
