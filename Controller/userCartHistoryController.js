@@ -138,7 +138,7 @@ const UpdateGroupOrderStatus = async (req, res) => {
 const getRevenues = async (req, res) => {
   try {
     const groupCartHistory = await GroupCartHistory.find();
-
+    let totalOrders = groupCartHistory.length;
     let totalRevenue = 0;
     groupCartHistory.forEach((data) => {
       totalRevenue += data.totalAmount;
@@ -169,6 +169,7 @@ const getRevenues = async (req, res) => {
     res.status(200).json({
       message: "Revenue fetched successfully",
       totalRevenue: totalRevenue,
+      totalOrders: totalOrders,
       revenuePerDay: revenuePerDay,
       revenuePerMonth: revenuePerMonth,
     });
