@@ -4,7 +4,8 @@ const getAllUserCartHistory = async (req, res) => {
   try {
     const cartHistory = await UserCartHistory.find()
       .populate("userId", "fullName")
-      .populate("productId");
+      .populate("productId")
+      .sort({ createdAt: -1 });
     if (cartHistory.length === 0) {
       return res
         .status(200)
@@ -26,7 +27,8 @@ const getCartHistoryByUserId = async (req, res) => {
       userId: userId,
     })
       .populate("userId", "fullName")
-      .populate("productId");
+      .populate("productId")
+      .sort({ createdAt: -1 });
     if (userCartHistory.length === 0) {
       return res
         .status(200)
@@ -52,7 +54,8 @@ const getAllGroupCartHistory = async (req, res) => {
         path: "groupId",
         populate: { path: "admins", select: "fullName" },
       })
-      .populate("productId");
+      .populate("productId")
+      .sort({ createdAt: -1 });
     if (groupCartHistory.length === 0) {
       return res
         .status(200)
@@ -66,11 +69,7 @@ const getAllGroupCartHistory = async (req, res) => {
       .json({ error: error.message, message: "Internal server error" });
   }
 };
-//  let overAllTotal = 0;
-// groupCartHistory.forEach((data) => {
-//   overAllTotal += data.totalAmount;
-// });
-// console.log(overAllTotal);
+
 const getCartHistoryByGroupId = async (req, res) => {
   const { id } = req.params;
   try {
