@@ -14,8 +14,12 @@ const UserProfile = require("../Models/UserProfile");
 const { BadRequestError } = require("../errors");
 
 const register = async (req, res) => {
-  const { name, email, password, country, referralCode } = req.body;
+  let { name, email, password, country, referralCode } = req.body;
   let referrer;
+  console.log("first", email, password);
+
+  email = email.trim().toLowerCase();
+  password = password.trim();
 
   if (!email || !password || !name || !country) {
     throw new BadRequestError(
@@ -56,9 +60,9 @@ const register = async (req, res) => {
 
   const newProfile = new UserProfile({
     user: savedUser._id,
-    name: req.body.name,
-    email: req.body.email,
-    country: req.body.country,
+    name: name,
+    email: email,
+    country: country,
   });
 
   savedUserProfile = await newProfile.save();
@@ -67,8 +71,9 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const { password, email } = req.body;
-
+  let { password, email } = req.body;
+  email = email.trim().toLowerCase();
+  password = password.trim();
   if (!email || !password) {
     throw new BadRequestError("Please provide email and password");
   }
@@ -90,6 +95,7 @@ const login = async (req, res) => {
 
 const updateUserProfile = async (req, res) => {
   const { name, email, phone, address } = req.body;
+  email = email.trim().toLowerCase();
   const profile = await UserProfile.findOne({ user: req.user.id });
   if (!profile) {
     res.status(401).json({ message: "You need to login" });
