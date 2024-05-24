@@ -5,6 +5,8 @@ require("dotenv").config();
 const cors = require("cors");
 const multer = require("multer");
 const { job } = require("./helper");
+const connectDB = require("./db/connect");
+
 // my route start here
 const user = require("./Routes/userRoute");
 const grouproute = require("./Routes/groupRoute");
@@ -23,14 +25,16 @@ const notFoundMiddleware = require("./Middleware/not-found");
 const errorHandlerMiddleware = require("./Middleware/error-handler");
 
 mongoose.set("strictQuery", true);
-mongoose
-  .connect(process.env.MONGO_URS)
-  .then(() => console.log("connected to db"))
-  .catch((err) => console.log(err));
+// mongoose
+//   .connect(process.env.MONGO_URS)
+//   .then(() => console.log("connected to db"))
+//   .catch((err) => console.log(err));
 
 const app = express();
 job.start();
 app.use(cors());
+const httpServer = require("http").Server(app);
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
@@ -66,6 +70,21 @@ app.use(function (err, req, res, next) {
   next();
 });
 
-app.listen(process.env.PORT, () => {
-  console.log(`Backend server is running on port ${process.env.PORT}`);
-});
+const start = async () => {
+  try {
+    await connectDB(process.env.MONGO_URS);
+    console.log(`DB Connected!`);
+    httpServer.listen(
+      process.env.PORT,
+      console.log(`Server is listening at PORT:${process.env.PORT}`)
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+start();
+
+// app.listen(process.env.PORT, () => {
+//   console.log(`Backend server is running on port ${process.env.PORT}`);
+// });

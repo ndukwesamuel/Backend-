@@ -12,6 +12,7 @@ const User = require("../Models/Users");
 const cloudinary = require("../utils/Cloudinary");
 const UserProfile = require("../Models/UserProfile");
 const { BadRequestError } = require("../errors");
+const asyncWrapper = require("../Middleware/asyncWrapper");
 
 const register = async (req, res) => {
   const { name, email, password, country, referralCode } = req.body;
@@ -66,7 +67,7 @@ const register = async (req, res) => {
   sendVerificationEmail(savedUser, res);
 };
 
-const login = async (req, res) => {
+const login = asyncWrapper(async (req, res) => {
   const { password, email } = req.body;
 
   if (!email || !password) {
@@ -86,7 +87,7 @@ const login = async (req, res) => {
     const error = handleErrors(err);
     res.status(400).json({ error });
   }
-};
+});
 
 const updateUserProfile = async (req, res) => {
   const { name, email, phone, address } = req.body;
