@@ -15,8 +15,12 @@ const { BadRequestError } = require("../errors");
 const asyncWrapper = require("../Middleware/asyncWrapper");
 
 const register = async (req, res) => {
-  const { name, email, password, country, referralCode } = req.body;
+  let { name, email, password, country, referralCode } = req.body;
   let referrer;
+  console.log("first", email, password);
+
+  email = email.trim().toLowerCase();
+  password = password.trim();
 
   if (!email || !password || !name || !country) {
     throw new BadRequestError(
@@ -57,9 +61,9 @@ const register = async (req, res) => {
 
   const newProfile = new UserProfile({
     user: savedUser._id,
-    name: req.body.name,
-    email: req.body.email,
-    country: req.body.country,
+    name: name,
+    email: email,
+    country: country,
   });
 
   savedUserProfile = await newProfile.save();
@@ -67,9 +71,10 @@ const register = async (req, res) => {
   sendVerificationEmail(savedUser, res);
 };
 
-const login = asyncWrapper(async (req, res) => {
-  const { password, email } = req.body;
-
+const login = async (req, res) => {
+  let { password, email } = req.body;
+  email = email.trim().toLowerCase();
+  password = password.trim();
   if (!email || !password) {
     throw new BadRequestError("Please provide email and password");
   }
@@ -87,10 +92,11 @@ const login = asyncWrapper(async (req, res) => {
     const error = handleErrors(err);
     res.status(400).json({ error });
   }
-});
+};
 
 const updateUserProfile = async (req, res) => {
   const { name, email, phone, address } = req.body;
+  email = email.trim().toLowerCase();
   const profile = await UserProfile.findOne({ user: req.user.id });
   if (!profile) {
     res.status(401).json({ message: "You need to login" });
@@ -113,12 +119,14 @@ const updateUserProfile = async (req, res) => {
   }
 };
 const getAllUser = async (req, res) => {
-  const users = await User.find();
-  if (!users) {
-    return res.status(404).json({ message: "No user has registered!" });
-  }
+  const users = await User.find().populate("referredUsers", "fullName");
   try {
-    res.status(200).json({ message: users });
+    if (!users) {
+      return res
+        .status(404)
+        .json({ message: "No user has registered!", data: users });
+    }
+    res.status(200).json({ data: users });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

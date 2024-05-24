@@ -26,7 +26,6 @@ const createGroup = async (req, res) => {
     throw new BadRequestError("You need to login");
   }
   const creatorCountry = creator.country;
-  console.log(creatorCountry);
 
   const isAdminOfAnyGroup = await groupmodel.exists({
     $or: [
@@ -352,7 +351,6 @@ const CheckoutGroupCart = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
-    console.log(cartItem);
     const amount = cartItem.totalAmount;
     if (group.wallet < amount) {
       return res
@@ -363,7 +361,7 @@ const CheckoutGroupCart = async (req, res) => {
     // Deduct the amount from the group's wallet and update the group's bill
     group.wallet -= amount;
     group.bill = amount;
-
+    // Create group cart history for each product to be checked out
     const groupHistory = new GroupCartHistory({
       groupId: groupId,
       productId: cartItem.productId,
