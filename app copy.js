@@ -23,7 +23,7 @@ const cartHistoryRoute = require("./Routes/cartHistoryRoute");
 
 const notFoundMiddleware = require("./Middleware/not-found");
 const errorHandlerMiddleware = require("./Middleware/error-handler");
-const { sendVerificationEmail } = require("./utils/sendVerificationEmail");
+const { EmailFunction } = require("./utils/EmailFunction");
 const sendEmail = require("./utils/sendEmail");
 
 mongoose.set("strictQuery", true);

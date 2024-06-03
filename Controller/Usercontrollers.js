@@ -7,10 +7,7 @@ const {
   generateReferralCode,
 } = require("../Middleware/errorHandler/function");
 const { createToken } = require("../Middleware/auth");
-const {
-  sendVerificationEmail,
-  BrevosendVerificationEmail,
-} = require("../Middleware/Verification");
+const { BrevosendVerificationEmail } = require("../Middleware/Verification");
 const User = require("../Models/Users");
 const cloudinary = require("../utils/Cloudinary");
 const UserProfile = require("../Models/UserProfile");
