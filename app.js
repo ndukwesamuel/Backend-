@@ -25,6 +25,7 @@ const notFoundMiddleware = require("./Middleware/not-found");
 const errorHandlerMiddleware = require("./Middleware/error-handler");
 const { sendVerificationEmail } = require("./utils/sendVerificationEmail");
 const sendEmail = require("./utils/sendEmail");
+const port = process.env.PORT || 5000;
 
 mongoose.set("strictQuery", true);
 // mongoose
@@ -70,10 +71,7 @@ const start = async () => {
   try {
     await connectDB(process.env.MONGO_URS);
     console.log(`DB Connected!`);
-    httpServer.listen(
-      process.env.PORT,
-      console.log(`Server is listening at PORT:${process.env.PORT}`)
-    );
+    httpServer.listen(port, console.log(`Server is listening at PORT:${port}`));
   } catch (error) {
     console.log(error);
   }
