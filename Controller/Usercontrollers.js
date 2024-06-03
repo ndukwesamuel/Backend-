@@ -7,69 +7,82 @@ const {
   generateReferralCode,
 } = require("../Middleware/errorHandler/function");
 const { createToken } = require("../Middleware/auth");
-const { sendVerificationEmail } = require("../Middleware/Verification");
+const {
+  sendVerificationEmail,
+  BrevosendVerificationEmail,
+} = require("../Middleware/Verification");
 const User = require("../Models/Users");
 const cloudinary = require("../utils/Cloudinary");
 const UserProfile = require("../Models/UserProfile");
 const { BadRequestError } = require("../errors");
 const asyncWrapper = require("../Middleware/asyncWrapper");
 
-const register = async (req, res) => {
+const register = asyncWrapper(async (req, res) => {
   let { name, email, password, country, referralCode } = req.body;
   let referrer;
-  console.log("first", email, password);
 
   email = email.trim().toLowerCase();
   password = password.trim();
 
   if (!email || !password || !name || !country) {
-    throw new BadRequestError(
-      "Please provide email, name, password, and country"
-    );
+    return res
+      .status(400)
+      .json({ error: "Please provide email, name, password, and country" });
   }
 
-  const emailAlreadyExists = await User.findOne({ email });
-  if (emailAlreadyExists) {
-    throw new BadRequestError("Email already exists");
-  }
-
-  if (referralCode) {
-    referrer = await User.findOne({ referralCode });
-    if (referrer) {
-      // Add 1000 to the referrer's wallet balance
-      referrer.wallet += 1000;
-    } else {
-      return res.status(200).json({ message: "Invalid referral code" });
+  try {
+    const emailAlreadyExists = await User.findOne({ email });
+    if (emailAlreadyExists) {
+      return res.status(400).json({ error: "Email already exists" });
     }
+
+    if (referralCode) {
+      referrer = await User.findOne({ referralCode });
+      if (referrer) {
+        referrer.wallet += 1000;
+        await referrer.save(); // Save the updated referrer's wallet balance
+      } else {
+        return res.status(200).json({ message: "Invalid referral code" });
+      }
+    }
+
+    const refCode = await generateReferralCode();
+    const newUser = new User({
+      fullName: name,
+      email: email,
+      password: password,
+      country: country,
+      referralCode: refCode,
+      referredBy: referrer ? referrer._id : null,
+    });
+
+    const savedUser = await newUser.save();
+
+    if (referralCode && referrer) {
+      referrer.referredUsers.push(savedUser._id);
+      await referrer.save();
+    }
+
+    const newProfile = new UserProfile({
+      user: savedUser._id,
+      name: name,
+      email: email,
+      country: country,
+    });
+
+    const savedUserProfile = await newProfile.save();
+
+    const result = await BrevosendVerificationEmail(savedUser, res);
+    res.status(201).json({
+      message: "Account created successfully",
+      success: true,
+      data: { result },
+    });
+  } catch (error) {
+    console.error("Error during registration:", error);
+    res.status(500).json({ error: "An error occurred during registration" });
   }
-  const refCode = await generateReferralCode();
-  const newUser = new User({
-    fullName: name,
-    email: email,
-    password: password,
-    country: country,
-    referralCode: refCode,
-    referredBy: referrer ? referrer._id : null,
-  });
-  savedUser = await newUser.save();
-
-  // Update referrer's referredUsers array after savedUser has been saved
-  if (referralCode && referrer) {
-    referrer.referredUsers.push(savedUser._id);
-    await referrer.save();
-  }
-
-  const newProfile = new UserProfile({
-    user: savedUser._id,
-    name: name,
-    email: email,
-    country: country,
-  });
-
-  savedUserProfile = await newProfile.save();
-
-  sendVerificationEmail(savedUser, res);
-};
+});
 
 const login = async (req, res) => {
   let { password, email } = req.body;

@@ -3,6 +3,9 @@ const nodemailer = require("nodemailer");
 const emailVerification = require("../Models/emailVerification");
 const userPasswordReset = require("../Models/passwordReset");
 const { v4: uuidv4 } = require("uuid");
+const sendEmail = require("../utils/sendEmail");
+const customError = require("../utils/customError");
+const { sendVerificationEmail } = require("../utils/sendVerificationEmail");
 require("dotenv").config();
 
 // Nodemailer
@@ -76,21 +79,12 @@ const sendPasswordResetEmail = async ({ _id, email, fullName }, res) => {
 };
 
 // Email verification
-const sendVerificationEmail = async ({ _id, email, fullName }, res) => {
+
+const BrevosendVerificationEmail = async ({ _id, email, fullName }, res) => {
   const uniqueString = uuidv4() + _id;
-  const redirectUrl = "https://www.webuyam.com";
-
-  const first_name = fullName.split(/\s+/)[0];
-
-  const mailOptions = {
-    from: process.env.EMAIL,
-    to: email,
-    subject: "Email Verification",
-    html: `<p>Hello ${first_name},<br> You registered an account on  <a href="https://www.webuyam.com">Webuyam</a> website, before being able to use your account you need to verify that this is your email address by clicking <a href="${redirectUrl}/verify-email?userId=${_id}&uniqueString=${uniqueString}">here</a>.</p> \n <b>Verification link expires in 1 hour.</b>
-    
-    <p>Kind Regards.</p>
-    `,
-  };
+  const redirectUrl = "https://www.webuyam.com"; // this is for live
+  // const redirectUrl = "http://localhost:3000"; // this is for local http://localhost:3000/  // this is for local
+  const first_name = fullName?.split(/\s+/)[0];
 
   try {
     const hashedUniqueString = await bcrypt.hash(uniqueString, 10);
@@ -98,22 +92,34 @@ const sendVerificationEmail = async ({ _id, email, fullName }, res) => {
       userId: _id,
       uniqueString: hashedUniqueString,
       createdAt: Date.now(),
-      expireAt: Date.now() + 3600000,
+      expireAt: Date.now() + 86400000, ////1 day
     });
 
     await verification.save();
-    transporter.sendMail(mailOptions);
 
-    res.status(200).json({
+    const subject = "Account Verification";
+    const intro = `<p>Hello ${first_name},<br> You registered an account on <a href="https://www.webuyam.com">Webuyam</a> website. Before being able to use your account, you need to verify that this is your email address by clicking <a href="${redirectUrl}/verify-email?userId=${_id}&uniqueString=${uniqueString}">here</a>.</p> \n <b>Verification link expires in 1 day.</b><p>Kind Regards.</p>`;
+
+    const { emailBody, emailText } = sendVerificationEmail(intro, first_name);
+
+    const info = await sendEmail({
+      to: email,
+      subject,
+      text: emailText,
+      html: emailBody,
+    });
+
+    return {
+      success: true,
       status: "pending",
-      message: "Verification email sent",
-    });
-  } catch (err) {
-    res.status(500).json({
-      message:
-        "Error occurred during the process of sending verification email",
-    });
+      message: `Verification link has been sent to ${info.envelope.to}`,
+    };
+  } catch (error) {
+    console.error("Error during email verification:", error);
+    throw new Error(
+      "Error occurred during the process of sending verification email"
+    );
   }
 };
 
-module.exports = { sendVerificationEmail, sendPasswordResetEmail };
+module.exports = { BrevosendVerificationEmail, sendPasswordResetEmail };

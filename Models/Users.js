@@ -10,12 +10,17 @@ const userSchema = new Schema(
       type: String,
       required: [true, "Please enter your name"],
     },
+
     email: {
       type: String,
-      required: [true, "Please enter email"],
+      required: [true, "Please provide an email"],
+      trim: true,
       lowercase: true,
+      match: [
+        /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
+        "Please provide a valid email",
+      ],
       unique: true,
-      validate: [isEmail, "Please enter a valid email"],
     },
     password: {
       type: String,

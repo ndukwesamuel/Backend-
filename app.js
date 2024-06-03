@@ -23,6 +23,8 @@ const cartHistoryRoute = require("./Routes/cartHistoryRoute");
 // my route ends here
 const notFoundMiddleware = require("./Middleware/not-found");
 const errorHandlerMiddleware = require("./Middleware/error-handler");
+const { sendVerificationEmail } = require("./utils/sendVerificationEmail");
+const sendEmail = require("./utils/sendEmail");
 
 mongoose.set("strictQuery", true);
 // mongoose
@@ -51,12 +53,6 @@ app.use("/api/checkout", paymentRoute);
 app.use("/api/orders", orderRoute);
 app.use("/api/bank", BankRoute);
 app.use("/api/history", cartHistoryRoute);
-
-app.post("/", (req, res) => {
-  const { name, email, password } = req.body;
-
-  res.status(200).json({ name, email, password });
-});
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
