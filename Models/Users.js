@@ -42,7 +42,6 @@ const userSchema = new Schema(
     country: {
       type: String,
       required: [true, "Please select your country"],
-      enum: ["Nigeria", "Ghana", "Benin"], // Ensure the value is one of the predefined countries
     },
     referralCode: {
       type: String,
