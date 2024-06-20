@@ -1,7 +1,7 @@
 const userPasswordReset = require("../Models/passwordReset");
 const bcrypt = require("bcrypt");
 const User = require("../Models/Users");
-const { sendPasswordResetEmail } = require("../Middleware/Verification");
+const { BravoSendPasswordResetEmail } = require("../Middleware/Verification");
 
 const passwordResetEmail = async (req, res) => {
   const { email } = req.body;
@@ -10,7 +10,7 @@ const passwordResetEmail = async (req, res) => {
     if (userData) {
       // Check if the user has been verified before sending password reset email
       if (userData.verified) {
-        sendPasswordResetEmail(userData, res);
+        BravoSendPasswordResetEmail(userData, res);
       } else {
         res.status(401).json({ message: "Email has not been verified" });
       }

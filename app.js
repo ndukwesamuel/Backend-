@@ -24,7 +24,7 @@ const cartHistoryRoute = require("./Routes/cartHistoryRoute");
 // my route ends here
 const notFoundMiddleware = require("./Middleware/not-found");
 const errorHandlerMiddleware = require("./Middleware/error-handler");
-const { sendVerificationEmail } = require("./utils/sendVerificationEmail");
+const { EmailFunction } = require("./utils/EmailFunction");
 const sendEmail = require("./utils/sendEmail");
 const port = process.env.PORT || 5000;
 

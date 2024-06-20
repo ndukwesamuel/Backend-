@@ -2,7 +2,7 @@ const nodemailer = require("nodemailer");
 
 const Mailgen = require("mailgen");
 
-const sendVerificationEmail = (intro, name) => {
+const EmailFunction = (intro, name) => {
   const mailGenerator = new Mailgen({
     theme: "default",
     product: {
@@ -36,4 +36,4 @@ const sendVerificationEmail = (intro, name) => {
   return { emailBody, emailText };
 };
 
-module.exports = { sendVerificationEmail };
+module.exports = { EmailFunction };
