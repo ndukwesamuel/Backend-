@@ -31,10 +31,6 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    isUserAdmin: {
-      type: Boolean,
-      default: false,
-    },
     isAdmin: {
       type: Boolean,
       default: false,
@@ -50,7 +46,6 @@ const userSchema = new Schema(
     },
     referralCode: {
       type: String,
-      required: true,
     },
     referredBy: {
       type: Schema.Types.ObjectId,

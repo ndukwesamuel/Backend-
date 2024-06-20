@@ -14,6 +14,7 @@ const {
   register,
   login,
   logout,
+  V1_register,
 } = require("../Controller/Usercontrollers");
 const {
   emailVerification,

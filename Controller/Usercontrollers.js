@@ -16,6 +16,8 @@ const cloudinary = require("../utils/Cloudinary");
 const UserProfile = require("../Models/UserProfile");
 const { BadRequestError } = require("../errors");
 const asyncWrapper = require("../Middleware/asyncWrapper");
+const { registerService, findUserByEmail } = require("../services/userService");
+const { sendOTPByEmail } = require("../utils/emailUtils");
 
 const register = asyncWrapper(async (req, res) => {
   let { name, email, password, country, referralCode } = req.body;
@@ -82,6 +84,17 @@ const register = asyncWrapper(async (req, res) => {
     console.error("Error during registration:", error);
     res.status(500).json({ error: "An error occurred during registration" });
   }
+});
+
+const V1_register = asyncWrapper(async (req, res) => {
+  const { user } = await registerService(req.body);
+  const emailInfo = await sendOTPByEmail(user.email, user.fullName);
+
+  // const result = await BrevosendVerificationEmail(savedUser, res);
+  res.status(201).json({
+    success: true,
+    message: `OTP has been sent to ${emailInfo.envelope.to}`,
+  });
 });
 
 const login = async (req, res) => {
@@ -206,6 +219,20 @@ const logout = async (req, res) => {
   );
 };
 
+// SendOTP
+const sendOTP = asyncWrapper(async (req, res, next) => {
+  const { email } = req.body;
+  const user = await findUserByEmail(email);
+  // const userProfile = await userService.findUserProfileById(user._id);
+  // if (userProfile.isVerified) {
+  //   return res.status(200).json({ message: "User Already Verified" });
+  // }
+  // const emailInfo = await emailUtils.sendOTPByEmail(email, user.firstName);
+  // res.status(201).json({
+  //   message: `OTP has been sent to ${emailInfo.envelope.to}`,
+  // });
+});
+
 module.exports = {
   updateUserProfile,
   getUserProfile,
@@ -214,4 +241,6 @@ module.exports = {
   register,
   login,
   logout,
+  V1_register,
+  sendOTP,
 };

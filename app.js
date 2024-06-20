@@ -9,6 +9,7 @@ const connectDB = require("./db/connect");
 
 // my route start here
 const user = require("./Routes/userRoute");
+const V1user = require("./Routes/v1/userRoute");
 const grouproute = require("./Routes/groupRoute");
 const categoryroute = require("./Routes/categoryroute");
 const productroute = require("./Routes/productroute");
@@ -44,6 +45,7 @@ app.use(express.json());
 // this is the  api route
 
 app.use("/api", Route);
+app.use("/api/v1", V1user);
 app.use("/api/user", user);
 app.use("/api/group", grouproute);
 app.use("/api/category", categoryroute);

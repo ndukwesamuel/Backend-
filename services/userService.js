@@ -1,133 +1,100 @@
-// const UserProfile = require("../models/userProfile");
-// const User = require("../models/user");
-// const customError = require("../utils/customError");
-// const validateMongoId = require("../utils/validateMongoId");
-// const KYC = require("../models/kyc");
-// const Wallet = require("../models/wallet");
-// const generateRandomUsername = require("../utils/generateUsername");
-// const countryToCurrency = require("country-to-currency");
-// const bcrypt = require("bcrypt");
+// import UserProfile from "../models/userProfile.js";
+// import User from "../models/user.js";
+// import { validatePassword } from "../utils/validationUtils.js";
+// import customError from "../utils/customError.js";
+// import generateToken from "../config/generateToken.js";
+const mongoose = require("mongoose");
+const UserProfile = require("../Models/UserProfile");
+const User = require("../Models/Users");
+const customError = require("../utils/customError");
+const { generateReferralCode } = require("../Middleware/errorHandler/function");
 
-// exports.registerUser = async (userData) => {
-//   // console.log(countryToCurrency[userData.country]); // USD
-//   console.log({
-//     userData,
-//   });
+// import { paginate } from "../utils/paginate.js";
 
-//   const salt = await bcrypt.genSalt(10);
-//   const hashedNewPincode = await bcrypt.hash(userData.password, salt);
-//   const user = await User.create({
-//     email: userData.email,
-//     password: hashedNewPincode,
-//     firstName: userData.firstName,
-//     lastName: userData.lastName,
-//     country: userData.country,
-//   });
+// Fields to exclude
+const excludedFields = ["-password", "-__v", "-createdAt", "-updatedAt"];
 
-//   let name = `${user.firstName} ${user.lastName}`;
-//   let generatedUsername = generateRandomUsername(user.email, name);
-//   const userProfile = await UserProfile.create({
-//     userId: user._id,
-//     username: generatedUsername,
-//   });
+// Register User
+async function registerService(userData) {
+  let { name, email, password, country, referralCode } = userData;
+  let referrer = null; // Declare referrer variable
 
-//   const kyc = await KYC.create({
-//     userId: user._id,
-//   });
+  // Starts Session
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  const requiredFields = ["name", "email", "country", "password"];
+  const missingField = requiredFields.find((field) => !userData[field]);
+  if (missingField) {
+    await session.abortTransaction();
+    session.endSession();
+    throw customError(400, `${missingField} is required!`);
+  }
 
-//   const wallet = await Wallet.create({
-//     userId: user._id,
-//     Currency: countryToCurrency[userData.country],
-//   });
+  try {
+    if (referralCode) {
+      referrer = await User.findOne({ referralCode });
+      if (referrer) {
+        referrer.wallet += 1000;
+        await referrer.save(); // Save the updated referrer's wallet balance
+      } else {
+        throw customError(400, `Invalid referral code`);
+      }
+    }
 
-//   return { user, userProfile, kyc, wallet };
-// };
+    const refCode = await generateReferralCode();
 
-// exports.updateUserProfile = async (userId, userDetails) => {
-//   try {
-//     // Updating userProfile model
-//     const userProfile = await UserProfile.findOneAndUpdate(
-//       { userId: userId },
-//       userDetails
-//     );
-//     return { message: "Details Updated Successfully!", userProfile };
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+    const user = await User.create(
+      [
+        {
+          fullName: name,
+          email: email,
+          password: password,
+          country: country,
+          referralCode: refCode,
+          referredBy: referrer ? referrer._id : null,
+        },
+      ],
+      { session }
+    );
+    const userProfile = await UserProfile.create(
+      [
+        {
+          user: user[0]._id,
+        },
+      ],
+      { session }
+    );
 
-// exports.updateUserModel = async (userId, userInfo) => {
-//   const userProfile = await UserProfile.findOne({ userId: userId });
-//   try {
-//     // Updating user model
-//     await User.findOneAndUpdate({ _id: userProfile.userId }, userInfo);
-//     return { message: "User Info Updated Successfully!" };
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+    if (referralCode && referrer) {
+      referrer.referredUsers.push(user[0]._id);
+      await referrer.save();
+    }
+    // Commit changes to DB
+    await session.commitTransaction();
+    session.endSession();
+    return { user: user[0], userProfile: userProfile[0] };
+  } catch (error) {
+    // Reverses anything that has been done
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
+}
 
-// // exports.validatePassword = async (userId, password) => {
-// //   if (!password) {
-// //     throw customError(401, "Please provide password");
-// //   }
+async function findUserByEmail(email) {
+  if (!email) {
+    throw customError(400, "Please provide an email");
+  }
+  const user = await User.findOne({ email: email.toLowerCase() });
 
-// //   const user = await User.findOne({ _id: userProfile.userId });
-// //   const isPasswordCorrect = await user.comparePassword(password);
+  if (!user) {
+    throw customError(401, "No User with this Email");
+  }
 
-// //   if (!isPasswordCorrect) {
-// //     throw customError(401, "Unauthorized");
-// //   }
-// // };
+  return user;
+}
 
-// exports.validatePincode = async (user_data, pinCode) => {
-//   try {
-//     if (!pinCode) {
-//       throw customError(404, "PIN Code is required");
-//     }
-
-//     if (!/^\d{4}$/.test(pinCode)) {
-//       throw customError(404, "PIN must be a 4-digit number.");
-//     }
-
-//     const userProfile____ = await UserProfile.findOne({
-//       userId: user_data.userId._id,
-//     });
-
-//     // // Check if user profile exists
-//     if (!userProfile____) {
-//       throw customError(404, "User profile not found");
-//     }
-
-//     // Compare provided pin code with stored hashed pin code
-//     const isPinCodeCorrect = await bcrypt.compare(
-//       pinCode,
-//       userProfile____.pinCode
-//     );
-//     if (!isPinCodeCorrect) {
-//       throw customError(404, "PIN code is incorrect");
-//     }
-
-//     return isPinCodeCorrect;
-//   } catch (error) {
-//     return error.message;
-//   }
-// };
-
-// exports.validatePassword = async (user_data, password) => {
-//   try {
-//     if (!password) {
-//       throw customError(404, "password Code is required");
-//     }
-//     const userinfo = await User.findOne({
-//       _id: user_data.userId._id,
-//     });
-//     const isPasswordCorrect = await userinfo.comparePassword(password);
-//     if (!isPasswordCorrect) {
-//       throw customError(404, "Your password is incorrect");
-//     }
-//     return isPasswordCorrect;
-//   } catch (error) {
-//     return error.message;
-//   }
-// };
+module.exports = {
+  registerService,
+  findUserByEmail,
+};
