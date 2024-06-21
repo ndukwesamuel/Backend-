@@ -94,7 +94,20 @@ async function findUserByEmail(email) {
   return user;
 }
 
+async function findUserProfileById(userId) {
+  const userProfile = await UserProfile.findOne({ user: userId }).populate({
+    path: "user",
+    select: excludedFields,
+  });
+
+  if (!userProfile) {
+    throw customError(404, "User profile not found");
+  }
+  return userProfile;
+}
+
 module.exports = {
   registerService,
   findUserByEmail,
+  findUserProfileById,
 };

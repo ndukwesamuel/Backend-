@@ -13,7 +13,11 @@ const cloudinary = require("../utils/Cloudinary");
 const UserProfile = require("../Models/UserProfile");
 const { BadRequestError } = require("../errors");
 const asyncWrapper = require("../Middleware/asyncWrapper");
-const { registerService, findUserByEmail } = require("../services/userService");
+const {
+  registerService,
+  findUserByEmail,
+  findUserProfileById,
+} = require("../services/userService");
 const { sendOTPByEmail } = require("../utils/emailUtils");
 
 const register = asyncWrapper(async (req, res) => {
@@ -90,6 +94,19 @@ const V1_register = asyncWrapper(async (req, res) => {
   // const result = await BrevosendVerificationEmail(savedUser, res);
   res.status(201).json({
     success: true,
+    message: `OTP has been sent to ${emailInfo.envelope.to}`,
+  });
+});
+
+const V1_sendOTP = asyncWrapper(async (req, res, next) => {
+  const { email } = req.body;
+  const user = await findUserByEmail(email);
+  const userProfile = await findUserProfileById(user._id);
+  if (userProfile.isVerified) {
+    return res.status(200).json({ message: "User Already Verified" });
+  }
+  const emailInfo = await sendOTPByEmail(email, user.fullName);
+  res.status(201).json({
     message: `OTP has been sent to ${emailInfo.envelope.to}`,
   });
 });
@@ -226,7 +243,8 @@ const sendOTP = asyncWrapper(async (req, res, next) => {
   // }
   // const emailInfo = await emailUtils.sendOTPByEmail(email, user.firstName);
   // res.status(201).json({
-  //   message: `OTP has been sent to ${emailInfo.envelope.to}`,
+  //   message: `OTP has been sent to ${email}`,
+  //   // message: `OTP has been sent to ${emailInfo.envelope.to}`,
   // });
 });
 
@@ -240,4 +258,5 @@ module.exports = {
   logout,
   V1_register,
   sendOTP,
+  V1_sendOTP,
 };
