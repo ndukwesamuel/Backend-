@@ -33,7 +33,7 @@ const verifyToken = async (req, res, next) => {
 };
 const verifyTokenAndAuthorization = (req, res, next) => {
   verifyToken(req, res, () => {
-    if (req.user.id === req.params.id) {
+    if (req.user.userId === req.params.id) {
       next();
     } else {
       res.status(403).json({ error: true, message: "You are not authorized" });
@@ -43,7 +43,7 @@ const verifyTokenAndAuthorization = (req, res, next) => {
 
 const verifyTokenAndAdmin = (req, res, next) => {
   verifyToken(req, res, () => {
-    User.findOne({ _id: req.user.id })
+    User.findOne({ _id: req.user.userId })
       .then((data) => {
         if (data.isAdmin) {
           next();

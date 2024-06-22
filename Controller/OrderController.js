@@ -2,7 +2,7 @@ const Cart = require("../Models/Cart");
 const Order = require("../Models/Order");
 const OrderItem = require("../Models/OrderItems");
 
-// NOTE: NONE OF THIS ROUTE IS RESTRICTED AND SO I PASSED THE USER ID AS EITHER A BODY OR PARAMS. IF THIS IS WHAT WE WANT, I WILL RESTRICT THEM AND GET THE USER ID FROM req.user.id
+// NOTE: NONE OF THIS ROUTE IS RESTRICTED AND SO I PASSED THE USER ID AS EITHER A BODY OR PARAMS. IF THIS IS WHAT WE WANT, I WILL RESTRICT THEM AND GET THE USER ID FROM req.user.userId
 
 const orderList = async (req, res) => {
   try {
@@ -50,7 +50,7 @@ const orderById = async (req, res) => {
 
 const createOrder = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     const orderItemsIds = [];
 
@@ -151,7 +151,7 @@ const deleteOrder = (req, res) => {
 
 const userOrder = async (req, res) => {
   try {
-    const userOrderList = await Order.find({ user: req.user.id })
+    const userOrderList = await Order.find({ user: req.user.userId })
       .populate({
         path: "orderItems",
         populate: {

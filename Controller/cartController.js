@@ -3,7 +3,7 @@ const product = require("../Models/Products");
 // GET cart for a user
 const getCart = async (req, res) => {
   try {
-    let userId = req.user.id;
+    let userId = req.user.userId;
     // Find the user's cart based on userId and populate product details including image
     // const userCart = await Cart.findOne({ userId });
 
@@ -26,14 +26,14 @@ const getCart = async (req, res) => {
 const addToCart = async (req, res) => {
   const { productId, quantity, price, name } = req.body;
 
-  if (!req.user.id) {
+  if (!req.user.userId) {
     throw new BadRequestError("You are not logged in!");
   }
-  const cart = await Cart.findOne({ userId: req.user.id });
+  const cart = await Cart.findOne({ userId: req.user.userId });
   if (!cart) {
     // create a new cart if one doesn't exist for the user
     const newCart = new Cart({
-      userId: req.user.id,
+      userId: req.user.userId,
       items: [{ productId, quantity, price, name }],
       bill: quantity * price,
     });
@@ -64,10 +64,10 @@ const addToCart = async (req, res) => {
 };
 // Decrease items quantity
 const decreaseCartItems = async (req, res) => {
-  console.log(req.user.id);
+  console.log(req.user.userId);
   const { productId, quantity } = req.body;
 
-  const userId = req.user.id;
+  const userId = req.user.userId;
   const quantityToRemove = quantity || 1;
 
   try {
@@ -135,7 +135,7 @@ const decreaseCartItems = async (req, res) => {
 
   // try {
   //   const cart = await Cart.find();
-  //   // const cart = await Cart.findOne({ userId: req.user.id });
+  //   // const cart = await Cart.findOne({ userId: req.user.userId });
   //   console.log({ cart });
   //   const index = cart.items.findIndex(
   //     (item) => item.productId == req.body.productId
@@ -167,7 +167,7 @@ const deleteFromCart = async (req, res) => {
   console.log({ req: req.body });
   // const { productId } = req.body;
   try {
-    const cart = await Cart.findOne({ userId: req.user.id });
+    const cart = await Cart.findOne({ userId: req.user.userId });
     const index = cart.items.findIndex(
       (item) => item.productId == req.body.productId
     );

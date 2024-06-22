@@ -20,7 +20,7 @@ const getAllUserCartHistory = async (req, res) => {
 };
 
 const getCartHistoryByUserId = async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user.userId;
 
   try {
     const userCartHistory = await UserCartHistory.find({

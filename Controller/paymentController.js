@@ -94,7 +94,7 @@ const verifyPayment = async (req, res) => {
           });
           newVerification.save();
         }
-        const isOrder = await Order.findOne({ user: req.user.id });
+        const isOrder = await Order.findOne({ user: req.user.userId });
         if (!isOrder) {
           return res
             .status(404)

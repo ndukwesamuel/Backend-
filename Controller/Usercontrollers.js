@@ -158,7 +158,7 @@ const loginggg = asyncWrapper(async (req, res) => {
 const updateUserProfile = async (req, res) => {
   const { name, email, phone, address } = req.body;
   email = email.trim().toLowerCase();
-  const profile = await UserProfile.findOne({ user: req.user.id });
+  const profile = await UserProfile.findOne({ user: req.user.userId });
   if (!profile) {
     res.status(401).json({ message: "You need to login" });
   }
@@ -169,7 +169,7 @@ const updateUserProfile = async (req, res) => {
       phone: phone,
       address: address,
     };
-    await User.findByIdAndUpdate(req.user.id, { name: name, email: email });
+    await User.findByIdAndUpdate(req.user.userId, { name: name, email: email });
     await UserProfile.findByIdAndUpdate(profile._id, data);
     res
       .status(StatusCodes.OK)
@@ -195,7 +195,9 @@ const getAllUser = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
   try {
-    const profile = await UserProfile.findOne({ user: req.user.id }).populate({
+    const profile = await UserProfile.findOne({
+      user: req.user.userId,
+    }).populate({
       path: "user",
       select: ["-password", "-isAdmin"], // Exclude the 'password' and "isAdmin" field
     });
@@ -211,7 +213,7 @@ const getUserProfile = async (req, res) => {
 };
 
 const uploadProfileImage = async (req, res) => {
-  const profile = await UserProfile.findOne({ user: req.user.id });
+  const profile = await UserProfile.findOne({ user: req.user.userId });
 
   try {
     if (profile.profileImage) {

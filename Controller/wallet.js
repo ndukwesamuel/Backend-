@@ -13,7 +13,7 @@ const receiptUploader = async (req, res) => {
     });
 
     const newReceipt = new Receipt({
-      user: req.user.id,
+      user: req.user.userId,
       receipt: upload.secure_url,
       amount: req.body.amount,
     });
@@ -157,7 +157,7 @@ const AddMoneyTo = async (req, res) => {
 };
 
 const GetUserMoney = async (req, res) => {
-  let user = req.user.id;
+  let user = req.user.userId;
   let userwalet = await User.findById(user);
 
   if (!user) {
@@ -237,7 +237,7 @@ const getAllUsersHistory = async (req, res) => {
 
 const Get__user__Transaction__History = async (req, res) => {
   console.log("Get__user__Transaction__History");
-  let userId = req.user.id;
+  let userId = req.user.userId;
   try {
     const user = await User.findById(userId);
 
@@ -267,7 +267,7 @@ const Get__user__Transaction__History = async (req, res) => {
 
 const Get__group__Transaction__History = async (req, res) => {
   let groupId = req.params.groupId;
-  let userId = req.user.id;
+  let userId = req.user.userId;
 
   try {
     const group = await Group.findById(groupId);
@@ -297,7 +297,7 @@ const Get__group__Transaction__History = async (req, res) => {
 
 const GroupPaysForAProduct = async (req, res) => {
   const { groupId, amount, description, type } = req.body;
-  let userId = req.user.id;
+  let userId = req.user.userId;
 
   if (type !== "groupPurchase") {
     return res

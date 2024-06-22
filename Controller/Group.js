@@ -13,10 +13,13 @@ const { BadRequestError } = require("../errors");
 const UserProfile = require("../Models/UserProfile");
 const UserCartHistory = require("../Models/userCartHistory");
 const GroupCartHistory = require("../Models/groupCartHistory");
+const asyncWrapper = require("../Middleware/asyncWrapper");
+const { findUserProfileById } = require("../services/userService");
+const { findGroupById, isUserInAnyGroup } = require("../services/groupService");
 
 const createGroup = async (req, res) => {
   const { name, description } = req.body;
-  const userId = req.user.id;
+  const userId = req.user.userId;
 
   if (!name || !description) {
     throw new BadRequestError("Please provide name and description");
@@ -50,45 +53,37 @@ const createGroup = async (req, res) => {
   res.status(StatusCodes.OK).json(group);
 };
 
-const joinGroup = async (req, res) => {
+const joinGroup = asyncWrapper(async (req, res) => {
   const groupId = req.params.groupId;
-  const group = await Group.findById(groupId);
-  const userId = req.user.id;
-
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new BadRequestError("You need to login");
+  const userId = req.user?.userId;
+  const isUserInAnyGroup_info = await isUserInAnyGroup(userId);
+  if (isUserInAnyGroup_info) {
+    throw new BadRequestError("You are already a member of a group");
   }
+  const group = await findGroupById(groupId);
+
+  const user = await findUserProfileById(userId);
+
   const userCountry = user.country;
-  console.log(userCountry);
 
-  if (!group) {
-    throw new BadRequestError("Group not found");
-  }
+  // if (group.country !== userCountry) {
+  //   throw new BadRequestError("You can only join groups from your country");
+  // }
 
-  // Check if the user is already a member of the group
-  if (group.members.includes(userId)) {
-    throw new BadRequestError("You are already a member of this group");
-  }
+  // // Check if the user is already a member of any group (assuming same country restriction)
+  // const existingGroup = await Group.find({
+  //   members: userId,
+  //   country: userCountry,
+  // });
 
-  if (group.country !== userCountry) {
-    throw new BadRequestError("You can only join groups from your country");
-  }
+  // if (existingGroup.length > 0) {
+  //   throw new BadRequestError("You are already a member of another group!");
+  // }
 
-  // Check if the user is already a member of any group (assuming same country restriction)
-  const existingGroup = await Group.find({
-    members: userId,
-    country: userCountry,
-  });
-
-  if (existingGroup.length > 0) {
-    throw new BadRequestError("You are already a member of another group!");
-  }
-
-  group.members.push(userId);
-  await group.save();
-  res.status(StatusCodes.OK).json(group);
-};
+  // group.members.push(userId);
+  // await group.save();
+  res.status(StatusCodes.OK).json({ isUserInAnyGroup_info, group, user });
+});
 
 const getAllGroups = async (req, res) => {
   try {
@@ -137,8 +132,9 @@ const getAllGroupMembers = async (req, res) => {
   }
 };
 const getMemberGroups = async (req, res) => {
+  const userId = req.user.userId;
   try {
-    const groups = await groupmodel.findOne({ members: req.user.id });
+    const groups = await groupmodel.findOne({ members: req.user.userId });
 
     if (!groups) {
       res.status(200).json({ message: "You are not in any Group " });
@@ -152,7 +148,7 @@ const getMemberGroups = async (req, res) => {
 };
 
 const getGroupCart = async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user.userId;
 
   const user = await User.findById(userId);
 
@@ -185,7 +181,7 @@ const getGroupCart = async (req, res) => {
 
 const AddGroupCart = async (req, res) => {
   const { productId, groupId } = req.body;
-  const userId = req.user.id;
+  const userId = req.user.userId;
 
   const user = await User.findById(userId);
   if (!user) {
@@ -312,7 +308,7 @@ const AddGroupCart = async (req, res) => {
 const CheckoutGroupCart = async (req, res) => {
   try {
     const { productId, groupId } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.userId;
     const group = await groupmodel.findById(groupId);
     const isUser = await User.findOne({ _id: userId });
 
@@ -490,7 +486,7 @@ const DeleteSingleGroupCart = async (req, res) => {
 };
 
 const deleteGroup = async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user.userId;
   try {
     const isUserAdmin = await Group.findOne({ userAdminId: userId });
     if (isUserAdmin) {
