@@ -19,7 +19,7 @@ const OTP = require("../Models/otp");
 
 // Validates OTP
 async function validateOTP(email, otp) {
-  const otpExists = await OTP.findOne({ email: "" });
+  const otpExists = await OTP.findOne({ email, otp });
   if (!otpExists) {
     throw customError(400, "Invalid or Expired OTP");
   }

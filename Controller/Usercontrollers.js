@@ -118,7 +118,7 @@ const V1_verifyOTP = asyncWrapper(async (req, res, next) => {
   const validator_info = await validateOTP(email, otp);
   user.verified = true;
   await user.save();
-  res.status(200).json({ validator_info, user, message: "Profile Verified" });
+  res.status(200).json({ message: "Profile Verified" });
 });
 
 const login = async (req, res) => {
