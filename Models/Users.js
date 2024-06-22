@@ -57,23 +57,33 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-// encrypt user's password before saving to db
 userSchema.pre("save", async function (next) {
-  const salt = await bcrypt.genSalt();
+  if (!this.isModified("password")) {
+    return next();
+  }
+  const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
-// static method to login user
-userSchema.statics.login = async function (email, password) {
-  const user = await this.findOne({ email });
-  if (user) {
-    const auth = await bcrypt.compare(password, user.password);
-    if (auth) {
-      return user;
-    }
-    throw Error("Incorrect password or email");
+userSchema.pre("findOneAndUpdate", async function (next) {
+  // Check if the password is being modified
+  if (!this._update.password) {
+    return next();
   }
-  throw Error("Incorrect password or email");
+  try {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(this._update.password, salt);
+    this._update.password = hashedPassword;
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+userSchema.methods.comparePassword = async function (incomingPassword) {
+  const isMatch = await bcrypt.compare(incomingPassword, this.password);
+  return isMatch;
 };
 
 const User = mongoose.model("user", userSchema);

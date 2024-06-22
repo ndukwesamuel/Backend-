@@ -17,6 +17,7 @@ const {
   registerService,
   findUserByEmail,
   findUserProfileById,
+  signIn,
 } = require("../services/userService");
 const { sendOTPByEmail } = require("../utils/emailUtils");
 const { validateOTP } = require("../utils/validationUtils");
@@ -121,7 +122,13 @@ const V1_verifyOTP = asyncWrapper(async (req, res, next) => {
   res.status(200).json({ message: "Profile Verified" });
 });
 
-const login = async (req, res) => {
+const login = asyncWrapper(async (req, res, next) => {
+  const { email, password } = req.body;
+  const user = await signIn(email, password);
+  res.status(200).json({ data: user });
+});
+
+const loginggg = asyncWrapper(async (req, res) => {
   let { password, email } = req.body;
   email = email.trim().toLowerCase();
   password = password.trim();
@@ -129,20 +136,24 @@ const login = async (req, res) => {
     throw new BadRequestError("Please provide email and password");
   }
 
-  try {
-    const user = await User.login(email, password);
-    if (user.verified) {
-      const token = createToken(user._id);
-      const { password, ...others } = user._doc;
-      res.status(200).json({ ...others, token });
-    } else {
-      res.status(401).json({ message: "Verify email to login" });
-    }
-  } catch (err) {
-    const error = handleErrors(err);
-    res.status(400).json({ error });
-  }
-};
+  const user = await User.login(email);
+
+  // try {
+  //   const user = await User.login(email);
+  //   if (user.verified) {
+  //     const token = createToken(user._id);
+  // const { password, ...others } = user._doc;
+  //     res.status(200).json({ ...others, token });
+  //   } else {
+  //     res.status(401).json({ message: "Verify email to login" });
+  //   }
+  // } catch (err) {
+  //   const error = handleErrors(err);
+  //   res.status(400).json({ error });
+  // }
+
+  res.status(200).json({ user, message: "Login successful" });
+});
 
 const updateUserProfile = async (req, res) => {
   const { name, email, phone, address } = req.body;

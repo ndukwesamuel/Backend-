@@ -1,21 +1,23 @@
 const mongoose = require("mongoose");
 const customError = require("./customError");
 const OTP = require("../Models/otp");
+const bcrypt = require("bcrypt");
+
 // import OTP from "../Models/otp";
 
 // import customError from "./customError";
 // import customError from "./customError.js";
 
 // Compares password
-// async function validatePassword(incomingPassword, existingPassword) {
-//   if (!incomingPassword || !existingPassword) {
-//     throw customError(401, "Please provide password");
-//   }
-//   const isMatch = await bcrypt.compare(incomingPassword, existingPassword);
-//   if (!isMatch) {
-//     throw customError(401, "Unauthorized");
-//   }
-// }
+async function validatePassword(incomingPassword, existingPassword) {
+  if (!incomingPassword || !existingPassword) {
+    throw customError(401, "Please provide password");
+  }
+  const isMatch = await bcrypt.compare(incomingPassword, existingPassword);
+  if (!isMatch) {
+    throw customError(401, "Unauthorized");
+  }
+}
 
 // Validates OTP
 async function validateOTP(email, otp) {
@@ -36,6 +38,6 @@ function validateMongoId(id) {
 
 module.exports = {
   validateMongoId,
-  // validatePassword,
+  validatePassword,
   validateOTP,
 };

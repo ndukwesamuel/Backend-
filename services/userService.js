@@ -8,7 +8,8 @@ const UserProfile = require("../Models/UserProfile");
 const User = require("../Models/Users");
 const customError = require("../utils/customError");
 const { generateReferralCode } = require("../Middleware/errorHandler/function");
-
+const { validatePassword } = require("../utils/validationUtils");
+const generateToken = require("../db/generateToken");
 // import { paginate } from "../utils/paginate.js";
 
 // Fields to exclude
@@ -106,8 +107,28 @@ async function findUserProfileById(userId) {
   return userProfile;
 }
 
+async function signIn(email, password) {
+  const user = await findUserByEmail(email);
+  await validatePassword(password, user.password);
+  const userProfile = await findUserProfileById(user._id);
+  if (!user.verified) {
+    throw customError(401, "Email not verified!");
+  }
+
+  //generate new token
+  const token = generateToken(user._id);
+
+  const userInfo = {
+    token,
+    user,
+  };
+
+  return userInfo;
+}
+
 module.exports = {
   registerService,
   findUserByEmail,
   findUserProfileById,
+  signIn,
 };
