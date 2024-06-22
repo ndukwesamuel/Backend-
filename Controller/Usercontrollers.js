@@ -19,6 +19,7 @@ const {
   findUserProfileById,
 } = require("../services/userService");
 const { sendOTPByEmail } = require("../utils/emailUtils");
+const { validateOTP } = require("../utils/validationUtils");
 
 const register = asyncWrapper(async (req, res) => {
   let { name, email, password, country, referralCode } = req.body;
@@ -109,6 +110,15 @@ const V1_sendOTP = asyncWrapper(async (req, res, next) => {
   res.status(201).json({
     message: `OTP has been sent to ${emailInfo.envelope.to}`,
   });
+});
+
+const V1_verifyOTP = asyncWrapper(async (req, res, next) => {
+  const { email, otp } = req.body;
+  const user = await findUserByEmail(email);
+  const validator_info = await validateOTP(email, otp);
+  // user.verified = true;
+  // await user.save();
+  res.status(200).json({ validator_info, user, message: "Profile Verified" });
 });
 
 const login = async (req, res) => {
@@ -259,4 +269,5 @@ module.exports = {
   V1_register,
   sendOTP,
   V1_sendOTP,
+  V1_verifyOTP,
 };

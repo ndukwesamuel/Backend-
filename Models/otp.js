@@ -5,6 +5,8 @@ const { Schema } = mongoose;
 const otpSchema = new Schema({
   email: {
     type: String,
+    trim: true,
+    lowercase: true,
     required: true,
   },
   otp: {
