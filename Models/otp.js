@@ -16,7 +16,8 @@ const otpSchema = new Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: 60 * 60, // The document will be automatically deleted after 5 minutes of its creation time
+    expires: 3600,
+    // expires: 60 * 60, // The document will be automatically deleted after 5 minutes of its creation time
   },
 });
 

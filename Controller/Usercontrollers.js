@@ -116,8 +116,8 @@ const V1_verifyOTP = asyncWrapper(async (req, res, next) => {
   const { email, otp } = req.body;
   const user = await findUserByEmail(email);
   const validator_info = await validateOTP(email, otp);
-  // user.verified = true;
-  // await user.save();
+  user.verified = true;
+  await user.save();
   res.status(200).json({ validator_info, user, message: "Profile Verified" });
 });
 
