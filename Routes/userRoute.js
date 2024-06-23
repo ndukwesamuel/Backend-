@@ -15,6 +15,7 @@ const {
   login,
   logout,
   V1_register,
+  get_A_UserProfile,
 } = require("../Controller/Usercontrollers");
 const {
   emailVerification,
@@ -37,5 +38,7 @@ router.route("/verify-email").post(emailVerification);
 router.route("/resendOTP").post(resendVerificationEmail);
 router.route("/passwordResetEmail").post(passwordResetEmail);
 router.route("/resetPassword").post(resetPassword);
+
+router.route("/get_user/:userId").get(verifyToken, get_A_UserProfile);
 
 module.exports = router;

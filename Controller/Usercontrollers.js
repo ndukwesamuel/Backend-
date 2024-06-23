@@ -128,33 +128,6 @@ const login = asyncWrapper(async (req, res, next) => {
   res.status(200).json({ data: user });
 });
 
-const loginggg = asyncWrapper(async (req, res) => {
-  let { password, email } = req.body;
-  email = email.trim().toLowerCase();
-  password = password.trim();
-  if (!email || !password) {
-    throw new BadRequestError("Please provide email and password");
-  }
-
-  const user = await User.login(email);
-
-  // try {
-  //   const user = await User.login(email);
-  //   if (user.verified) {
-  //     const token = createToken(user._id);
-  // const { password, ...others } = user._doc;
-  //     res.status(200).json({ ...others, token });
-  //   } else {
-  //     res.status(401).json({ message: "Verify email to login" });
-  //   }
-  // } catch (err) {
-  //   const error = handleErrors(err);
-  //   res.status(400).json({ error });
-  // }
-
-  res.status(200).json({ user, message: "Login successful" });
-});
-
 const updateUserProfile = async (req, res) => {
   const { name, email, phone, address } = req.body;
   email = email.trim().toLowerCase();
@@ -271,6 +244,26 @@ const sendOTP = asyncWrapper(async (req, res, next) => {
   // });
 });
 
+const get_A_UserProfile = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const profile = await UserProfile.findOne({
+      user: userId,
+    }).populate({
+      path: "user",
+      select: ["-password", "-isAdmin"], // Exclude the 'password' and "isAdmin" field
+    });
+    if (!profile) {
+      res.status(401).json({ message: "You need to login" });
+    }
+    res.status(StatusCodes.OK).json({ message: profile });
+  } catch (error) {
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   updateUserProfile,
   getUserProfile,
@@ -283,4 +276,5 @@ module.exports = {
   sendOTP,
   V1_sendOTP,
   V1_verifyOTP,
+  get_A_UserProfile,
 };
