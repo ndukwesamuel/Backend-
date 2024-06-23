@@ -17,6 +17,8 @@ const {
   Group_admin_add_remove_members,
   All_Group_members_Info,
   All_User_That_can_join_Group,
+  Group__add_members,
+  Group__Remove_members,
 } = require("../Controller/Group");
 
 router.route("/").post(verifyToken, createGroup).get(verifyToken, getAllGroups);
@@ -26,9 +28,9 @@ router.route("/checkout").post(verifyToken, CheckoutGroupCart);
 
 router.route("/:groupId/join").get(verifyToken, joinGroup);
 router.route("/addToCart").post(verifyToken, AddGroupCart);
-router
-  .route("/admin_add_remove_members")
-  .post(verifyToken, Group_admin_add_remove_members);
+
+router.route("/add_member").post(verifyToken, Group__add_members);
+router.route("/remove_member").post(verifyToken, Group__Remove_members);
 
 router
   .route("/group_members/:groupId")

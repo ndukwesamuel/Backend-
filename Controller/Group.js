@@ -15,7 +15,11 @@ const UserCartHistory = require("../Models/userCartHistory");
 const GroupCartHistory = require("../Models/groupCartHistory");
 const asyncWrapper = require("../Middleware/asyncWrapper");
 const { findUserProfileById } = require("../services/userService");
-const { findGroupById, isUserInAnyGroup } = require("../services/groupService");
+const {
+  findGroupById,
+  isUserInAnyGroup,
+  requesting_user_member_group_level,
+} = require("../services/groupService");
 
 const createGroup = async (req, res) => {
   const { name, description } = req.body;
@@ -53,10 +57,73 @@ const createGroup = async (req, res) => {
   res.status(StatusCodes.OK).json(group);
 };
 
-const Group_admin_add_remove_members = async (req, res) => {
-  const { groupId, userId } = req.body;
+const Group__add_members = async (req, res) => {
+  const { userIdToAdd, groupId } = req.body;
+  const requestingUserId = req?.user?.userId;
 
-  res.status(StatusCodes.OK).json({ group: "jsjsj" });
+  const group = await findGroupById(groupId);
+  const { isAdmin, isMember } = await requesting_user_member_group_level(
+    group,
+    requestingUserId
+  );
+
+  const othergroups = await Group.find({ members: userIdToAdd })
+    .populate("members")
+    .exec();
+
+  if (othergroups?.length > 0) {
+    return res.status(404).json({ message: "User is  a member of a groups." });
+  }
+  // If the requesting user is an admin, add the new user to the members array
+  if (isAdmin) {
+    group.members.push(userIdToAdd);
+  } else {
+    // Otherwise, add the new user to the pendingMembers array
+    group.pendingMembers.push(userIdToAdd);
+  }
+
+  await group.save();
+  res.status(StatusCodes.OK).json({
+    group,
+  });
+};
+
+const Group__Remove_members = async (req, res) => {
+  const { userIdToAdd, groupId } = req.body;
+  const requestingUserId = req?.user?.userId;
+
+  if (userIdToAdd === requestingUserId) {
+    return res.status(404).json({ message: "You cant remove your self" });
+  }
+
+  const group = await findGroupById(groupId);
+  const { isAdmin, isMember } = await requesting_user_member_group_level(
+    group,
+    requestingUserId
+  );
+
+  const member_to_delete_info = await requesting_user_member_group_level(
+    group,
+    userIdToAdd
+  );
+
+  if (!member_to_delete_info?.isMember) {
+    return res
+      .status(404)
+      .json({ message: "User is not a member of  our  groups." });
+  }
+
+  if (!isAdmin) {
+    return res.status(404).json({ message: "You are not a Group admin" });
+  }
+  group.members.pull(userIdToAdd);
+
+  // Save the group
+  await group.save();
+  res.status(StatusCodes.OK).json({
+    group,
+    message: "Member removed successfully",
+  });
 };
 
 const joinGroup = asyncWrapper(async (req, res) => {
@@ -572,7 +639,9 @@ module.exports = {
   getMemberGroups,
   CheckoutGroupCart,
   GroupcartCheckout,
-  Group_admin_add_remove_members,
+
   All_Group_members_Info,
   All_User_That_can_join_Group,
+  Group__add_members,
+  Group__Remove_members,
 };

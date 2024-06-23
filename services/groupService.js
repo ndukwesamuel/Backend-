@@ -37,38 +37,23 @@ const isUserInAnyGroup = async (userId) => {
   }
 };
 
-// async function findUserProfileById(userId) {
-//   const userProfile = await UserProfile.findOne({ user: userId }).populate({
-//     path: "user",
-//     select: excludedFields,
-//   });
+async function requesting_user_member_group_level(
+  group_info,
+  requestingUserId
+) {
+  // Check if the requesting user is an admin
+  const isAdmin = group_info.admins.includes(requestingUserId);
+  // Check if the user to add is already a member or pending member
+  const isMember = group_info.members.includes(requestingUserId);
 
-//   if (!userProfile) {
-//     throw customError(404, "User profile not found");
-//   }
-//   return userProfile;
-// }
-
-// async function signIn(email, password) {
-//   const user = await findUserByEmail(email);
-//   await validatePassword(password, user.password);
-//   const userProfile = await findUserProfileById(user._id);
-//   if (!user.verified) {
-//     throw customError(401, "Email not verified!");
-//   }
-
-//   //generate new token
-//   const token = generateToken(user._id);
-
-//   const userInfo = {
-//     token,
-//     user,
-//   };
-
-//   return userInfo;
-// }
+  return {
+    isAdmin,
+    isMember,
+  };
+}
 
 module.exports = {
   findGroupById,
   isUserInAnyGroup,
+  requesting_user_member_group_level,
 };
