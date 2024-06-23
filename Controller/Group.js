@@ -113,6 +113,37 @@ const All_Group_members_Info = asyncWrapper(async (req, res) => {
     },
   });
 });
+
+const All_User_That_can_join_Group = asyncWrapper(async (req, res) => {
+  const groupId = req.params.groupId;
+  const group = await Group.findById(groupId)
+    .populate({
+      path: "members",
+      model: User, // Adjust the path as needed
+    })
+    .populate({
+      path: "pendingMembers",
+      model: User, // Adjust the path as needed
+    });
+
+  if (!group) {
+    return res.status(404).json({ message: "Group not found" });
+  }
+
+  const usersInSameCountry = await User.find({ country: group.country });
+  // const usersNotInAnyGroup = usersInSameCountry.filter(async (user) => {
+  //   const isMember = await Group.exists({ members: user._id });
+  //   const isAdmin = await Group.exists({ admins: user._id });
+  //   return !isMember && !isAdmin;
+  // });
+
+  res.json({
+    data: {
+      usersInSameCountry, // eligibleUsers.group.country,
+    },
+  });
+});
+
 const getAllGroups = async (req, res) => {
   try {
     const groups = await Group.find()
@@ -543,4 +574,5 @@ module.exports = {
   GroupcartCheckout,
   Group_admin_add_remove_members,
   All_Group_members_Info,
+  All_User_That_can_join_Group,
 };
