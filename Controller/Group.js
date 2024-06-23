@@ -53,6 +53,12 @@ const createGroup = async (req, res) => {
   res.status(StatusCodes.OK).json(group);
 };
 
+const Group_admin_add_remove_members = async (req, res) => {
+  const { groupId, userId } = req.body;
+
+  res.status(StatusCodes.OK).json({ group: "jsjsj" });
+};
+
 const joinGroup = asyncWrapper(async (req, res) => {
   const groupId = req.params.groupId;
   const userId = req.user?.userId;
@@ -85,6 +91,28 @@ const joinGroup = asyncWrapper(async (req, res) => {
   res.status(StatusCodes.OK).json({ isUserInAnyGroup_info, group, user });
 });
 
+const All_Group_members_Info = asyncWrapper(async (req, res) => {
+  const groupId = req.params.groupId;
+  const group = await Group.findById(groupId)
+    .populate({
+      path: "members",
+      model: User, // Adjust the path as needed
+    })
+    .populate({
+      path: "pendingMembers",
+      model: User, // Adjust the path as needed
+    });
+
+  if (!group) {
+    return res.status(404).json({ message: "Group not found" });
+  }
+  res.json({
+    data: {
+      members: group.members,
+      pendingMembers: group.pendingMembers,
+    },
+  });
+});
 const getAllGroups = async (req, res) => {
   try {
     const groups = await Group.find()
@@ -513,4 +541,6 @@ module.exports = {
   getMemberGroups,
   CheckoutGroupCart,
   GroupcartCheckout,
+  Group_admin_add_remove_members,
+  All_Group_members_Info,
 };
