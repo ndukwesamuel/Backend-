@@ -256,7 +256,7 @@ const get_A_UserProfile = async (req, res) => {
     if (!profile) {
       res.status(401).json({ message: "You need to login" });
     }
-    res.status(StatusCodes.OK).json({ message: profile });
+    res.status(StatusCodes.OK).json({ data: profile });
   } catch (error) {
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
