@@ -7,12 +7,13 @@ const productSchema = new Schema({
     type: String,
     required: [true, "Please enter product name"],
   },
-
+  OtherName: {
+    type: String,
+  },
   country: {
     type: String,
     required: [true, "Please select your country"],
   },
-
   image: {
     type: String,
   },

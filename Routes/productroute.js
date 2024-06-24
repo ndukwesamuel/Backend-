@@ -13,12 +13,15 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
+  AdmingetAllProducts,
 } = require("../Controller/productcontroler");
 
 router
   .route("/")
-  .get(getAllProducts)
+  .get(verifyTokenAndAdmin, AdmingetAllProducts)
   .post(verifyTokenAndAdmin, upload.single("image"), createProduct);
+
+router.route("/user-product").get(verifyToken, getAllProducts);
 router
   .route("/:id")
   .put(verifyTokenAndAdmin, upload.single("image"), updateProduct)

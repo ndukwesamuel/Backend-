@@ -5,26 +5,26 @@ const {
 
 const Category = require("../Models/Category");
 const Product = require("../Models/Products");
+const { findUserProfileById } = require("../services/userService");
 const cloudinary = require("../utils/Cloudinary");
 
 const createProduct = async (req, res) => {
-  const categoryCheck = await Category.findOne({ name: req.body.category });
-  if (!categoryCheck) {
-    return res.status(400).json({ error: true, message: "Invalid category" });
-  }
+  // const categoryCheck = await Category.findOne({ name: req.body.category });
+  // if (!categoryCheck) {
+  //   return res.status(400).json({ error: true, message: "Invalid category" });
+  // }
   try {
     const upload = await cloudinary.uploader.upload(req.file.path, {
       folder: "webuyam/product",
     });
     const newProduct = new Product({
       name: req.body.name,
+      OtherName: req.body.OtherName,
+      country: req.body.country,
       price: req.body.price,
       image: upload.secure_url,
       description: req.body.description,
-      category: req.body.category,
-      frenchName: req.body.frenchName,
-      Frenchdescription: req.body.Frenchdescription,
-      otherprice: req.body.otherprice,
+      // category: req.body.category,
     });
     savedProduct = await newProduct.save();
     res.status(200).json({
@@ -51,6 +51,34 @@ const getProduct = async (req, res) => {
 };
 
 const getAllProducts = async (req, res) => {
+  const user_id = req.user?.userId;
+
+  const user_info = await findUserProfileById(user_id);
+  console.log({
+    user_id: user_info,
+  });
+  try {
+    const products = await Product.find({
+      country: user_info?.user?.country,
+    }).sort({ createdAt: -1 });
+
+    if (products.length < 1) {
+      return res.status(200).json({ products: [] });
+    }
+    res.status(200).json(products);
+  } catch (err) {
+    const errors = handleErrors(err);
+    res.status(500).json({ error: errors, message: err });
+  }
+};
+
+const AdmingetAllProducts = async (req, res) => {
+  const user_id = req.user?.userId;
+
+  // const user_info = await findUserProfileById(user_id);
+  // console.log({
+  //   user_id: user_info,
+  // });
   try {
     const products = await Product.find().sort({ createdAt: -1 });
 
@@ -165,4 +193,5 @@ module.exports = {
   getAllProducts,
   updateProduct,
   deleteProduct,
+  AdmingetAllProducts,
 };
