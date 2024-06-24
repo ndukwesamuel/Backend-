@@ -21,12 +21,13 @@ const {
   emailVerification,
   resendVerificationEmail,
 } = require("../Controller/verificationController");
+router.route("/").get(verifyTokenAndAdmin, getAllUser);
+
 router
   .route("/profile")
   .patch(verifyToken, updateUserProfile)
   .get(verifyToken, getUserProfile);
 
-router.route("/").get(verifyTokenAndAdmin, getAllUser);
 router
   .route("/upload-image")
   .put(verifyToken, upload.single("image"), uploadProfileImage);

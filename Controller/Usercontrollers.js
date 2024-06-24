@@ -129,8 +129,8 @@ const login = asyncWrapper(async (req, res, next) => {
 });
 
 const updateUserProfile = async (req, res) => {
-  const { name, email, phone, address } = req.body;
-  email = email.trim().toLowerCase();
+  const { name, phone, address } = req.body;
+  // email = email.trim().toLowerCase();
   const profile = await UserProfile.findOne({ user: req.user.userId });
   if (!profile) {
     res.status(401).json({ message: "You need to login" });
@@ -138,11 +138,11 @@ const updateUserProfile = async (req, res) => {
   try {
     data = {
       name: name,
-      email: email,
+      // email: email,
       phone: phone,
       address: address,
     };
-    await User.findByIdAndUpdate(req.user.userId, { name: name, email: email });
+    await User.findByIdAndUpdate(req.user.userId, { name: name });
     await UserProfile.findByIdAndUpdate(profile._id, data);
     res
       .status(StatusCodes.OK)
