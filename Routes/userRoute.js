@@ -16,6 +16,7 @@ const {
   logout,
   V1_register,
   get_A_UserProfile,
+  get_country_account_details,
 } = require("../Controller/Usercontrollers");
 const {
   emailVerification,
@@ -34,6 +35,7 @@ router
 router.route("/register").post(register);
 router.route("/login").post(login);
 router.route("/logout").get(verifyToken, logout);
+router.route("/account-number").get(verifyToken, get_country_account_details);
 
 router.route("/verify-email").post(emailVerification);
 router.route("/resendOTP").post(resendVerificationEmail);

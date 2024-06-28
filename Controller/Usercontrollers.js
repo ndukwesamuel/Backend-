@@ -264,6 +264,32 @@ const get_A_UserProfile = async (req, res) => {
   }
 };
 
+const get_country_account_details = asyncWrapper(async (req, res) => {
+  const { userId } = req.user;
+  const profile = await findUserProfileById(userId);
+  let userCountry = profile?.user?.country;
+
+  let bank = [
+    {
+      name: "PROVIDENTIAL BANK",
+      accountNo: "1234567890",
+      country: "NGA",
+    },
+    {
+      country: "RWA",
+      name: "MOMO",
+      accountNo: "1234567890",
+    },
+    {
+      name: "PROVIDENTIAL BANK",
+      accountNo: "1234567890",
+      country: "BEN",
+    },
+  ];
+  let userBank = bank.filter((b) => b.country === userCountry);
+  res.status(StatusCodes.OK).json({ userBank });
+});
+
 module.exports = {
   updateUserProfile,
   getUserProfile,
@@ -277,4 +303,5 @@ module.exports = {
   V1_sendOTP,
   V1_verifyOTP,
   get_A_UserProfile,
+  get_country_account_details,
 };
