@@ -19,10 +19,12 @@ const {
   All_User_That_can_join_Group,
   Group__add_members,
   Group__Remove_members,
+  usergetAllGroups,
 } = require("../Controller/Group");
 
 router.route("/").post(verifyToken, createGroup).get(verifyToken, getAllGroups);
 router.route("/all").get(verifyTokenAndAdmin, getAllGroupMembers);
+router.route("/user-get-all-group").get(verifyToken, usergetAllGroups);
 router.route("/member").get(verifyToken, getMemberGroups);
 router.route("/checkout").post(verifyToken, CheckoutGroupCart);
 

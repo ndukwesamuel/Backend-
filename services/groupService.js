@@ -19,7 +19,16 @@ const excludedFields = ["-password", "-__v", "-createdAt", "-updatedAt"];
 // Register User
 
 async function findGroupById(groupId) {
-  const groupinfo = await Group.findById(groupId);
+  const groupinfo = await Group.findById(groupId)
+    .populate({
+      path: "members",
+      model: User, // Adjust the path as needed
+    })
+    .populate({
+      path: "pendingMembers",
+      model: User, // Adjust the path as needed
+    });
+
   if (!groupinfo) {
     throw customError(404, "groupinfo");
   }
@@ -27,9 +36,26 @@ async function findGroupById(groupId) {
   return groupinfo;
 }
 
+async function findGroups_info(datainfo) {
+  const groupinfo = await Group.find(datainfo)
+    .populate({
+      path: "members",
+      model: User, // Adjust the path as needed
+    })
+    .populate({
+      path: "pendingMembers",
+      model: User, // Adjust the path as needed
+    });
+
+  return groupinfo;
+}
+
 const isUserInAnyGroup = async (userId) => {
+  console.log({
+    userId,
+  });
   // Find groups where the user is a member
-  const groups = await Group.find({ members: userId }).exec();
+  const groups = await Group.find({ members: userId });
   if (groups.length > 0) {
     return groups;
   } else {
@@ -56,4 +82,5 @@ module.exports = {
   findGroupById,
   isUserInAnyGroup,
   requesting_user_member_group_level,
+  findGroups_info,
 };

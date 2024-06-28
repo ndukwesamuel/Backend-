@@ -19,6 +19,7 @@ const {
   findGroupById,
   isUserInAnyGroup,
   requesting_user_member_group_level,
+  findGroups_info,
 } = require("../services/groupService");
 
 const createGroup = async (req, res) => {
@@ -129,33 +130,32 @@ const Group__Remove_members = async (req, res) => {
 const joinGroup = asyncWrapper(async (req, res) => {
   const groupId = req.params.groupId;
   const userId = req.user?.userId;
-  const isUserInAnyGroup_info = await isUserInAnyGroup(userId);
-  if (isUserInAnyGroup_info) {
-    throw new BadRequestError("You are already a member of a group");
+
+  const findUserProfileByIdrespons = await findUserProfileById(userId);
+
+  const isUserInAnyGrouprespons = await isUserInAnyGroup(userId);
+
+  const grouprespons = await findGroupById(groupId);
+
+  if (isUserInAnyGrouprespons) {
+    return res.status(400).json({
+      message: "User is already a member or has a pending request",
+    });
   }
-  const group = await findGroupById(groupId);
 
-  const user = await findUserProfileById(userId);
+  let user_country = findUserProfileByIdrespons?.user?.country;
+  let group_country = grouprespons?.country;
 
-  const userCountry = user.country;
+  if (user_country !== group_country) {
+    return res.status(400).json({
+      message: "You can only join groups from your country",
+    });
+  }
 
-  // if (group.country !== userCountry) {
-  //   throw new BadRequestError("You can only join groups from your country");
-  // }
+  grouprespons.pendingMembers.push(userId);
+  await grouprespons.save();
 
-  // // Check if the user is already a member of any group (assuming same country restriction)
-  // const existingGroup = await Group.find({
-  //   members: userId,
-  //   country: userCountry,
-  // });
-
-  // if (existingGroup.length > 0) {
-  //   throw new BadRequestError("You are already a member of another group!");
-  // }
-
-  // group.members.push(userId);
-  // await group.save();
-  res.status(StatusCodes.OK).json({ isUserInAnyGroup_info, group, user });
+  res.status(200).json({ message: "Request to join group sent" });
 });
 
 const All_Group_members_Info = asyncWrapper(async (req, res) => {
@@ -230,6 +230,22 @@ const getAllGroups = async (req, res) => {
     return res.status(500).json({ message: err });
   }
 };
+
+const usergetAllGroups = asyncWrapper(async (req, res) => {
+  // try {
+  const userId = req.user.userId;
+
+  const findUserProfileByIdrespons = await findUserProfileById(userId);
+
+  let user_country = findUserProfileByIdrespons?.user?.country;
+  let search_data = {
+    country: user_country,
+  };
+
+  const groups = await findGroups_info(search_data);
+
+  return res.status(200).json({ groups });
+});
 
 const getAllGroupMembers = async (req, res) => {
   try {
@@ -644,4 +660,5 @@ module.exports = {
   All_User_That_can_join_Group,
   Group__add_members,
   Group__Remove_members,
+  usergetAllGroups,
 };
