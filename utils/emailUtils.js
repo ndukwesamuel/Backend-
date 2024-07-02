@@ -36,7 +36,7 @@ const sendEmail = async ({ to, subject, text, html }) => {
     });
 
     const mailOptions = {
-      from: "Admin@Pausepoint.com",
+      from: "Admin@Webuyam.com",
       to: to,
       subject,
       text,
