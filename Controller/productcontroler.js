@@ -135,7 +135,8 @@ const updateProduct = async (req, res) => {
     // }
 
     // Check if the product exists
-    const existingProduct = await Product.findById(req.params.productId);
+    const existingProduct = await Product.findById(req.params.id);
+    console.log("hello");
     if (!existingProduct) {
       return res
         .status(404)
