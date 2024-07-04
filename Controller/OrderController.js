@@ -1,4 +1,5 @@
 const Cart = require("../Models/Cart");
+const order = require("../Models/Order");
 const Order = require("../Models/Order");
 const OrderItem = require("../Models/OrderItems");
 
@@ -17,7 +18,9 @@ const orderList = async (req, res) => {
       .sort({ dateOrdered: -1 });
 
     if (!orders || orders.length === 0) {
-      return res.status(404).json({ success: false, message: "No orders yet" });
+      return res
+        .status(404)
+        .json({ success: false, message: "No orders yet", orders: orders });
     }
 
     res.status(200).json({
