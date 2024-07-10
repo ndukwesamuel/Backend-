@@ -65,7 +65,7 @@ const Get_Bank_USer_Can_Pay_with = asyncWrapper(async (req, res) => {
       id: 3,
       BankName: "MoMO",
       AccountNumber: "*182*8*1*1243072#",
-      AccountHolder: "Webuyam",
+      AccountHolder: "Kitovu Technology Company Ltd",
       Country: "RWA",
     },
   ];

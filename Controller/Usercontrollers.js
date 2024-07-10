@@ -44,7 +44,7 @@ const register = asyncWrapper(async (req, res) => {
     if (referralCode) {
       referrer = await User.findOne({ referralCode });
       if (referrer) {
-        referrer.wallet += 1000;
+        referrer.wallet += 100;
         await referrer.save(); // Save the updated referrer's wallet balance
       } else {
         return res.status(200).json({ message: "Invalid referral code" });

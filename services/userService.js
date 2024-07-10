@@ -35,7 +35,7 @@ async function registerService(userData) {
     if (referralCode) {
       referrer = await User.findOne({ referralCode });
       if (referrer) {
-        referrer.wallet += 1000;
+        referrer.wallet += 100;
         await referrer.save(); // Save the updated referrer's wallet balance
       } else {
         throw customError(400, `Invalid referral code`);

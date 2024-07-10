@@ -37,7 +37,7 @@ const userSchema = new Schema(
     },
     wallet: {
       type: Number,
-      default: 500000, // Initial wallet balance is 0
+      default: 100, // Initial wallet balance is 0
     },
     country: {
       type: String,

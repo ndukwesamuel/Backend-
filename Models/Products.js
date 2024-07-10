@@ -7,16 +7,16 @@ const productSchema = new Schema({
     type: String,
     required: [true, "Please enter product name"],
   },
-  OtherName: {
-    type: String,
-  },
+
   country: {
     type: String,
     required: [true, "Please select your country"],
   },
+
   image: {
     type: String,
   },
+
   price: {
     type: Number,
     default: 0,
@@ -25,6 +25,12 @@ const productSchema = new Schema({
   description: {
     type: String,
   },
+
+  //// this is where we update the line
+  OtherName: {
+    type: String,
+  },
+
   category: {
     type: String,
     ref: "category",
