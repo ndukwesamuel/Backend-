@@ -129,13 +129,14 @@ const OldupdateProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     // Check if the category exists
-    const categoryCheck = await Category.findOne({ name: req.body.category });
-    if (!categoryCheck) {
-      return res.status(400).json({ error: true, message: "Invalid category" });
-    }
+    // const categoryCheck = await Category.findOne({ name: req.body.category });
+    // if (!categoryCheck) {
+    //   return res.status(400).json({ error: true, message: "Invalid category" });
+    // }
 
     // Check if the product exists
-    const existingProduct = await Product.findById(req.body.productId);
+    const existingProduct = await Product.findById(req.params.id);
+    console.log("hello");
     if (!existingProduct) {
       return res
         .status(404)
@@ -146,7 +147,7 @@ const updateProduct = async (req, res) => {
     existingProduct.name = req.body.name;
     existingProduct.price = req.body.price;
     existingProduct.description = req.body.description;
-    existingProduct.category = req.body.category;
+    // existingProduct.category = req.body.category;
 
     // If a new image is provided, upload and update the image URL
     if (req.file) {
