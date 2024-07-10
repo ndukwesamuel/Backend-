@@ -55,7 +55,7 @@ const UpdateUserWalletwithReceipt = async (req, res) => {
   }
 
   try {
-    // Find the receipt by ID
+    //   // Find the receipt by ID
     const receipt = await Receipt.findById(receiptId).populate("user");
 
     // Check if the receipt exists
