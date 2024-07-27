@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/ndukwesamuel/Backend-#readme",
   "dependencies": {
+    "@faker-js/faker": "^8.4.1",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.2",
     "cloudinary": "^1.38.0",
@@ -29,6 +30,8 @@
     "express-async-errors": "^3.1.1",
     "express-async-handler": "^1.2.0",
     "express-session": "^1.17.3",
+    "faker": "^6.6.6",
+    "flutterwave-node-v3": "^1.1.10",
     "follow-redirects": "^1.15.2",
     "handlebars": "^4.7.8",
     "http-status-codes": "^2.2.0",
