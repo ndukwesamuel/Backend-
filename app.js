@@ -75,7 +75,9 @@ app.get("/api/countries", async (req, res) => {
       tx_ref: "MC-158523s09v5050e8",
       order_id: "USS_URG_893982923s2327",
       amount: "1500",
-      currency: "NGN",
+      // currency: "NGN",
+      currency: "RWF",
+
       email: "olufemi@flw.com",
       phone_number: "9167703400",
       fullname: "John Madakin",
@@ -104,6 +106,12 @@ app.get("/flutterwave", async (req, res) => {
 
 app.post("/flutterwave", async (req, res) => {
   res.json({ message: "hello flutterwave post" });
+});
+
+app.post("/flw-webhook", async (req, res) => {
+  const payload = req.body;
+  console.log(payload);
+  res.status(200).json({ message: "hello flutterwave post", data: payload });
 });
 
 app.use(notFoundMiddleware);
