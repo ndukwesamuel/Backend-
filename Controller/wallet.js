@@ -5,7 +5,16 @@ const { getImageId } = require("../Middleware/errorHandler/function");
 const { CreditUser, GroupTransfer } = require("../Models/Transaction");
 const Receipt = require("../Models/receipt");
 const { StatusCodes } = require("http-status-codes");
-
+const { findUserProfileById } = require("../services/userService");
+const { v4: uuidv4 } = require("uuid");
+const uuid = uuidv4();
+const Flutterwave = require("flutterwave-node-v3");
+const flw = new Flutterwave(
+  "FLWPUBK_TEST-5efc88def75d1c44d4a4535b31bc4c8a-X",
+  "FLWSECK_TEST-67a4462102e95e67069e7f5f98c80369-X"
+  // process.env.FLW_PUBLIC_KEY,
+  // process.env.FLW_SECRET_KEY
+);
 const receiptUploader = async (req, res) => {
   try {
     const upload = await cloudinary.uploader.upload(req.file.path, {
@@ -353,6 +362,50 @@ const GroupPaysForAProduct = async (req, res) => {
   });
 };
 
+function generateUniqueNumber() {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based, so add 1
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+
+  const dateString = `${year}${month}${day}${hours}${minutes}${seconds}`;
+  const uniqueNumber = `${uuid}-${dateString}`;
+
+  return uniqueNumber;
+}
+
+const fluterwave_fun_money = async (req, res) => {
+  const { phone_number, amount } = req.body;
+
+  let user = req.user?.userId;
+
+  const user_details = await findUserProfileById(user);
+
+  const payload = {
+    tx_ref: `tx_ref-${generateUniqueNumber()}-${amount}`,
+    order_id: `order_id-${generateUniqueNumber()}-RWF`,
+    amount: amount,
+    currency: "RWF",
+    phone_number: phone_number,
+    email: user_details?.user?.email,
+    fullname: user_details?.user?.fullName, //"Example User",
+  };
+  const response = await flw.MobileMoney.rwanda(payload);
+
+  res.status(200).json({
+    data: response,
+  });
+};
+
+const fluterwave_webhook = async (req, res) => {
+  const payload = req.body;
+  console.log(payload);
+  res.status(200).json({ message: "hello flutterwave post", data: payload });
+};
+
 module.exports = {
   receiptUploader,
   getAllReceipt,
@@ -365,4 +418,5 @@ module.exports = {
   GroupPaysForAProduct,
   GetUserMoney,
   UpdateUserWalletwithReceipt,
+  fluterwave_fun_money,
 };

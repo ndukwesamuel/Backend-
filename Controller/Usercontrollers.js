@@ -290,6 +290,8 @@ const get_country_account_details = asyncWrapper(async (req, res) => {
   res.status(StatusCodes.OK).json({ userBank });
 });
 
+// Route to create an admin user
+
 module.exports = {
   updateUserProfile,
   getUserProfile,
