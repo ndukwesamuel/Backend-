@@ -12,11 +12,14 @@ const {
   GroupPaysForAProduct,
   GetUserMoney,
   UpdateUserWalletwithReceipt,
+  fluterwave_fun_money,
 } = require("../Controller/wallet");
 const upload = require("../Middleware/multer");
 const router = Router();
 
 router.route("/").post(verifyToken, AddMoneyTo).get(verifyToken, GetUserMoney);
+router.route("/fluterwave").post(verifyToken, fluterwave_fun_money);
+
 router.route("/update/:id").patch(verifyTokenAndAdmin, updateUserWallet);
 router.route("/receipt").get(verifyTokenAndAdmin, getAllReceipt);
 

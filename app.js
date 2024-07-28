@@ -71,26 +71,25 @@ app.use("/api/seed", seedRoute); // Add this line
 // Route to get all country items
 app.get("/api/countries", async (req, res) => {
   try {
-    const payload = {
-      tx_ref: "MC-158523s09v5050e8",
-      order_id: "USS_URG_893982923s2327",
-      amount: "1500",
-      // currency: "NGN",
-      currency: "RWF",
-
-      email: "olufemi@flw.com",
-      phone_number: "9167703400",
-      fullname: "John Madakin",
-    };
-
     // const payload = {
-    //   phone_number: "054709929220",
-    //   amount: 1500,
-    //   currency: "RWF",
-    //   email: "JoeBloggs@acme.co",
-    //   tx_ref: "MC-158523s09v5050e8",
+    //   tx_ref: "MC-158523s09v50343",
     //   order_id: "USS_URG_893982923s2327",
+    //   amount: "1500",
+    //   currency: "RWF",
+
+    //   email: "olufemi@flw.com",
+    //   phone_number: "9167703400",
+    //   fullname: "John Madakin",
     // };
+
+    const payload = {
+      phone_number: "054709929220",
+      amount: 1500,
+      currency: "RWF",
+      email: "JoeBloggs@acme.co",
+      tx_ref: "MC-158523s09v5050e8a",
+      order_id: "USS_URG_893982923s2326",
+    };
 
     const response = await flw.MobileMoney.rwanda(payload);
     console.log(response);
