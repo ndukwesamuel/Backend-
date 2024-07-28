@@ -36,6 +36,7 @@ const notFoundMiddleware = require("./Middleware/not-found");
 const errorHandlerMiddleware = require("./Middleware/error-handler");
 const { EmailFunction } = require("./utils/EmailFunction");
 const sendEmail = require("./utils/sendEmail");
+const { Flutterwave_Payment } = require("./services/PaymantService");
 const port = process.env.PORT || 5000;
 
 mongoose.set("strictQuery", true);
@@ -109,8 +110,43 @@ app.post("/flutterwave", async (req, res) => {
 
 app.post("/flw-webhook", async (req, res) => {
   const payload = req.body;
-  console.log(payload);
-  res.status(200).json({ message: "hello flutterwave post", data: payload });
+  // console.log(payload);
+
+  let newdata = {
+    event: "charge.completed",
+    data: {
+      id: 6506833,
+      tx_ref: "tx_ref-4b01cabf-c600-4636-aa3e-339f1ecf3491-20240728151633-20",
+      flw_ref: "flwm3s4m0c1722179804734",
+      device_fingerprint: "N/A",
+      amount: 20,
+      currency: "RWF",
+      charged_amount: 20,
+      app_fee: 0.58,
+      merchant_fee: 0,
+      processor_response: "Transaction Successful",
+      auth_model: "MOBILEMONEY",
+      ip: "52.209.154.143",
+      narration: "Samuel Ndukwe 1722077312293",
+      status: "successful",
+      payment_type: "mobilemoneyrw",
+      created_at: "2024-07-28T15:16:44.000Z",
+      account_id: 2515122,
+      customer: {
+        id: 2460221,
+        name: "Kaka Kaka",
+        phone_number: "0805614811",
+        email: "pofow73737@mfunza.com",
+        created_at: "2024-07-28T15:16:44.000Z",
+      },
+    },
+    "event.type": "MOBILEMONEYRW_TRANSACTION",
+  };
+
+  const payment_service = await Flutterwave_Payment(payload);
+  res
+    .status(200)
+    .json({ message: "hello flutterwave post", data: payment_service });
 });
 
 app.use(notFoundMiddleware);
