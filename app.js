@@ -27,6 +27,7 @@ const Route = require("./Routes/Route");
 const orderRoute = require("./Routes/OrderRoute");
 const BankRoute = require("./Routes//BankRoute");
 const cartHistoryRoute = require("./Routes/cartHistoryRoute");
+const selfbuyRoute = require("./Routes/SelfBuyProductRoute");
 
 const seedRoute = require("./Routes/seedroute");
 // ./Routes/seedRoute"); // Add this line
@@ -58,6 +59,7 @@ app.use(express.json());
 app.use("/api", Route);
 app.use("/api/v1", V1user);
 app.use("/api/user", user);
+app.use("/api/selfbuy", selfbuyRoute);
 app.use("/api/group", grouproute);
 app.use("/api/category", categoryroute);
 app.use("/api/products", productroute);

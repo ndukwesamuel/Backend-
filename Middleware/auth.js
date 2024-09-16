@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../Models/Users");
 const { UnauthenticatedError } = require("../errors");
+const { findUserProfileById } = require("../services/userService");
 // create token for password hashing
 const createToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {});
@@ -41,6 +42,14 @@ const verifyTokenAndAuthorization = (req, res, next) => {
   });
 };
 
+const verifyCountry = async (req, res, next) => {
+  // verifyToken(req, res, () => {
+  let userId = req.user.userId;
+  const userRes = await findUserProfileById(userId);
+  req.userProfile = userRes;
+  next();
+};
+
 const verifyTokenAndAdmin = (req, res, next) => {
   verifyToken(req, res, () => {
     User.findOne({ _id: req.user.userId })
@@ -65,4 +74,5 @@ module.exports = {
   verifyTokenAndAdmin,
   verifyTokenAndAuthorization,
   createToken,
+  verifyCountry,
 };
