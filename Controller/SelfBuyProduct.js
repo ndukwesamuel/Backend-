@@ -27,6 +27,24 @@ const getSelfProduct = async (req, res) => {
   }
 };
 
+const getSingleSelfProduct = async (req, res) => {
+  try {
+    const userinfo = req.userProfile;
+
+    let userCountry = userinfo?.user?.country;
+
+    let product = await findProduct({
+      country: userCountry,
+    });
+
+    res.status(200).json({
+      data: product,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+};
+
 const createProduct = async (req, res) => {
   // const categoryCheck = await Category.findOne({ name: req.body.category });
   // if (!categoryCheck) {
