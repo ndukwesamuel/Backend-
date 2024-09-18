@@ -65,6 +65,44 @@ const addToCart = async (req, res) => {
   }
 };
 
+const removeFromCart = async (req, res) => {
+  let { productId } = req.query;
+
+  try {
+    let cart = await Cart.findOne({ userId: req.user.userId });
+
+    if (!cart) {
+      return res.status(404).json({ error: "Cart not found." });
+    }
+
+    const index = cart.items.findIndex((item) => item.productId == productId);
+
+    if (index === -1) {
+      return res.status(404).json({ error: "Item not found in cart." });
+    }
+
+    // Decrement the quantity of the item
+    cart.items[index].quantity -= 1;
+
+    // Remove the item if the quantity reaches zero
+    if (cart.items[index].quantity === 0) {
+      cart.items.splice(index, 1); // Remove the item from the array
+    }
+
+    await cart.save();
+
+    // Populate product details in the response
+    cart = await cart.populate("items.productId");
+
+    res.status(200).json(cart);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while removing from the cart." });
+  }
+};
+
 // Decrease items quantity
 const decreaseCartItems = async (req, res) => {
   console.log(req.user.userId);
@@ -194,4 +232,5 @@ module.exports = {
   getCart,
   deleteFromCart,
   decreaseCartItems,
+  removeFromCart,
 };
