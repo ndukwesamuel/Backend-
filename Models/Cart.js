@@ -8,17 +8,22 @@ const cartSchema = new Schema({
     ref: "user",
     required: true,
   },
+
   items: [
     {
       productId: {
-        type: String,
-        ref: "products",
+        // type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "product",
         required: true,
       },
       quantity: {
         type: Number,
-        default: 0,
+        required: true,
+        default: 1,
       },
+
+      ///this has to  removed
       price: {
         type: Number,
         default: 0,
@@ -26,6 +31,8 @@ const cartSchema = new Schema({
       name: {
         type: String,
       },
+
+      // all this
     },
   ],
   bill: {

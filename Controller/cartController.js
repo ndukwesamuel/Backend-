@@ -4,8 +4,6 @@ const product = require("../Models/Products");
 const getCart = async (req, res) => {
   try {
     let userId = req.user.userId;
-    // Find the user's cart based on userId and populate product details including image
-    // const userCart = await Cart.findOne({ userId });
 
     const userCart = await Cart.findOne({ userId }).populate({
       path: "items.productId",
@@ -22,46 +20,51 @@ const getCart = async (req, res) => {
   }
 };
 
-// ADD item to cart
 const addToCart = async (req, res) => {
-  const { productId, quantity, price, name } = req.body;
+  let { productId } = req.query;
 
-  if (!req.user.userId) {
-    throw new BadRequestError("You are not logged in!");
-  }
-  const cart = await Cart.findOne({ userId: req.user.userId });
-  if (!cart) {
-    // create a new cart if one doesn't exist for the user
-    const newCart = new Cart({
-      userId: req.user.userId,
-      items: [{ productId, quantity, price, name }],
-      bill: quantity * price,
-    });
-    await newCart.save();
-    res.status(200).json(newCart);
-  } else {
-    // add the item to the existing cart
-    const index = cart.items.findIndex((item) => item.productId == productId);
-    if (index === -1) {
-      // add the item if it doesn't already exist in the cart
-      const initailValue = 0;
+  try {
+    let cart = await Cart.findOne({ userId: req.user.userId });
 
-      cart.items.push({ productId, quantity, price, name });
-      cart.bill = cart.items.reduce((total, curr) => {
-        return total + curr.quantity * curr.price;
-      }, initailValue);
+    if (!cart) {
+      // Create a new cart if one doesn't exist for the user
+      const newCart = new Cart({
+        userId: req.user.userId,
+        items: [{ productId, quantity: 1 }], // Set initial quantity to 1
+      });
+      await newCart.save();
+
+      // Populate product details in the response
+      await newCart.populate("items.productId");
+
+      res.status(200).json(newCart);
     } else {
-      // update the quantity of the item if it already exists in the cart
-      const initailValue = 0;
-      cart.items[index].quantity += 1;
-      cart.bill = cart.items.reduce((total, curr) => {
-        return total + curr.quantity * curr.price;
-      }, initailValue);
+      // Add the item to the existing cart
+      const index = cart.items.findIndex((item) => item.productId == productId);
+
+      if (index === -1) {
+        // Add the item if it doesn't already exist in the cart
+        cart.items.push({ productId, quantity: 1 }); // Set initial quantity to 1
+      } else {
+        // Update the quantity of the item if it already exists in the cart
+        cart.items[index].quantity += 1; // Increment quantity by 1
+      }
+
+      await cart.save();
+
+      // Populate product details in the response
+      cart = await cart.populate("items.productId");
+
+      res.status(200).json(cart);
     }
-    await cart.save();
-    res.status(200).json(cart);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while adding to the cart." });
   }
 };
+
 // Decrease items quantity
 const decreaseCartItems = async (req, res) => {
   console.log(req.user.userId);
