@@ -1,7 +1,67 @@
 const Cart = require("../Models/Cart");
-const order = require("../Models/Order");
 const Order = require("../Models/Order");
 const OrderItem = require("../Models/OrderItems");
+
+const userOrder = async (req, res) => {
+  try {
+    let userId = req.user.userId;
+
+    const orders = await Order.find({ user: userId })
+      .populate("products.product")
+      .populate("user");
+
+    res.status(200).json({ success: true, data: orders });
+  } catch (error) {
+    res.status(500).send("Internal Server Error");
+  }
+};
+
+const PlaceOrderFromCart = async (req, res) => {
+  try {
+    let userId = req.user.userId;
+
+    console.log({
+      fff: req.user,
+      yyy: userId,
+    });
+
+    const cart = await Cart.findOne({ userId }).populate({
+      path: "items.productId",
+      model: "product",
+    });
+
+    if (!cart || cart.items.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Cart is empty or does not exist." });
+    }
+
+    const orderDetails = {
+      user: userId,
+      products: cart.items.map((item) => ({
+        product: item.productId._id,
+        quantity: item.quantity,
+      })),
+      totalAmount: cart.bill,
+      // shippingAddress: "req.body.shippingAddress", // You can get this from req.body or user's profile
+    };
+    // Create the order
+    const order = new Order(orderDetails);
+    await order.save();
+
+    // Clear the cart
+    cart.items = [];
+    cart.bill = 0;
+    await cart.save();
+
+    res.status(201).json({ message: "Order placed successfully", order });
+  } catch (error) {
+    console.log({
+      error: error,
+    });
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 // NOTE: NONE OF THIS ROUTE IS RESTRICTED AND SO I PASSED THE USER ID AS EITHER A BODY OR PARAMS. IF THIS IS WHAT WE WANT, I WILL RESTRICT THEM AND GET THE USER ID FROM req.user.userId
 
@@ -152,40 +212,6 @@ const deleteOrder = (req, res) => {
     });
 };
 
-const userOrder = async (req, res) => {
-  try {
-    const userOrderList = await Order.find({ user: req.user.userId })
-      .populate({
-        path: "orderItems",
-        populate: {
-          path: "product",
-        },
-      })
-      .sort({ dateOrdered: -1 });
-
-    if (!userOrderList || userOrderList.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No orders yet: Place an order now!",
-      });
-    }
-
-    const userOrders = userOrderList.map((order) => {
-      return {
-        orderId: order._id,
-        status: order.status,
-        totalPrice: order.totalPrice,
-        dateOrdered: order.dateOrdered,
-        orderItems: order.orderItems,
-        paymentStatus: order.paymentStatus,
-      };
-    });
-    res.status(200).json({ success: true, message: userOrders });
-  } catch (error) {
-    res.status(500).send("Internal Server Error");
-  }
-};
-
 module.exports = {
   orderList,
   orderById,
@@ -193,4 +219,5 @@ module.exports = {
   updateOrder,
   deleteOrder,
   userOrder,
+  PlaceOrderFromCart,
 };

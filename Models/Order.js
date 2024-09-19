@@ -1,58 +1,56 @@
 const mongoose = require("mongoose");
 
-const orderSchema = mongoose.Schema({
-  orderItems: [
-    {
+const orderSchema = new mongoose.Schema(
+  {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "orderItem",
+      ref: "user",
       required: true,
     },
-  ],
-  shippingAddress1: {
-    type: String,
-    required: true,
+    products: [
+      {
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "product",
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Completed", "Failed"],
+      default: "Pending",
+    },
+    orderStatus: {
+      type: String,
+      enum: ["Processing", "Shipped", "Delivered", "Cancelled"],
+      default: "Processing",
+    },
+    // shippingAddress: {
+    //   fullName: { type: String, required: true },
+    //   address: { type: String, required: true },
+    //   city: { type: String, required: true },
+    //   postalCode: { type: String, required: true },
+    //   country: { type: String, required: true },
+    // },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  shippingAddress2: {
-    type: String,
-    required: true,
-  },
-  city: {
-    type: String,
-    required: true,
-  },
-  zip: {
-    type: String,
-    required: true,
-  },
-  country: {
-    type: String,
-    required: true,
-  },
-  phone: {
-    type: String,
-    required: true,
-  },
-  status: {
-    type: String,
-    required: true,
-    default: "Pending",
-  },
-  paymentStatus: {
-    type: String,
-    default: "Not initiated",
-  },
-  totalPrice: {
-    type: Number,
-  },
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "user",
-  },
-  dateOrdered: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
-const order = mongoose.model("order", orderSchema);
-module.exports = order;
+const Order = mongoose.model("Order", orderSchema);
+
+module.exports = Order;
