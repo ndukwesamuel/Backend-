@@ -126,33 +126,81 @@ const addToCart = async (req, res) => {
   }
 };
 
+// const removeFromCart = async (req, res) => {
+//   let { productId } = req.query;
+
+//   try {
+//     let cart = await Cart.findOne({ userId: req.user.userId });
+
+//     console.log({
+//       haha: cart,
+//     });
+
+//     if (!cart) {
+//       return res.status(404).json({ error: "Cart not found." });
+//     }
+
+//     const index = cart.items.findIndex((item) => item.productId == productId);
+
+//     if (index === -1) {
+//       return res.status(404).json({ error: "Item not found in cart." });
+//     }
+
+//     // Decrement the quantity of the item
+//     cart.items[index].quantity -= 1;
+
+//     // Remove the item if the quantity reaches zero
+//     if (cart.items[index].quantity === 0) {
+//       cart.items.splice(index, 1); // Remove the item from the array
+//     }
+
+//     await cart.save();
+
+//     // Populate product details in the response
+//     cart = await cart.populate("items.productId");
+
+//     res.status(200).json(cart);
+//   } catch (error) {
+//     console.error(error);
+//     res
+//       .status(500)
+//       .json({ error: "An error occurred while removing from the cart." });
+//   }
+// };
+
 const removeFromCart = async (req, res) => {
   let { productId } = req.query;
 
   try {
+    // Find the cart for the user
     let cart = await Cart.findOne({ userId: req.user.userId });
 
-    console.log({
-      haha: cart,
-    });
-
     if (!cart) {
-      return res.status(404).json({ error: "Cart not found." });
+      return res.status(404).json({ error: "Cart not found" });
     }
 
+    // Find the product in the cart
     const index = cart.items.findIndex((item) => item.productId == productId);
 
     if (index === -1) {
-      return res.status(404).json({ error: "Item not found in cart." });
+      return res.status(404).json({ error: "Product not found in cart" });
     }
 
-    // Decrement the quantity of the item
-    cart.items[index].quantity -= 1;
-
-    // Remove the item if the quantity reaches zero
-    if (cart.items[index].quantity === 0) {
-      cart.items.splice(index, 1); // Remove the item from the array
+    // Decrease the quantity of the item or remove it if quantity becomes zero
+    if (cart.items[index].quantity > 1) {
+      cart.items[index].quantity -= 1; // Reduce quantity by 1
+    } else {
+      // Remove the item from the cart if quantity is 1
+      cart.items.splice(index, 1);
     }
+
+    // Recalculate the total bill
+    let totalBill = 0;
+    for (const item of cart.items) {
+      const itemProduct = await Product.findById(item.productId);
+      totalBill += itemProduct.price * item.quantity;
+    }
+    cart.bill = totalBill;
 
     await cart.save();
 
@@ -164,7 +212,7 @@ const removeFromCart = async (req, res) => {
     console.error(error);
     res
       .status(500)
-      .json({ error: "An error occurred while removing from the cart." });
+      .json({ error: "An error occurred while reducing from the cart." });
   }
 };
 
