@@ -11,9 +11,6 @@ const {
 
 router.route("/").get(verifyToken, getCart);
 
-// .post(verifyToken, addToCart);
-// .all(methodNotAllowed);
-
 router.route("/").get(verifyToken, getCart);
 router.route("/addItem").get(verifyToken, addToCart);
 router.route("/decreaseItem").get(verifyToken, removeFromCart);
