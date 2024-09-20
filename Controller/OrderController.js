@@ -5,8 +5,21 @@ const OrderItem = require("../Models/OrderItems");
 const userOrder = async (req, res) => {
   try {
     let userId = req.user.userId;
+    let { orderStatus } = req.query;
 
-    const orders = await Order.find({ user: userId })
+    console.log({
+      orderStatus,
+    });
+
+    const searchCriteria = {
+      user: userId,
+    };
+
+    if (orderStatus) {
+      searchCriteria.orderStatus = orderStatus;
+    }
+
+    const orders = await Order.find(searchCriteria)
       .populate("products.product")
       .populate("user");
 
