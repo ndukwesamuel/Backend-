@@ -112,7 +112,7 @@ app.post("/flutterwave", async (req, res) => {
 
 app.post("/flw-webhook", async (req, res) => {
   const payload = req.body;
-  // console.log(payload);
+  console.log(payload);
 
   let newdata = {
     event: "charge.completed",
