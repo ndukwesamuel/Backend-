@@ -145,10 +145,8 @@ app.post("/flw-webhook", async (req, res) => {
     "event.type": "MOBILEMONEYRW_TRANSACTION",
   };
 
-  const payment_service = await Flutterwave_Payment(payload);
-  res
-    .status(200)
-    .json({ message: "hello flutterwave post", data: payment_service });
+  // const payment_service = await Flutterwave_Payment(payload);
+  res.status(200).json({ message: "hello flutterwave post", data: payload });
 });
 
 app.use(notFoundMiddleware);

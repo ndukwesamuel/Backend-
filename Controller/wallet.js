@@ -414,7 +414,11 @@ const ProductOrderpaymentForpersonalProductfluterwave_fun_money = async (
     .populate("products.product")
     .populate("user");
 
-  let data = {
+  if (!orders) {
+    return res.status(404).json({ message: "Order not found" });
+  }
+
+  let payload = {
     tx_ref: `tx_ref-${generateUniqueNumber()}-${orders?.totalAmount}`,
     order_id: `order_id-${generateUniqueNumber()}-${
       user_details?.user?.country
@@ -428,10 +432,11 @@ const ProductOrderpaymentForpersonalProductfluterwave_fun_money = async (
 
   // Testing tip
   // In Test Mode, you can complete the transaction by visiting the returned redirect URL and entering 123456 as the OTP.
-  const response = await flw.MobileMoney.rwanda(data);
+  const response = await flw.MobileMoney.rwanda(payload);
 
   res.status(200).json({
-    data: { response, user_details, orders, ff: data },
+    data: response,
+    data1: { user_details, orders, ff: payload },
   });
 };
 
