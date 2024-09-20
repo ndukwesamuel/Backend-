@@ -1,4 +1,6 @@
 const User = require("../Models/Users");
+const Order = require("../Models/Order");
+
 const Group = require("../Models/Group");
 const cloudinary = require("../utils/Cloudinary");
 const { getImageId } = require("../Middleware/errorHandler/function");
@@ -400,6 +402,39 @@ const fluterwave_fun_money = async (req, res) => {
   });
 };
 
+const ProductOrderpaymentForpersonalProductfluterwave_fun_money = async (
+  req,
+  res
+) => {
+  let { userId } = req.user;
+  const { orderId } = req.body;
+  const user_details = await findUserProfileById(userId);
+
+  const orders = await Order.findOne({ _id: orderId })
+    .populate("products.product")
+    .populate("user");
+
+  let data = {
+    tx_ref: `tx_ref-${generateUniqueNumber()}-${orders?.totalAmount}`,
+    order_id: `order_id-${generateUniqueNumber()}-${
+      user_details?.user?.country
+    }`,
+    amount: orders?.totalAmount,
+    currency: "RWF",
+    phone_number: "09167703400",
+    email: user_details?.user?.email,
+    fullname: user_details?.user?.fullName, //"Example User",
+  };
+
+  // Testing tip
+  // In Test Mode, you can complete the transaction by visiting the returned redirect URL and entering 123456 as the OTP.
+  const response = await flw.MobileMoney.rwanda(data);
+
+  res.status(200).json({
+    data: { response, user_details, orders, ff: data },
+  });
+};
+
 const fluterwave_webhook = async (req, res) => {
   const payload = req.body;
   console.log(payload);
@@ -419,4 +454,6 @@ module.exports = {
   GetUserMoney,
   UpdateUserWalletwithReceipt,
   fluterwave_fun_money,
+  ProductOrderpaymentForpersonalProductfluterwave_fun_money,
+  fluterwave_webhook,
 };

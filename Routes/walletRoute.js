@@ -13,12 +13,19 @@ const {
   GetUserMoney,
   UpdateUserWalletwithReceipt,
   fluterwave_fun_money,
+  ProductOrderpaymentForpersonalProductfluterwave_fun_money,
+  fluterwave_webhook,
 } = require("../Controller/wallet");
 const upload = require("../Middleware/multer");
 const router = Router();
 
 router.route("/").post(verifyToken, AddMoneyTo).get(verifyToken, GetUserMoney);
 router.route("/fluterwave").post(verifyToken, fluterwave_fun_money);
+router
+  .route("/fluterwave-product")
+  .post(verifyToken, ProductOrderpaymentForpersonalProductfluterwave_fun_money);
+
+router.route("/fluterwave-webhook").post(fluterwave_webhook);
 
 router.route("/update/:id").patch(verifyTokenAndAdmin, updateUserWallet);
 router.route("/receipt").get(verifyTokenAndAdmin, getAllReceipt);
