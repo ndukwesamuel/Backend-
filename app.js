@@ -112,7 +112,7 @@ app.post("/flutterwave", async (req, res) => {
 
 app.post("/flw-webhook", async (req, res) => {
   const payload = req.body;
-  console.log(payload);
+  // console.log(payload);
 
   let newdata = {
     event: "charge.completed",
@@ -145,8 +145,10 @@ app.post("/flw-webhook", async (req, res) => {
     "event.type": "MOBILEMONEYRW_TRANSACTION",
   };
 
-  // const payment_service = await Flutterwave_Payment(payload);
-  res.status(200).json({ message: "hello flutterwave post", data: payload });
+  const payment_service = await Flutterwave_Payment(payload);
+  res
+    .status(200)
+    .json({ message: "hello flutterwave post", data: payment_service });
 });
 
 app.use(notFoundMiddleware);
