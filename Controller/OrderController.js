@@ -1,6 +1,9 @@
 const Cart = require("../Models/Cart");
+const mongoose = require("mongoose");
+
 const Order = require("../Models/Order");
 const OrderItem = require("../Models/OrderItems");
+const User = require("../Models/Users");
 
 const userOrder = async (req, res) => {
   try {
@@ -29,19 +32,66 @@ const userOrder = async (req, res) => {
   }
 };
 
+// const PlaceOrderFromCart = async (req, res) => {
+//   try {
+//     let userId = req.user.userId;
+
+//     console.log({
+//       fff: req.user,
+//       yyy: userId,
+//     });
+
+//     const cart = await Cart.findOne({ userId }).populate({
+//       path: "items.productId",
+//       model: "product",
+//     });
+
+//     if (!cart || cart.items.length === 0) {
+//       return res
+//         .status(400)
+//         .json({ message: "Cart is empty or does not exist." });
+//     }
+
+//     const orderDetails = {
+//       user: userId,
+//       products: cart.items.map((item) => ({
+//         product: item.productId._id,
+//         quantity: item.quantity,
+//       })),
+//       totalAmount: cart.bill,
+//       // shippingAddress: "req.body.shippingAddress", // You can get this from req.body or user's profile
+//     };
+//     // Create the order
+//     const order = new Order(orderDetails);
+//     await order.save();
+
+//     // Clear the cart
+//     cart.items = [];
+//     cart.bill = 0;
+//     await cart.save();
+
+//     res.status(201).json({ message: "Order placed successfully", order });
+//   } catch (error) {
+//     console.log({
+//       error: error,
+//     });
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
+
 const PlaceOrderFromCart = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     let userId = req.user.userId;
 
-    console.log({
-      fff: req.user,
-      yyy: userId,
-    });
-
-    const cart = await Cart.findOne({ userId }).populate({
-      path: "items.productId",
-      model: "product",
-    });
+    const cart = await Cart.findOne({ userId })
+      .populate({
+        path: "items.productId",
+        model: "product",
+      })
+      .session(session); // Ensure the query is run within the transaction
 
     if (!cart || cart.items.length === 0) {
       return res
@@ -49,6 +99,19 @@ const PlaceOrderFromCart = async (req, res) => {
         .json({ message: "Cart is empty or does not exist." });
     }
 
+    // Fetch user and check wallet balance
+    const user = await User.findById(userId).session(session);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    if (cart.bill > user.wallet) {
+      return res.status(400).json({
+        message: "Insufficient balance in wallet to complete the transaction",
+      });
+    }
+
+    // Order details
     const orderDetails = {
       user: userId,
       products: cart.items.map((item) => ({
@@ -58,21 +121,31 @@ const PlaceOrderFromCart = async (req, res) => {
       totalAmount: cart.bill,
       // shippingAddress: "req.body.shippingAddress", // You can get this from req.body or user's profile
     };
+
     // Create the order
     const order = new Order(orderDetails);
-    await order.save();
+    await order.save({ session }); // Save within the transaction
+
+    // Deduct the cart bill from the user's wallet
+    user.wallet -= cart.bill;
+    await user.save({ session }); // Save the updated user wallet balance within the transaction
 
     // Clear the cart
     cart.items = [];
     cart.bill = 0;
-    await cart.save();
+    await cart.save({ session }); // Save the empty cart within the transaction
+
+    await session.commitTransaction(); // Commit the transaction
 
     res.status(201).json({ message: "Order placed successfully", order });
   } catch (error) {
+    await session.abortTransaction(); // Abort the transaction if an error occurs
     console.log({
-      error: error,
+      error: error.message,
     });
     res.status(500).json({ message: "Internal Server Error" });
+  } finally {
+    session.endSession();
   }
 };
 

@@ -12,8 +12,6 @@ const {
   PlaceOrderFromCart,
 } = require("../Controller/OrderController");
 
-router.route("/user-order").post(verifyToken, PlaceOrderFromCart);
-
 router
   .route("/")
   .post(verifyToken, createOrder)
@@ -23,9 +21,6 @@ router
   .route("/user-order")
   .post(verifyToken, PlaceOrderFromCart)
   .get(verifyToken, userOrder);
-
-router.route("/user-order").get(verifyToken, userOrder);
-// .post(verifyToken, PlaceuserOrder);
 
 router
   .route("/:id")

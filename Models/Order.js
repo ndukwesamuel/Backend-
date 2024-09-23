@@ -31,8 +31,8 @@ const orderSchema = new mongoose.Schema(
     },
     orderStatus: {
       type: String,
-      enum: ["request", "accepted", "ongoing", "delivered", "cancelled"],
-      default: "request",
+      enum: ["Processing", "Shipped", "Delivered", "Cancelled"],
+      default: "Processing",
     },
     // shippingAddress: {
     //   fullName: { type: String, required: true },
