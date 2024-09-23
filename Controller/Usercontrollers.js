@@ -129,29 +129,37 @@ const login = asyncWrapper(async (req, res, next) => {
 });
 
 const updateUserProfile = async (req, res) => {
-  const { name, phone, address } = req.body;
-  // email = email.trim().toLowerCase();
-  const profile = await UserProfile.findOne({ user: req.user.userId });
-  if (!profile) {
-    res.status(401).json({ message: "You need to login" });
-  }
+  let userId = req.user.userId;
+
+  const { fullName, phone, address } = req.body;
+
   try {
-    data = {
-      name: name,
-      // email: email,
-      phone: phone,
-      address: address,
-    };
-    await User.findByIdAndUpdate(req.user.userId, { name: name });
-    await UserProfile.findByIdAndUpdate(profile._id, data);
-    res
-      .status(StatusCodes.OK)
-      .json({ message: "Profile successfully updated" });
+    if (fullName) {
+      await User.findByIdAndUpdate(userId, { fullName }, { new: true });
+    }
+
+    if (phone || address) {
+      await UserProfile.findOneAndUpdate(
+        { user: userId },
+        {
+          ...(phone && { phone }),
+          ...(address && { address }),
+          // ...(profileImage && { profileImage }),
+        },
+        { new: true }
+      );
+    }
+
+    res.status(200).json({ message: "User profile updated successfully" });
   } catch (err) {
+    console.log({
+      dddd: err,
+    });
     // const errors = handleErrors(err);
     res.status(500).json({ error: err, message: "Profile update failed" });
   }
 };
+
 const getAllUser = async (req, res) => {
   const users = await User.find().populate("referredUsers", "fullName");
   try {

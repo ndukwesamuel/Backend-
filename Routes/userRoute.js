@@ -100,35 +100,6 @@ const Creat_admin = async (req, res) => {
 router.route("/").get(verifyTokenAndAdmin, getAllUser);
 router.route("/create-admin").get(Creat_admin);
 
-// AdminRoute.get("/create-admin", async (req, res) => {
-//   const { fullName, email, password, country } = req.body;
-
-//   try {
-//     // Check if the user already exists
-//     const existingUser = await User.findOne({ email });
-//     if (existingUser) {
-//       return res.status(400).json({ message: "User already exists" });
-//     }
-
-//     // Create a new user
-//     const newUser = new User({
-//       fullName: "Ndukwe",
-//       email: "ndukwesamuel23@gmail.com",
-//       password: "adminndukwesamuel23@gmail.com",
-//       country: "NGR",
-//       isAdmin: true, // Set isAdmin to true
-//     });
-
-//     // Save the user to the database
-//     await newUser.save();
-//     res
-//       .status(201)
-//       .json({ message: "Admin user created successfully", user: newUser });
-//   } catch (error) {
-//     res.status(500).json({ message: "Server error" });
-//   }
-// });
-
 router
   .route("/profile")
   .patch(verifyToken, updateUserProfile)
