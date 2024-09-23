@@ -21,6 +21,8 @@ const {
 } = require("../services/userService");
 const { sendOTPByEmail } = require("../utils/emailUtils");
 const { validateOTP } = require("../utils/validationUtils");
+const customError = require("../utils/customError");
+const { uploadUserImage } = require("../services/uploadService");
 
 const register = asyncWrapper(async (req, res) => {
   let { name, email, password, country, referralCode } = req.body;
@@ -194,23 +196,25 @@ const getUserProfile = async (req, res) => {
 };
 
 const uploadProfileImage = async (req, res) => {
-  const profile = await UserProfile.findOne({ user: req.user.userId });
+  let userId = req.user.userId;
+  const { image } = req.files;
+
+  if (!req?.files && !req?.files?.image) {
+    return next(customError(400, "Please provide an image"));
+  }
+
+  const profileImage = await uploadUserImage(req.files.image.tempFilePath);
+
+  // const profile = await UserProfile.findOne({ user: req.user.userId });
 
   try {
-    if (profile.profileImage) {
-      const imageId = getImageId(profile.profileImage);
-      await cloudinary.uploader.destroy(`webuyam/profile/${imageId}`);
-    }
-    const upload = await cloudinary.uploader.upload(req.file.path, {
-      folder: "webuyam/profile",
+    const userProfile____ = await UserProfile.findOne({
+      userId: userId,
     });
-    const data = { profileImage: upload.secure_url };
+    userProfile____.profileImage = profileImage || userProfile____.profileImage;
+    await userProfile____.save();
 
-    await UserProfile.findByIdAndUpdate(profile._id, data, {
-      new: true,
-    });
-
-    res.status(200).json({ message: "Image uploaded" });
+    res.status(200).json({ message: "Image uploaded", data: userProfile____ });
   } catch (error) {
     console.log(error);
     res

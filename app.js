@@ -3,6 +3,8 @@ require("express-async-errors");
 const mongoose = require("mongoose");
 require("dotenv").config();
 const cors = require("cors");
+const fileUpload = require("express-fileupload");
+
 const multer = require("multer");
 const { job } = require("./helper");
 const connectDB = require("./db/connect");
@@ -53,6 +55,12 @@ const httpServer = require("http").Server(app);
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
+);
 
 // this is the  api route
 

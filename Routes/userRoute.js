@@ -105,6 +105,8 @@ router
   .patch(verifyToken, updateUserProfile)
   .get(verifyToken, getUserProfile);
 
+router.route("/upload-image").patch(verifyToken, uploadProfileImage);
+
 router
   .route("/upload-image")
   .put(verifyToken, upload.single("image"), uploadProfileImage);

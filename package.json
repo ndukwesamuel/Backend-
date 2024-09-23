@@ -29,6 +29,7 @@
     "express": "^4.18.2",
     "express-async-errors": "^3.1.1",
     "express-async-handler": "^1.2.0",
+    "express-fileupload": "^1.5.1",
     "express-session": "^1.17.3",
     "faker": "^6.6.6",
     "flutterwave-node-v3": "^1.1.10",
