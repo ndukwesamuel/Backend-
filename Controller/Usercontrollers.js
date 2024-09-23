@@ -205,16 +205,16 @@ const uploadProfileImage = async (req, res) => {
 
   const profileImage = await uploadUserImage(req.files.image.tempFilePath);
 
-  // const profile = await UserProfile.findOne({ user: req.user.userId });
+  const profile = await UserProfile.findOne({ user: req.user.userId });
 
   try {
-    const userProfile____ = await UserProfile.findOne({
-      userId: userId,
-    });
-    userProfile____.profileImage = profileImage || userProfile____.profileImage;
-    await userProfile____.save();
+    // const userProfile____ = await UserProfile.findOne({
+    //   userId: userId,
+    // });
+    profile.profileImage = profileImage || profile.profileImage;
+    await profile.save();
 
-    res.status(200).json({ message: "Image uploaded", data: userProfile____ });
+    res.status(200).json({ message: "Image uploaded", data: profile });
   } catch (error) {
     console.log(error);
     res
