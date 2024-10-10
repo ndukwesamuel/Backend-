@@ -21,51 +21,6 @@ const getCart = async (req, res) => {
   }
 };
 
-// const addToCart = async (req, res) => {
-//   let { productId } = req.query;
-
-//   try {
-//     let cart = await Cart.findOne({ userId: req.user.userId });
-
-//     if (!cart) {
-//       // Create a new cart if one doesn't exist for the user
-//       const newCart = new Cart({
-//         userId: req.user.userId,
-//         items: [{ productId, quantity: 1 }], // Set initial quantity to 1
-//       });
-//       await newCart.save();
-
-//       // Populate product details in the response
-//       await newCart.populate("items.productId");
-
-//       res.status(200).json(newCart);
-//     } else {
-//       // Add the item to the existing cart
-//       const index = cart.items.findIndex((item) => item.productId == productId);
-
-//       if (index === -1) {
-//         // Add the item if it doesn't already exist in the cart
-//         cart.items.push({ productId, quantity: 1 }); // Set initial quantity to 1
-//       } else {
-//         // Update the quantity of the item if it already exists in the cart
-//         cart.items[index].quantity += 1; // Increment quantity by 1
-//       }
-
-//       await cart.save();
-
-//       // Populate product details in the response
-//       cart = await cart.populate("items.productId");
-
-//       res.status(200).json(cart);
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     res
-//       .status(500)
-//       .json({ error: "An error occurred while adding to the cart." });
-//   }
-// };
-
 const addToCart = async (req, res) => {
   let { productId } = req.query;
 

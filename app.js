@@ -30,6 +30,9 @@ const orderRoute = require("./Routes/OrderRoute");
 const BankRoute = require("./Routes//BankRoute");
 const cartHistoryRoute = require("./Routes/cartHistoryRoute");
 const selfbuyRoute = require("./Routes/SelfBuyProductRoute");
+const disbusmentRoute = require("./Routes/DisbusmentRoute");
+const comboRoute = require("./Routes/comboRoute");
+const superadmin = require("./Routes/v1/adminRoute");
 
 const seedRoute = require("./Routes/seedroute");
 // ./Routes/seedRoute"); // Add this line
@@ -40,6 +43,7 @@ const errorHandlerMiddleware = require("./Middleware/error-handler");
 const { EmailFunction } = require("./utils/EmailFunction");
 const sendEmail = require("./utils/sendEmail");
 const { Flutterwave_Payment } = require("./services/PaymantService");
+const { createAdminUser } = require("./Controller/Admin/v1/adminUser");
 const port = process.env.PORT || 5000;
 
 mongoose.set("strictQuery", true);
@@ -77,22 +81,17 @@ app.use("/api/checkout", paymentRoute);
 app.use("/api/orders", orderRoute);
 app.use("/api/bank", BankRoute);
 app.use("/api/history", cartHistoryRoute);
+app.use("/api/disbusmentRoute", disbusmentRoute);
+app.use("/api/combo", comboRoute);
+app.use("/api/v1/superadmin", superadmin);
+
+app.use("/v1/superadmin", superadmin);
+
 app.use("/api/seed", seedRoute); // Add this line
 
 // Route to get all country items
 app.get("/api/countries", async (req, res) => {
   try {
-    // const payload = {
-    //   tx_ref: "MC-158523s09v50343",
-    //   order_id: "USS_URG_893982923s2327",
-    //   amount: "1500",
-    //   currency: "RWF",
-
-    //   email: "olufemi@flw.com",
-    //   phone_number: "9167703400",
-    //   fullname: "John Madakin",
-    // };
-
     const payload = {
       phone_number: "054709929220",
       amount: 1500,
