@@ -53,7 +53,7 @@ const getAllCombo = asyncWrapper(async (req, res, next) => {
   try {
     res.status(StatusCodes.OK).json({
       message: "Combo created successfully",
-      data: { userProfile, combos },
+      data: combos,
     });
   } catch (e) {
     return res.status(404).json({
