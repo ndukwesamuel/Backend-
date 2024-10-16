@@ -180,8 +180,30 @@ const placeComboOrder = asyncWrapper(async (req, res, next) => {
   res.json({ message: "Order placed successfully", order, orderItems, combo });
 });
 
+const getUserOrders = asyncWrapper(async (req, res, next) => {
+  const userId = req.user.userId; // Assuming userId is set in the request object from authentication middleware
+  const { status } = req.query; // Get the status from query params (optional)
+
+  // Build the query object
+  const query = { user: userId };
+
+  // If a status is provided, add it to the query
+  if (status) {
+    if (!["pending", "completed", "cancelled"].includes(status)) {
+      return res.status(400).json({ error: "Invalid order status" });
+    }
+    query.status = status;
+  }
+
+  // Fetch orders based on userId and optional status
+  const orders = await ComboOrder.find(query).populate("combo", "name").exec();
+
+  res.json({ orders });
+});
+
 module.exports = {
   createCombo,
   getAllCombo,
   placeComboOrder,
+  getUserOrders,
 };
