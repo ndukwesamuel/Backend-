@@ -3,6 +3,7 @@ const AdminProfile = require("../Models/AdminProfile");
 const { StatusCodes } = require("http-status-codes");
 const asyncWrapper = require("../Middleware/asyncWrapper");
 const Combo = require("../Models/combo");
+const mongoose = require("mongoose");
 
 const ComboOrder = require("../Models/comboOrder");
 const { findUserProfileById } = require("../services/userService");
@@ -65,119 +66,123 @@ const getAllCombo = asyncWrapper(async (req, res, next) => {
   }
 });
 
-// const placeComboOrder = async (userId, comboId, selectedProducts) => {
-// const placeComboOrder = asyncWrapper(async (req, res, next) => {
-//   const userId = req.user.userId;
-//   const userProfile = await findUserProfileById(userId);
-//   const { comboId, selectedProducts } = req.body;
-//   const combo = await Combo.findById(comboId);
-//   if (!combo) {
-//     throw new Error("Combo not found");
-//   }
-
-//   let totalPrice = 0;
-
-//   // Iterate through the selected products and validate the quantities
-//   const orderItems = selectedProducts.map((productSelection) => {
-//     const product = combo.products.find(
-//       (p) => p._id.toString() === productSelection.productId
-//     );
-
-//     if (!product) {
-//       throw new Error(
-//         `Product with ID ${productSelection.productId} not found in this combo`
-//       );
-//     }
-
-//     if (productSelection.quantity > product.availableQuantity) {
-//       throw new Error(`Insufficient quantity for ${product.name}`);
-//     }
-
-//     // Deduct the quantity from available stock
-//     product.availableQuantity -= productSelection.quantity;
-
-//     // Calculate total price
-//     totalPrice += productSelection.quantity * product.price;
-
-//     return {
-//       productId: product._id,
-//       quantity: productSelection.quantity,
-//     };
-//   });
-
-//   await combo.save();
-
-//   // Create a new order
-//   const order = new ComboOrder({
-//     user: userId,
-//     combo: comboId,
-//     orderItems: orderItems,
-//     totalPrice: totalPrice,
-//   });
-
-//   // Save the order
-//   await order.save();
-
-//   res.json({ message: "Order placed successfully", order, orderItems, combo });
-// });
-
 const placeComboOrder = asyncWrapper(async (req, res, next) => {
-  const userId = req.user.userId;
-  const userProfile = await findUserProfileById(userId);
-  const { comboId, selectedProducts } = req.body;
-  const combo = await Combo.findById(comboId);
-  if (!combo) {
-    throw new Error("Combo not found");
-  }
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  let totalPrice = 0;
+  try {
+    const userId = req.user.userId;
+    const { comboId, selectedProducts } = req.body;
 
-  // Iterate through the selected products and validate the quantities
-  const orderItems = selectedProducts.map((productSelection) => {
-    const product = combo.products.find(
-      (p) => p._id.toString() === productSelection.productId
-    );
+    // Find the user and combo
+    const user = await User.findById(userId).session(session);
+    const combo = await Combo.findById(comboId).session(session);
 
-    if (!product) {
-      throw new Error(
-        `Product with ID ${productSelection.productId} not found in this combo`
+    if (!combo) {
+      throw new Error("Combo not found");
+    }
+
+    let totalPrice = 0;
+
+    // Check if the user already has a pending order for this combo
+    let existingOrder = await ComboOrder.findOne({
+      user: userId,
+      combo: comboId,
+      status: "pending", // Only consider pending orders for updating
+    }).session(session);
+
+    let updatedOrderItems = existingOrder ? existingOrder.orderItems : [];
+
+    // Iterate through the selected products and validate the quantities
+    selectedProducts.forEach((productSelection) => {
+      const product = combo.products.find(
+        (p) => p._id.toString() === productSelection.productId
       );
+
+      if (!product) {
+        throw new Error(
+          `Product with ID ${productSelection.productId} not found in this combo`
+        );
+      }
+
+      if (productSelection.quantity > product.availableQuantity) {
+        throw new Error(`Insufficient quantity for ${product.name}`);
+      }
+
+      // Find the product in the existing order items (if it exists)
+      const existingOrderItem = updatedOrderItems.find(
+        (item) => item.productId.toString() === productSelection.productId
+      );
+
+      if (existingOrderItem) {
+        // Increment the quantity if the product already exists in the order
+        existingOrderItem.quantity += productSelection.quantity;
+      } else {
+        // Add the new product to the order
+        updatedOrderItems.push({
+          productId: product._id,
+          quantity: productSelection.quantity,
+        });
+      }
+
+      // Deduct the quantity from available stock
+      product.availableQuantity -= productSelection.quantity;
+
+      // Calculate the total price for the product
+      totalPrice += productSelection.quantity * product.price;
+    });
+
+    // Ensure the user has enough funds in the wallet to pay for the order
+    if (user.wallet < totalPrice) {
+      throw new Error("Insufficient wallet balance to place this order");
     }
 
-    if (productSelection.quantity > product.availableQuantity) {
-      throw new Error(`Insufficient quantity for ${product.name}`);
+    // Deduct the total price from the user's wallet
+    user.wallet -= totalPrice;
+
+    // Mark the combo products array as modified so Mongoose will update it
+    combo.markModified("products");
+
+    if (existingOrder) {
+      // Update the existing order with new/updated products and total price
+      existingOrder.orderItems = updatedOrderItems;
+      existingOrder.totalPrice = totalPrice;
+
+      // Save the updated order
+      await existingOrder.save({ session });
+    } else {
+      // Create a new order if no pending order exists
+      const newOrder = new ComboOrder({
+        user: userId,
+        combo: comboId,
+        orderItems: updatedOrderItems,
+        totalPrice: totalPrice,
+      });
+
+      // Save the new order
+      await newOrder.save({ session });
     }
 
-    // Deduct the quantity from available stock
-    product.availableQuantity -= productSelection.quantity;
+    // Save the updated combo and user
+    await combo.save({ session });
+    await user.save({ session });
 
-    // Calculate total price
-    totalPrice += productSelection.quantity * product.price;
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
 
-    return {
-      productId: product._id,
-      quantity: productSelection.quantity,
-    };
-  });
-
-  // Mark the products array as modified so Mongoose will update it
-  combo.markModified("products");
-
-  // Save the updated combo
-  await combo.save();
-
-  // Create a new order
-  const order = new ComboOrder({
-    user: userId,
-    combo: comboId,
-    orderItems: orderItems,
-    totalPrice: totalPrice,
-  });
-
-  // Save the order
-  await order.save();
-
-  res.json({ message: "Order placed successfully", order, orderItems, combo });
+    res.json({
+      message: "Order placed successfully",
+      order: existingOrder || newOrder,
+      orderItems: updatedOrderItems,
+      combo,
+    });
+  } catch (error) {
+    // Abort the transaction and roll back changes
+    await session.abortTransaction();
+    session.endSession();
+    return next(error);
+  }
 });
 
 const getUserOrders = asyncWrapper(async (req, res, next) => {
