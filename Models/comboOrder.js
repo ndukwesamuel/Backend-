@@ -1,8 +1,13 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+// const orderItemSchema = new Schema({
+//   productId: { type: Schema.Types.ObjectId, ref: "Combo", required: true }, // Reference to the combo itself
+//   quantity: { type: Number, required: true }, // Quantity of the product ordered
+// });
+
 const orderItemSchema = new Schema({
-  productId: { type: Schema.Types.ObjectId, ref: "Combo", required: true }, // Reference to the combo itself
+  productId: { type: Schema.Types.ObjectId, required: true }, // Reference to individual product in the combo
   quantity: { type: Number, required: true }, // Quantity of the product ordered
 });
 

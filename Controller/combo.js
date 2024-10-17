@@ -190,6 +190,27 @@ const placeComboOrder = asyncWrapper(async (req, res, next) => {
   }
 });
 
+// const getUserOrders = asyncWrapper(async (req, res, next) => {
+//   const userId = req.user.userId;
+//   const { status } = req.query;
+
+//   const query = { user: userId };
+
+//   if (status) {
+//     if (!["pending", "completed", "cancelled"].includes(status)) {
+//       return res.status(400).json({ error: "Invalid order status" });
+//     }
+//     query.status = status;
+//   }
+
+//   const orders = await ComboOrder.find(query)
+//     .populate("combo", "name products") // Populate combo name and products
+//     .populate("orderItems.productId", "name price") // Populate product details
+//     .exec();
+
+//   res.json({ orders });
+// });
+
 const getUserOrders = asyncWrapper(async (req, res, next) => {
   const userId = req.user.userId;
   const { status } = req.query;
@@ -204,8 +225,14 @@ const getUserOrders = asyncWrapper(async (req, res, next) => {
   }
 
   const orders = await ComboOrder.find(query)
-    .populate("combo", "name products") // Populate combo name and products
-    .populate("orderItems.productId", "name price") // Populate product details
+    .populate({
+      path: "combo",
+      select: "name products",
+      populate: {
+        path: "products",
+        select: "name price", // Populate products with name and price
+      },
+    })
     .exec();
 
   res.json({ orders });
