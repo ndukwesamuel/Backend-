@@ -5,6 +5,7 @@ const {
   getAllCombo,
   placeComboOrder,
   getUserOrders,
+  AdmingetAllCombo,
 } = require("../Controller/combo");
 
 const { Router } = require("express");
@@ -15,6 +16,9 @@ router
   .route("/order")
   .post(verifyToken, placeComboOrder)
   .get(verifyToken, getUserOrders);
-router.route("/admin").post(verifyTokenAndAdmin, createCombo);
+router
+  .route("/admin")
+  .post(verifyTokenAndAdmin, createCombo)
+  .get(verifyTokenAndAdmin, AdmingetAllCombo);
 
 module.exports = router;
