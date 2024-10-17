@@ -66,6 +66,146 @@ const getAllCombo = asyncWrapper(async (req, res, next) => {
   }
 });
 
+// const placeComboOrder = asyncWrapper(async (req, res, next) => {
+//   const session = await mongoose.startSession();
+//   session.startTransaction();
+
+//   try {
+//     const userId = req.user.userId;
+//     const { comboId, selectedProducts } = req.body;
+
+//     // Find the user and combo
+//     const user = await User.findById(userId).session(session);
+//     const combo = await Combo.findById(comboId).session(session);
+
+//     if (!combo) {
+//       throw new Error("Combo not found");
+//     }
+
+//     let totalPrice = 0;
+
+//     // Check if the user already has a pending order for this combo
+//     let existingOrder = await ComboOrder.findOne({
+//       user: userId,
+//       combo: comboId,
+//       status: "pending", // Only consider pending orders for updating
+//     }).session(session);
+
+//     let updatedOrderItems = existingOrder ? existingOrder.orderItems : [];
+
+//     // Iterate through the selected products and validate the quantities
+//     selectedProducts.forEach((productSelection) => {
+//       const product = combo.products.find(
+//         (p) => p._id.toString() === productSelection.productId
+//       );
+
+//       if (!product) {
+//         throw new Error(
+//           `Product with ID ${productSelection.productId} not found in this combo`
+//         );
+//       }
+
+//       if (productSelection.quantity > product.availableQuantity) {
+//         throw new Error(`Insufficient quantity for ${product.name}`);
+//       }
+
+//       // Find the product in the existing order items (if it exists)
+//       const existingOrderItem = updatedOrderItems.find(
+//         (item) => item.productId.toString() === productSelection.productId
+//       );
+
+//       if (existingOrderItem) {
+//         // Increment the quantity if the product already exists in the order
+//         existingOrderItem.quantity += productSelection.quantity;
+//       } else {
+//         // Add the new product to the order
+//         updatedOrderItems.push({
+//           productId: product._id,
+//           quantity: productSelection.quantity,
+//         });
+//       }
+
+//       // Deduct the quantity from available stock
+//       product.availableQuantity -= productSelection.quantity;
+
+//       // Calculate the total price for the product
+//       totalPrice += productSelection.quantity * product.price;
+//     });
+
+//     // Ensure the user has enough funds in the wallet to pay for the order
+//     if (user.wallet < totalPrice) {
+//       throw new Error("Insufficient wallet balance to place this order");
+//     }
+
+//     // Deduct the total price from the user's wallet
+//     user.wallet -= totalPrice;
+
+//     // Mark the combo products array as modified so Mongoose will update it
+//     combo.markModified("products");
+
+//     if (existingOrder) {
+//       // Update the existing order with new/updated products and total price
+//       existingOrder.orderItems = updatedOrderItems;
+//       existingOrder.totalPrice = totalPrice;
+
+//       // Save the updated order
+//       await existingOrder.save({ session });
+//     } else {
+//       // Create a new order if no pending order exists
+//       const newOrder = new ComboOrder({
+//         user: userId,
+//         combo: comboId,
+//         orderItems: updatedOrderItems,
+//         totalPrice: totalPrice,
+//       });
+
+//       // Save the new order
+//       await newOrder.save({ session });
+//     }
+
+//     // Save the updated combo and user
+//     await combo.save({ session });
+//     await user.save({ session });
+
+//     // Commit the transaction
+//     await session.commitTransaction();
+//     session.endSession();
+
+//     res.json({
+//       message: "Order placed successfully",
+//       order: existingOrder || newOrder,
+//       orderItems: updatedOrderItems,
+//       combo,
+//     });
+//   } catch (error) {
+//     // Abort the transaction and roll back changes
+//     await session.abortTransaction();
+//     session.endSession();
+//     return next(error);
+//   }
+// });
+
+// const getUserOrders = asyncWrapper(async (req, res, next) => {
+//   const userId = req.user.userId; // Assuming userId is set in the request object from authentication middleware
+//   const { status } = req.query; // Get the status from query params (optional)
+
+//   // Build the query object
+//   const query = { user: userId };
+
+//   // If a status is provided, add it to the query
+//   if (status) {
+//     if (!["pending", "completed", "cancelled"].includes(status)) {
+//       return res.status(400).json({ error: "Invalid order status" });
+//     }
+//     query.status = status;
+//   }
+
+//   // Fetch orders based on userId and optional status
+//   const orders = await ComboOrder.find(query).populate("combo", "name").exec();
+
+//   res.json({ orders });
+// });
+
 const placeComboOrder = asyncWrapper(async (req, res, next) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -169,7 +309,6 @@ const placeComboOrder = asyncWrapper(async (req, res, next) => {
 
     // Commit the transaction
     await session.commitTransaction();
-    session.endSession();
 
     res.json({
       message: "Order placed successfully",
@@ -178,21 +317,47 @@ const placeComboOrder = asyncWrapper(async (req, res, next) => {
       combo,
     });
   } catch (error) {
-    // Abort the transaction and roll back changes
-    await session.abortTransaction();
-    session.endSession();
+    // If an error occurs, abort the transaction
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
     return next(error);
+  } finally {
+    // End the session whether success or failure
+    session.endSession();
   }
 });
 
-const getUserOrders = asyncWrapper(async (req, res, next) => {
-  const userId = req.user.userId; // Assuming userId is set in the request object from authentication middleware
-  const { status } = req.query; // Get the status from query params (optional)
+// const getUserOrders = asyncWrapper(async (req, res, next) => {
+//   const userId = req.user.userId; // Assuming userId is set in the request object from authentication middleware
+//   const { status } = req.query; // Get the status from query params (optional)
 
-  // Build the query object
+//   // Build the query object
+//   const query = { user: userId };
+
+//   // If a status is provided, add it to the query
+//   if (status) {
+//     if (!["pending", "completed", "cancelled"].includes(status)) {
+//       return res.status(400).json({ error: "Invalid order status" });
+//     }
+//     query.status = status;
+//   }
+
+//   // Fetch orders based on userId and optional status
+//   const orders = await ComboOrder.find(query)
+//     .populate("combo", "name") // Populate combo name
+//     .populate("orderItems.productId", "name price") // Populate product name and price in orderItems
+//     .exec();
+
+//   res.json({ orders });
+// });
+
+const getUserOrders = asyncWrapper(async (req, res, next) => {
+  const userId = req.user.userId;
+  const { status } = req.query;
+
   const query = { user: userId };
 
-  // If a status is provided, add it to the query
   if (status) {
     if (!["pending", "completed", "cancelled"].includes(status)) {
       return res.status(400).json({ error: "Invalid order status" });
@@ -200,8 +365,10 @@ const getUserOrders = asyncWrapper(async (req, res, next) => {
     query.status = status;
   }
 
-  // Fetch orders based on userId and optional status
-  const orders = await ComboOrder.find(query).populate("combo", "name").exec();
+  const orders = await ComboOrder.find(query)
+    .populate("combo", "name products") // Populate combo name and products
+    .populate("orderItems.productId", "name price") // Populate product details
+    .exec();
 
   res.json({ orders });
 });

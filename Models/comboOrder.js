@@ -2,11 +2,11 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const orderItemSchema = new Schema({
-  productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
+  productId: { type: Schema.Types.ObjectId, ref: "Combo", required: true }, // Reference to the combo itself
   quantity: { type: Number, required: true }, // Quantity of the product ordered
 });
 
-const comboOrderorderSchema = new Schema({
+const comboOrderSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: "User", required: true }, // The user who placed the order
   combo: { type: Schema.Types.ObjectId, ref: "Combo", required: true }, // The combo being ordered
   orderItems: [orderItemSchema], // List of products in the combo and the selected quantity
@@ -19,6 +19,6 @@ const comboOrderorderSchema = new Schema({
   createdAt: { type: Date, default: Date.now }, // Order creation time
 });
 
-const ComboOrder = mongoose.model("ComboOrder", comboOrderorderSchema);
+const ComboOrder = mongoose.model("ComboOrder", comboOrderSchema);
 
 module.exports = ComboOrder;

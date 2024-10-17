@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
-// Product schema: Each product in the combo
-const productSchema = new mongoose.Schema({
+// ComboProduct schema: Each product in the combo
+const comboProductSchema = new mongoose.Schema({
   name: { type: String, required: true }, // Name of the product
   price: { type: Number, required: true }, // Price per unit of the product
   totalQuantity: { type: Number, required: true }, // Total quantity of the product available in this combo
@@ -12,7 +12,7 @@ const productSchema = new mongoose.Schema({
 const comboSchema = new mongoose.Schema({
   name: { type: String, required: true }, // Combo name
   description: { type: String }, // Optional description for the combo
-  products: { type: [productSchema], required: true }, // Array of products in this combo
+  products: { type: [comboProductSchema], required: true }, // Array of products in this combo
   timeline: {
     start: { type: Date, required: true }, // Start time of the combo
     end: { type: Date, required: true }, // End time of the combo
