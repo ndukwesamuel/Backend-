@@ -5,7 +5,6 @@ require("dotenv").config();
 const cors = require("cors");
 const fileUpload = require("express-fileupload");
 
-const multer = require("multer");
 const { job } = require("./helper");
 const connectDB = require("./db/connect");
 const Flutterwave = require("flutterwave-node-v3");
@@ -160,15 +159,6 @@ app.post("/flw-webhook", async (req, res) => {
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
-
-app.use(function (err, req, res, next) {
-  if (err instanceof multer.MulterError) {
-    res.status(400).send({ message: err.message });
-  } else if (err) {
-    res.status(400).send({ message: err.message });
-  }
-  next();
-});
 
 const start = async () => {
   try {

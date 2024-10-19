@@ -14,14 +14,23 @@ const {
   updateProduct,
   deleteProduct,
   AdmingetAllProducts,
+  createAppImage,
+  getAllAppImages,
+  updateAppImage,
 } = require("../Controller/productcontroler");
 
 router
   .route("/")
   .get(verifyTokenAndAdmin, AdmingetAllProducts)
-  .post(verifyTokenAndAdmin, upload.single("image"), createProduct);
+  .post(verifyTokenAndAdmin, createProduct);
 
 router.route("/user-product").get(verifyToken, getAllProducts);
+router
+  .route("/adminProductimage")
+  .get(verifyTokenAndAdmin, getAllAppImages)
+  .post(verifyTokenAndAdmin, createAppImage)
+  .patch(verifyTokenAndAdmin, updateAppImage);
+
 router
   .route("/:id")
   .put(verifyTokenAndAdmin, upload.single("image"), updateProduct)

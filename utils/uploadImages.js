@@ -10,7 +10,7 @@ const uploadImages = async (files) => {
         file.tempFilePath,
         {
           use_filename: true,
-          folder: "zynopay",
+          folder: "webuy",
         },
         (error, result) => {
           if (error) {

@@ -242,14 +242,6 @@ const AdmingetAllCombo = asyncWrapper(async (req, res, next) => {
   const { active } = req.query;
   const userId = req.user.userId;
 
-  // const userProfile = await findUserProfileById(userId);
-
-  // let query = { country: userProfile.user.country, isActive: true }; // Default to only active combos
-
-  // Optionally filter by active status if specified
-  // if (active) {
-  //   query.isActive = active === "true"; // Set based on the active query parameter
-  // }
   const combos = await Combo.find();
   try {
     res.status(StatusCodes.OK).json({

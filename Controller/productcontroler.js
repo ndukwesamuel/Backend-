@@ -7,7 +7,8 @@ const Category = require("../Models/Category");
 const Product = require("../Models/Products");
 const { findUserProfileById } = require("../services/userService");
 const cloudinary = require("../utils/Cloudinary");
-
+const appImages = require("../Models/appImages");
+const { uploadUserImage } = require("../services/uploadService");
 const createProduct = async (req, res) => {
   // const categoryCheck = await Category.findOne({ name: req.body.category });
   // if (!categoryCheck) {
@@ -188,6 +189,67 @@ const deleteProduct = async (req, res) => {
     res.status(500).json({ error: errors, message: "Product deletion failed" });
   }
 };
+
+const createAppImage = async (req, res) => {
+  try {
+    console.log({
+      reqBody: req.files,
+    });
+
+    const profileImage = await uploadUserImage(req.files.image.tempFilePath);
+
+    const newImage = new appImages({
+      infoname: req.body.infoname,
+      description: req.body.description,
+      image: profileImage,
+    });
+    const savedImage = await newImage.save();
+    res.status(201).json({ savedImage });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+const getAllAppImages = async (req, res) => {
+  try {
+    const images = await appImages.find();
+    res.json(images);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const updateAppImage = async (req, res) => {
+  try {
+    const { id } = req.query;
+    // const updatedImage = await appImages.findByIdAndUpdate(
+    //   req.params.id,
+    //   req.body,
+    //   {
+    //     new: true,
+    //   }
+    // );
+    // if (!updatedImage) {
+    //   return res.status(404).json({ message: "Image not found" });
+    // }
+    res.json(id);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+const deleteAppImage = async (req, res) => {
+  try {
+    const deletedImage = await appImages.findByIdAndDelete(req.params.id);
+    if (!deletedImage) {
+      return res.status(404).json({ message: "Image not found" });
+    }
+    res.json({ message: "Image deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createProduct,
   getProduct,
@@ -195,4 +257,8 @@ module.exports = {
   updateProduct,
   deleteProduct,
   AdmingetAllProducts,
+  createAppImage,
+  getAllAppImages,
+  updateAppImage,
+  deleteAppImage,
 };
