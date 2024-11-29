@@ -32,6 +32,7 @@ const cartHistoryRoute = require("./Routes/cartHistoryRoute");
 const selfbuyRoute = require("./Routes/SelfBuyProductRoute");
 const disbusmentRoute = require("./Routes/DisbusmentRoute");
 const comboRoute = require("./Routes/comboRoute");
+const bnplRoute = require("./Routes/BnplROute");
 const superadmin = require("./Routes/v1/adminRoute");
 
 const seedRoute = require("./Routes/seedroute");
@@ -83,6 +84,7 @@ app.use("/api/bank", BankRoute);
 app.use("/api/history", cartHistoryRoute);
 app.use("/api/disbusmentRoute", disbusmentRoute);
 app.use("/api/combo", comboRoute);
+app.use("/api/bnpl", bnplRoute);
 app.use("/api/v1/superadmin", superadmin);
 
 app.use("/v1/superadmin", superadmin);

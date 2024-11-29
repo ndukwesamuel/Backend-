@@ -3,4 +3,5 @@ export const countryItems = [
   { label: "Ghana", value: "GHA" },
   { label: "Benin", value: "BEN" },
   { label: "Rwanda", value: "RWA" },
+  { label: "Kenya", value: "KEN" },
 ];
