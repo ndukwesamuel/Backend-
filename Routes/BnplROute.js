@@ -19,9 +19,6 @@ router
   .post(verifyToken, verifyCountry, KYC_Form_Submission)
   .get(verifyToken, verifyCountry, Fetch_Loan_Status);
 
-router
-  .route("/loan")
-  // .post(verifyToken, verifyCountry, KYC_Form_Submission)
-  .post(verifyToken, verifyCountry, Loan_Application);
+router.route("/loan").get(verifyToken, verifyCountry, Loan_Application);
 
 module.exports = router;
