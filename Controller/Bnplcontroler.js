@@ -25,6 +25,7 @@ const KYC_Form_Submission = async (req, res) => {
         ...(phoneNumber && { phoneNumber }),
         ...(bvn && { bvn }),
         ...(dob && { dob }),
+        isKYCComplete: true,
       },
       { new: true }
     );
