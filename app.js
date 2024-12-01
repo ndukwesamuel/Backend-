@@ -160,58 +160,6 @@ app.post("/flw-webhook", async (req, res) => {
     .json({ message: "hello flutterwave post", data: payment_service });
 });
 
-// efine a route to fetch users from the external API
-app.get("/icsusers", async (req, res) => {
-  try {
-    // Fetch data from the external API with authorization header
-    const response = await axios.get("https://icsjobportal.com/api/list/", {
-      headers: {
-        Authorization: "ICS101231", // Add the Authorization header
-      },
-    });
-
-    // Send the fetched data as the response
-    res.status(200).json(response.data);
-  } catch (error) {
-    console.log({
-      emeka: error,
-    });
-
-    console.error("Error fetching data:", error.message);
-    res.status(500).json({ message: "Error fetching data from external API" });
-  }
-});
-
-app.get("/details", async (req, res) => {
-  try {
-    let { staff } = req.query;
-
-    console.log({
-      staff,
-    });
-
-    // Fetch data from the external API with authorization header
-    const response = await axios.get(
-      `https://icsjobportal.com/api/details/?id=${staff}`,
-      {
-        headers: {
-          Authorization: "ICS101231", // Add the Authorization header
-        },
-      }
-    );
-
-    // Send the fetched data as the response
-    res.status(200).json(response.data);
-  } catch (error) {
-    console.log({
-      emeka: error,
-    });
-
-    console.error("Error fetching data:", error.message);
-    res.status(500).json({ message: "Error fetching data from external API" });
-  }
-});
-
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
