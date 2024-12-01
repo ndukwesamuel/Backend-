@@ -31,6 +31,7 @@ const KYC_Form_Submission = async (req, res) => {
         ...(bvn && { bvn }),
         ...(dob && { dob }),
         isKYCComplete: true,
+        isKYCVerified: true,
       },
       { new: true }
     );
