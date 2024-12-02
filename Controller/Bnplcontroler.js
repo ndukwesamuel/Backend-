@@ -46,16 +46,41 @@ const KYC_Form_Submission = async (req, res) => {
   }
 };
 
+// const Fetch_Loan_Status = async (req, res) => {
+//   // const { phoneNumber, bvn, dob } = req.body;
+//   const userinfo = req.userProfile;
+
+//   // let userCountry = userinfo?.user?.country;
+
+//   try {
+//     const loan = await Loan.findOne({ userId: userinfo?.user?._id }).sort({
+//       createdAt: -1,
+//     });
+
+//     if (!loan) {
+//       return res
+//         .status(404)
+//         .json({ message: "No loan records found for this user." });
+//     }
+
+//     res.status(200).json({
+//       lastLoanAmount: loan.amount,
+//       paymentStatus: loan.status,
+//       remainingBalance: loan.remainingBalance,
+//       nextRepaymentDate: loan.nextRepaymentDate,
+//       creditworthiness: loan.creditworthiness,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: "Error submitting KYC", error });
+//   }
+// };
+
 const Fetch_Loan_Status = async (req, res) => {
-  // const { phoneNumber, bvn, dob } = req.body;
   const userinfo = req.userProfile;
 
-  // let userCountry = userinfo?.user?.country;
-
   try {
-    const loan = await Loan.findOne({ userId: userinfo?.user?._id }).sort({
-      createdAt: -1,
-    });
+    // Fetch the user's loan profile
+    const loan = await Loan.findOne({ userId: userinfo?.user?._id });
 
     if (!loan) {
       return res
@@ -64,14 +89,16 @@ const Fetch_Loan_Status = async (req, res) => {
     }
 
     res.status(200).json({
-      lastLoanAmount: loan.amount,
-      paymentStatus: loan.status,
+      loanLimit: loan.loanLimit,
+      currentLoan: loan.currentLoan,
       remainingBalance: loan.remainingBalance,
+      isLoanActive: loan.isLoanActive,
       nextRepaymentDate: loan.nextRepaymentDate,
       creditworthiness: loan.creditworthiness,
+      loanHistory: loan.loanHistory, // History of borrow and repayment transactions
     });
   } catch (error) {
-    res.status(500).json({ message: "Error submitting KYC", error });
+    res.status(500).json({ message: "Error fetching loan status", error });
   }
 };
 
