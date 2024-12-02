@@ -185,6 +185,80 @@ const Loan_Application_first_load = async (req, res) => {
 //   }
 // };
 
+// const Loan_Application = async (req, res) => {
+//   const session = await mongoose.startSession();
+//   session.startTransaction();
+
+//   try {
+//     let userId = req.user.userId;
+//     const userinfo = req.userProfile;
+
+//     if (!userinfo || !userinfo.isKYCComplete) {
+//       return res
+//         .status(400)
+//         .json({ message: "Complete KYC before applying for a loan." });
+//     }
+
+//     const cart = await Cart.findOne({ userId })
+//       .populate({
+//         path: "items.productId",
+//         model: "product",
+//       })
+//       .session(session);
+
+//     if (!cart || cart.items.length === 0) {
+//       return res
+//         .status(400)
+//         .json({ message: "Cart is empty or does not exist." });
+//     }
+
+//     const orderDetails = {
+//       user: userId,
+//       products: cart.items.map((item) => ({
+//         product: item.productId._id,
+//         quantity: item.quantity,
+//       })),
+//       totalAmount: cart.bill,
+//     };
+
+//     // Fix: Wrap loan details in an array for `Model.create()`
+//     const loan = await Loan.create(
+//       [
+//         {
+//           userId: userId,
+//           amount: cart.bill,
+//           remainingBalance: cart.bill,
+//           nextRepaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+//         },
+//       ],
+//       { session }
+//     );
+
+//     const order = new Order(orderDetails);
+//     await order.save({ session });
+
+//     cart.items = [];
+//     cart.bill = 0;
+//     await cart.save({ session });
+
+//     await session.commitTransaction();
+
+//     res.status(201).json({
+//       message: "Order placed successfully with a loan!",
+//       order,
+//       loan,
+//     });
+//   } catch (error) {
+//     await session.abortTransaction();
+//     console.log({
+//       error: error.message,
+//     });
+//     res.status(500).json({ message: error.message });
+//   } finally {
+//     session.endSession();
+//   }
+// };
+
 const Loan_Application = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -197,6 +271,21 @@ const Loan_Application = async (req, res) => {
       return res
         .status(400)
         .json({ message: "Complete KYC before applying for a loan." });
+    }
+
+    const loan = await Loan.findOne({ userId }).session(session);
+    if (!loan) {
+      return res
+        .status(400)
+        .json({ message: "Loan profile not found. Contact support." });
+    }
+
+    // Check loan status
+    if (loan.isLoanActive && loan.remainingBalance > 0) {
+      return res.status(400).json({
+        message:
+          "You have an active loan. Repay it before applying for a new one.",
+      });
     }
 
     const cart = await Cart.findOne({ userId })
@@ -212,6 +301,30 @@ const Loan_Application = async (req, res) => {
         .json({ message: "Cart is empty or does not exist." });
     }
 
+    const totalAmount = cart.bill;
+
+    if (totalAmount > loan.loanLimit - loan.currentLoan) {
+      return res.status(400).json({
+        message:
+          "Loan limit exceeded. Repay outstanding balance to apply for a new loan.",
+      });
+    }
+
+    // Update loan details
+    loan.currentLoan += totalAmount;
+    loan.remainingBalance += totalAmount;
+    loan.isLoanActive = true;
+    loan.nextRepaymentDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+
+    // Record loan transaction
+    loan.loanHistory.push({
+      amount: totalAmount,
+      type: "Borrowed",
+    });
+
+    await loan.save({ session });
+
+    // Process the order
     const orderDetails = {
       user: userId,
       products: cart.items.map((item) => ({
@@ -221,22 +334,10 @@ const Loan_Application = async (req, res) => {
       totalAmount: cart.bill,
     };
 
-    // Fix: Wrap loan details in an array for `Model.create()`
-    const loan = await Loan.create(
-      [
-        {
-          userId: userId,
-          amount: cart.bill,
-          remainingBalance: cart.bill,
-          nextRepaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-        },
-      ],
-      { session }
-    );
-
     const order = new Order(orderDetails);
     await order.save({ session });
 
+    // Clear the cart
     cart.items = [];
     cart.bill = 0;
     await cart.save({ session });
@@ -244,7 +345,7 @@ const Loan_Application = async (req, res) => {
     await session.commitTransaction();
 
     res.status(201).json({
-      message: "Order placed successfully with a loan!",
+      message: "Loan approved and order placed successfully!",
       order,
       loan,
     });
