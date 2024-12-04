@@ -14,8 +14,12 @@ const createProduct = async (req, res) => {
   // if (!categoryCheck) {
   //   return res.status(400).json({ error: true, message: "Invalid category" });
   // }
+
   try {
-    const upload = await cloudinary.uploader.upload(req.file.path, {
+    const file = req.files.image;
+
+    // Upload file to Cloudinary
+    const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
       folder: "webuyam/product",
     });
     const newProduct = new Product({
@@ -23,7 +27,7 @@ const createProduct = async (req, res) => {
       OtherName: req.body.OtherName,
       country: req.body.country,
       price: req.body.price,
-      image: upload.secure_url,
+      image: uploadResult.secure_url,
       description: req.body.description,
       // category: req.body.category,
     });
@@ -33,6 +37,11 @@ const createProduct = async (req, res) => {
       product: savedProduct,
     });
   } catch (err) {
+    console.log({
+      dd: err.response,
+      dd: err.message,
+    });
+
     const error = handleErrors(err);
     res.status(500).json({ error: true, message: error });
   }
