@@ -1,4 +1,6 @@
 const User = require("../Models/Users");
+const Order = require("../Models/Order");
+
 const Group = require("../Models/Group");
 const cloudinary = require("../utils/Cloudinary");
 const { getImageId } = require("../Middleware/errorHandler/function");
@@ -10,10 +12,10 @@ const { v4: uuidv4 } = require("uuid");
 const uuid = uuidv4();
 const Flutterwave = require("flutterwave-node-v3");
 const flw = new Flutterwave(
-  "FLWPUBK_TEST-5efc88def75d1c44d4a4535b31bc4c8a-X",
-  "FLWSECK_TEST-67a4462102e95e67069e7f5f98c80369-X"
-  // process.env.FLW_PUBLIC_KEY,
-  // process.env.FLW_SECRET_KEY
+  // "FLWPUBK_TEST-5efc88def75d1c44d4a4535b31bc4c8a-X",
+  // "FLWSECK_TEST-67a4462102e95e67069e7f5f98c80369-X"
+  process.env.FLW_PUBLIC_KEY,
+  process.env.FLW_SECRET_KEY
 );
 const receiptUploader = async (req, res) => {
   try {
@@ -400,10 +402,88 @@ const fluterwave_fun_money = async (req, res) => {
   });
 };
 
+const ProductOrderpaymentForpersonalProductfluterwave_fun_money = async (
+  req,
+  res
+) => {
+  let { userId } = req.user;
+  const { orderId } = req.body;
+  const user_details = await findUserProfileById(userId);
+
+  const orders = await Order.findOne({ _id: orderId })
+    .populate("products.product")
+    .populate("user");
+
+  if (!orders) {
+    return res.status(404).json({ message: "Order not found" });
+  }
+
+  let payload = {
+    tx_ref: `tx_ref-${generateUniqueNumber()}-${orders?.totalAmount}`,
+    order_id: `order_id-${generateUniqueNumber()}-${
+      user_details?.user?.country
+    }`,
+    amount: orders?.totalAmount,
+    currency: "RWF",
+    phone_number: "09167703400",
+    email: user_details?.user?.email,
+    fullname: user_details?.user?.fullName, //"Example User",
+  };
+
+  // Testing tip
+  // In Test Mode, you can complete the transaction by visiting the returned redirect URL and entering 123456 as the OTP.
+  const response = await flw.MobileMoney.rwanda(payload);
+
+  res.status(200).json({
+    data: response,
+    data1: { user_details, orders, ff: payload },
+  });
+};
+
 const fluterwave_webhook = async (req, res) => {
   const payload = req.body;
   console.log(payload);
   res.status(200).json({ message: "hello flutterwave post", data: payload });
+};
+
+const RiwandaDisbusmentMobileMoney = async (req, res) => {
+  const { account_number, amount, currency, beneficiary_name, mobile_number } =
+    req.body;
+
+  try {
+    const details = {
+      account_bank: "MTN", // Rwanda uses MTN for mobile money
+      account_number: account_number, // Rwanda mobile number with country code e.g., 250700000000
+      amount: amount, // Amount in RWF (Rwandan Francs)
+      currency: currency || "RWF", // Default to Rwandan Franc
+      beneficiary_name: beneficiary_name, // Recipient's name
+      meta: {
+        sender: "Your Business Name", // Replace with your business name
+        sender_country: "RW", // Rwanda
+        mobile_number: mobile_number, // Sender's mobile number
+      },
+    };
+
+    // Initiate the transfer
+    const response = await flw.Transfer.initiate(details);
+
+    // Check for success
+    if (response.status === "success") {
+      res.status(200).json({
+        message: "Transfer Queued Successfully",
+        transferDetails: response.data,
+      });
+    } else {
+      res
+        .status(400)
+        .json({ message: "Transfer Failed", error: response.message });
+    }
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
+  }
 };
 
 module.exports = {
@@ -419,4 +499,7 @@ module.exports = {
   GetUserMoney,
   UpdateUserWalletwithReceipt,
   fluterwave_fun_money,
+  ProductOrderpaymentForpersonalProductfluterwave_fun_money,
+  fluterwave_webhook,
+  RiwandaDisbusmentMobileMoney,
 };

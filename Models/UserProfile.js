@@ -20,6 +20,11 @@ const userProfileSchema = new Schema(
     phone: {
       type: String,
     },
+    phoneNumber: { type: String },
+    bvn: { type: String },
+    dob: { type: Date },
+    isKYCComplete: { type: Boolean, default: false },
+    isKYCVerified: { type: Boolean, default: false },
 
     // Add other profile-related fields as needed
   },
