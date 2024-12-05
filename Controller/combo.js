@@ -10,32 +10,80 @@ const { findUserProfileById } = require("../services/userService");
 
 // Function to create an admin user
 
+// const createCombo = asyncWrapper(async (req, res, next) => {
+//   try {
+//     const { name, description, products, timeline, country } = req.body;
+
+//     const updatedProducts = products.map((product) => ({
+//       ...product,
+//       availableQuantity: product.totalQuantity,
+//     }));
+
+//     // Create new combo with provided data
+//     const combo = new Combo({
+//       name,
+//       description,
+//       products: updatedProducts,
+//       timeline,
+//       country,
+//     });
+//     await combo.save();
+
+//     res
+//       .status(StatusCodes.OK)
+//       .json({ message: "Combo created successfully", combo });
+//   } catch (e) {
+//     return res.status(404).json({
+//       success: false,
+//       message: `"Failed to create combo, ${e}`,
+//     });
+//   }
+// });
+
 const createCombo = asyncWrapper(async (req, res, next) => {
   try {
-    const { name, description, products, timeline, country } = req.body;
+    const {
+      name,
+      description,
+      pickupPoint,
+      products,
+      timeline,
+      country,
+      image,
+    } = req.body;
 
+    // Validate and prepare products
     const updatedProducts = products.map((product) => ({
-      ...product,
-      availableQuantity: product.totalQuantity,
+      name: product.name,
+      price: product.price,
+      totalQuantity: product.totalQuantity,
+      availableQuantity: product.totalQuantity, // Set availableQuantity to totalQuantity initially
+      image: product.image, // Optional product image
     }));
 
-    // Create new combo with provided data
+    // Create a new combo using the Combo schema
     const combo = new Combo({
       name,
       description,
-      products: updatedProducts,
+      products: updatedProducts, // Add validated products
       timeline,
       country,
+      image, // Combo image
+      pickupPoint,
     });
+
+    // Save the combo to the database
     await combo.save();
 
+    // Respond with success message and combo details
     res
-      .status(StatusCodes.OK)
-      .json({ message: "Combo created successfully", combo });
+      .status(StatusCodes.CREATED)
+      .json({ success: true, message: "Combo created successfully", combo });
   } catch (e) {
-    return res.status(404).json({
+    // Handle errors and respond with a failure message
+    return res.status(StatusCodes.BAD_REQUEST).json({
       success: false,
-      message: `"Failed to create combo, ${e}`,
+      message: `Failed to create combo: ${e.message}`,
     });
   }
 });

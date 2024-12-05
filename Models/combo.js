@@ -18,12 +18,21 @@ const comboSchema = new mongoose.Schema({
     start: { type: Date, required: true }, // Start time of the combo
     end: { type: Date, required: true }, // End time of the combo
   },
-
   country: {
     type: String,
     required: [true, "Please select your country"],
   },
-
+  pickupPoint: {
+    address: { type: String, required: true },
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    zipCode: { type: String },
+    coordinates: {
+      lat: { type: Number },
+      lng: { type: Number },
+    },
+  },
+  image: { type: String }, // Image for the combo
   isActive: { type: Boolean, default: true }, // Tracks if the combo is still active (true) or expired (false)
   createdAt: { type: Date, default: Date.now }, // When the combo was created
 });

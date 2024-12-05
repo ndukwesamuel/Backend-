@@ -33,7 +33,7 @@ router
 
 router
   .route("/:id")
-  .put(verifyTokenAndAdmin, upload.single("image"), updateProduct)
+  .patch(verifyTokenAndAdmin, updateProduct)
   .get(getProduct)
   .delete(verifyTokenAndAdmin, deleteProduct);
 

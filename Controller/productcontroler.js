@@ -136,49 +136,97 @@ const OldupdateProduct = async (req, res) => {
   }
 };
 
+// const updateProduct = async (req, res) => {
+//   try {
+//     // Check if the category exists
+//     // const categoryCheck = await Category.findOne({ name: req.body.category });
+//     // if (!categoryCheck) {
+//     //   return res.status(400).json({ error: true, message: "Invalid category" });
+//     // }
+
+//     // Check if the product exists
+//     const existingProduct = await Product.findById(req.params.id);
+//     console.log("hello");
+//     if (!existingProduct) {
+//       return res
+//         .status(404)
+//         .json({ error: true, message: "Product not found" });
+//     }
+
+//     // Update the product details
+//     existingProduct.name = req.body.name;
+//     existingProduct.price = req.body.price;
+//     existingProduct.description = req.body.description;
+//     // existingProduct.category = req.body.category;
+
+//     // If a new image is provided, upload and update the image URL
+//     if (req.file) {
+//       const upload = await cloudinary.uploader.upload(req.file.path, {
+//         folder: "webuyam/product",
+//       });
+//       existingProduct.image = upload.secure_url;
+//     }
+
+//     // Save the updated product
+//     const updatedProduct = await existingProduct.save();
+
+//     res.status(200).json({
+//       message: "Product updated",
+//       product: updatedProduct,
+//       // product: existingProduct,
+//     });
+//   } catch (err) {
+//     const error = handleErrors(err);
+//     console.log(err);
+//     res.status(500).json({ error: true, message: error });
+//   }
+// };
+
 const updateProduct = async (req, res) => {
   try {
-    // Check if the category exists
-    // const categoryCheck = await Category.findOne({ name: req.body.category });
-    // if (!categoryCheck) {
-    //   return res.status(400).json({ error: true, message: "Invalid category" });
-    // }
+    const { id } = req.params;
 
-    // Check if the product exists
-    const existingProduct = await Product.findById(req.params.id);
-    console.log("hello");
-    if (!existingProduct) {
-      return res
-        .status(404)
-        .json({ error: true, message: "Product not found" });
+    // Find the product by ID
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
     }
 
-    // Update the product details
-    existingProduct.name = req.body.name;
-    existingProduct.price = req.body.price;
-    existingProduct.description = req.body.description;
-    // existingProduct.category = req.body.category;
+    // Check if there is a new image in the request
+    if (req.files && req.files.image) {
+      const file = req.files.image;
 
-    // If a new image is provided, upload and update the image URL
-    if (req.file) {
-      const upload = await cloudinary.uploader.upload(req.file.path, {
+      // Upload new image to Cloudinary
+      const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
         folder: "webuyam/product",
       });
-      existingProduct.image = upload.secure_url;
+
+      // Update image URL
+      req.body.image = uploadResult.secure_url;
     }
 
-    // Save the updated product
-    const updatedProduct = await existingProduct.save();
+    // Update product fields
+    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
+      new: true, // Return the updated document
+      runValidators: true, // Ensure validation runs for updates
+    });
 
     res.status(200).json({
-      message: "Product updated",
+      success: true,
+      message: "Product updated successfully",
       product: updatedProduct,
-      // product: existingProduct,
     });
   } catch (err) {
-    const error = handleErrors(err);
-    console.log(err);
-    res.status(500).json({ error: true, message: error });
+    console.error(err);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to update product",
+      error: err.message,
+    });
   }
 };
 
