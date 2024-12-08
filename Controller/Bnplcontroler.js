@@ -307,13 +307,13 @@ const Loan_Application = async (req, res) => {
         .json({ message: "Loan profile not found. Contact support." });
     }
 
-    // Check loan status
-    if (loan.isLoanActive && loan.remainingBalance > 0) {
-      return res.status(400).json({
-        message:
-          "You have an active loan. Repay it before applying for a new one.",
-      });
-    }
+    // // Check loan status
+    // if (loan.isLoanActive && loan.remainingBalance > 0) {
+    //   return res.status(400).json({
+    //     message:
+    //       "You have an active loan. Repay it before applying for a new one.",
+    //   });
+    // }
 
     const cart = await Cart.findOne({ userId })
       .populate({
