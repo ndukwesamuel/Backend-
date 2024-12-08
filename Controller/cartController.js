@@ -31,6 +31,10 @@ const addToCart = async (req, res) => {
       return res.status(404).json({ error: "Product not found" });
     }
 
+    console.log({
+      cx: product,
+    });
+
     let cart = await Cart.findOne({ userId: req.user.userId });
 
     if (!cart) {
@@ -59,9 +63,21 @@ const addToCart = async (req, res) => {
       }
 
       // Recalculate the total bill
+      console.log({
+        items: cart.items,
+      });
+
       let totalBill = 0;
       for (const item of cart.items) {
+        console.log({
+          kaka: item,
+        });
+
         const itemProduct = await Product.findById(item.productId);
+        console.log({
+          itemProduct: itemProduct,
+        });
+
         totalBill += itemProduct.price * item.quantity;
       }
       cart.bill = totalBill;
