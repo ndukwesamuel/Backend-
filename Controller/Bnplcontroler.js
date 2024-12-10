@@ -17,7 +17,7 @@ const mongoose = require("mongoose");
 const Order = require("../Models/Order");
 const OrderItem = require("../Models/OrderItems");
 
-const KYC_Form_Submission = async (req, res) => {
+const KYC_Form_SubmissionA = async (req, res) => {
   const { phoneNumber, bvn, dob } = req.body;
   const userinfo = req.userProfile;
 
@@ -40,6 +40,52 @@ const KYC_Form_Submission = async (req, res) => {
       message: "KYC submitted successfully!",
       userinfo,
       data_info,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error submitting KYC", error });
+  }
+};
+
+// const Loan = require("./models/Loan"); // Import Loan model
+
+const KYC_Form_Submission = async (req, res) => {
+  const { phoneNumber, bvn, dob } = req.body;
+  const userinfo = req.userProfile;
+
+  try {
+    // Update UserProfile with KYC information
+    let data_info = await UserProfile.findOneAndUpdate(
+      { user: userinfo?.user?._id },
+      {
+        ...(phoneNumber && { phoneNumber }),
+        ...(bvn && { bvn }),
+        ...(dob && { dob }),
+        isKYCComplete: true,
+        isKYCVerified: true,
+      },
+      { new: true }
+    );
+
+    // Check if the user already has a loan document
+    let loanDocument = await Loan.findOne({ userId: userinfo?.user?._id });
+
+    if (!loanDocument) {
+      // Create a new Loan document for the user
+      loanDocument = await Loan.create({
+        userId: userinfo?.user?._id,
+        loanLimit: 50000, // Default loan limit
+        currentLoan: 0, // No active loan
+        remainingBalance: 0, // No balance due
+        creditworthiness: "Average", // Default creditworthiness
+        isLoanActive: false,
+      });
+    }
+
+    res.status(200).json({
+      message: "KYC submitted successfully!",
+      userinfo,
+      data_info,
+      loanDocument,
     });
   } catch (error) {
     res.status(500).json({ message: "Error submitting KYC", error });
@@ -300,7 +346,17 @@ const Loan_Application = async (req, res) => {
         .json({ message: "Complete KYC before applying for a loan." });
     }
 
-    const loan = await Loan.findOne({ userId }).session(session);
+    // console.log({
+    //   userId,
+    // });
+
+    // const loanALl = await Loan.find();
+
+    // console.log({
+    //   aa: loanALl,
+    // });
+
+    const loan = await Loan.findOne({ userId: userId }).session(session);
     if (!loan) {
       return res
         .status(400)
