@@ -9,6 +9,8 @@ const { findUserProfileById } = require("../services/userService");
 const cloudinary = require("../utils/Cloudinary");
 const appImages = require("../Models/appImages");
 const { uploadUserImage } = require("../services/uploadService");
+const slug = require("slugify");
+const mongoose = require("mongoose");
 const createProduct = async (req, res) => {
   // const categoryCheck = await Category.findOne({ name: req.body.category });
   // if (!categoryCheck) {
@@ -30,6 +32,7 @@ const createProduct = async (req, res) => {
       image: uploadResult.secure_url,
       description: req.body.description,
       // category: req.body.category,
+      slug: slug(req.body.name, { lower: true }),
     });
     savedProduct = await newProduct.save();
     res.status(200).json({
@@ -37,11 +40,6 @@ const createProduct = async (req, res) => {
       product: savedProduct,
     });
   } catch (err) {
-    console.log({
-      dd: err.response,
-      dd: err.message,
-    });
-
     const error = handleErrors(err);
     res.status(500).json({ error: true, message: error });
   }
@@ -49,13 +47,20 @@ const createProduct = async (req, res) => {
 
 const getProduct = async (req, res) => {
   try {
-    let product = await Product.findOne({ _id: req.params.id });
-    if (product.length < 1) {
+    const identifier = req.params.id;
+
+    const isObjectId = mongoose.Types.ObjectId.isValid(identifier);
+
+    const product = await Product.findOne(
+      isObjectId ? { _id: identifier } : { slug: identifier }
+    );
+    if (!product) {
       res.status(200).json({ message: "Out of stock" });
     } else {
       res.status(200).send(product);
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: err });
   }
 };
@@ -64,9 +69,7 @@ const getAllProducts = async (req, res) => {
   const user_id = req.user?.userId;
 
   const user_info = await findUserProfileById(user_id);
-  console.log({
-    user_id: user_info,
-  });
+
   try {
     const products = await Product.find({
       country: user_info?.user?.country,

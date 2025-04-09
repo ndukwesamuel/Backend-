@@ -24,6 +24,9 @@ const productSchema = new Schema({
   description: {
     type: String,
   },
+  slug: {
+    type: String,
+  },
 
   //// this is where we update the line
   OtherName: {
