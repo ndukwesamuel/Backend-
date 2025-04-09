@@ -173,7 +173,6 @@ const removeFromCart = async (req, res) => {
 
 // Decrease items quantity
 const decreaseCartItems = async (req, res) => {
-  console.log(req.user.userId);
   const { productId, quantity } = req.body;
 
   const userId = req.user.userId;
@@ -183,14 +182,14 @@ const decreaseCartItems = async (req, res) => {
     const userCart = await Cart.findOne({ userId });
 
     if (!userCart) {
-      return res.status(404).json({ message: "User cart not found" });
+      return res.status(404).json({ message: "User cart not found", data: [] });
     }
 
     // Find the product based on productId
     const productDetails = await product.findById(productId);
 
     if (!productDetails) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({ message: "Product not found", data: [] });
     }
 
     // Find the item in the cart
@@ -202,12 +201,10 @@ const decreaseCartItems = async (req, res) => {
       return res.status(404).json({ message: "Product not found in the cart" });
     }
 
-    // Check if the quantity to remove is greater than the current quantity in the cart
     if (quantityToRemove > userCart.items[cartItemIndex].quantity) {
       return res.status(400).json({ message: "Invalid quantity to remove" });
     }
 
-    // Update the quantity and price in the cart
     userCart.items[cartItemIndex].quantity -= quantityToRemove;
     userCart.items[cartItemIndex].price -=
       quantityToRemove * productDetails.price;
@@ -223,15 +220,7 @@ const decreaseCartItems = async (req, res) => {
       0
     );
 
-    // Save the updated cart
     await userCart.save();
-
-    // res.status(200).json({
-    //   message: "Item quantity decreased successfully",
-    //   productId,
-    //   productDetails,
-    //   quantityToRemove
-    // });
 
     res.json({
       message: "Quantity removed successfully",
@@ -241,57 +230,36 @@ const decreaseCartItems = async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-
-  // try {
-  //   const cart = await Cart.find();
-  //   // const cart = await Cart.findOne({ userId: req.user.userId });
-  //   console.log({ cart });
-  //   const index = cart.items.findIndex(
-  //     (item) => item.productId == req.body.productId
-  //   );
-
-  //   // console.log({ cart, index });
-
-  //   if (index === -1) {
-  //     return res.status(404).json({ message: "Item not found in cart" });
-  //   } else {
-  //     if (cart.items[index].quantity > 1) {
-  //       cart.items[index].quantity -= 1;
-  //       cart.bill -= cart.items[index].price;
-  //       await cart.save();
-  //       res.status(200).json(cart);
-  //     } else {
-  //       cart.items.splice(index, 1);
-  //       cart.bill = 0;
-  //       await cart.save();
-  //       res.status(200).json(cart);
-  //     }
-  //   }
-  // } catch (error) {
-  //   res.status(404).json({ message: "Cart is empty" });
-  // }
 };
 // REMOVES an item from cart at once
 const deleteFromCart = async (req, res) => {
-  console.log({ req: req.body });
-  // const { productId } = req.body;
   try {
-    const cart = await Cart.findOne({ userId: req.user.userId });
-    const index = cart.items.findIndex(
-      (item) => item.productId == req.body.productId
+    const cart = await Cart.findOne({ userId: req.user.userId }).populate(
+      "items.productId"
     );
+
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
+
+    const index = cart.items.findIndex(
+      (item) => item.productId._id.toString() === req.body.productId
+    );
+
     if (index === -1) {
       return res.status(404).json({ message: "Item not found in cart" });
     }
-    const deletedItemBill =
-      cart.items[index].quantity * cart.items[index].price;
+    const item = cart.items[index];
+    const productPrice = item.productId.price;
+    const deletedItemBill = item.quantity * productPrice;
     cart.items.splice(index, 1);
     cart.bill -= deletedItemBill;
+
     await cart.save();
 
     res.status(200).json(cart);
   } catch (err) {
-    res.status(404).json({ message: "Cart is empty" });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 

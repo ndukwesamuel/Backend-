@@ -21,14 +21,14 @@ const {
 
 router
   .route("/")
-  .get(verifyTokenAndAdmin, AdmingetAllProducts)
+  .get(AdmingetAllProducts)
   .post(verifyTokenAndAdmin, createProduct);
 router
   .route("/:id")
   .patch(verifyTokenAndAdmin, updateProduct)
   .get(getProduct)
   .delete(verifyTokenAndAdmin, deleteProduct);
-router.route("/user-product").get(verifyToken, getAllProducts);
+router.route("/user-product").get(getAllProducts);
 router
   .route("/adminProductimage")
   .get(verifyTokenAndAdmin, getAllAppImages)
