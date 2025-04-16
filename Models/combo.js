@@ -37,14 +37,6 @@ const comboSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }, // When the combo was created
 });
 
-// Middleware to set combo as inactive after end date
-comboSchema.pre("save", function (next) {
-  if (new Date() > this.timeline.end) {
-    this.isActive = false; // Set combo as inactive if the end time is reached
-  }
-  next();
-});
-
 const Combo = mongoose.model("Combo", comboSchema);
 
 module.exports = Combo;

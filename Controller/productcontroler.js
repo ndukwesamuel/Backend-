@@ -210,8 +210,8 @@ const updateProduct = async (req, res) => {
       // Update image URL
       req.body.image = uploadResult.secure_url;
     }
-    // Update product fields
-    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
+    const data = { ...req.body, slug: slug(req.body.name, { lower: true }) };
+    const updatedProduct = await Product.findByIdAndUpdate(id, data, {
       new: true, // Return the updated document
       runValidators: true, // Ensure validation runs for updates
     });

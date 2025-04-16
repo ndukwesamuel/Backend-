@@ -1,12 +1,6 @@
 const mongoose = require("mongoose");
 
 const verificationSchema = new mongoose.Schema({
-  firstname: {
-    type: String,
-  },
-  lastname: {
-    type: String,
-  },
   email: {
     type: String,
   },
@@ -25,9 +19,6 @@ const verificationSchema = new mongoose.Schema({
   },
   customer_code: {
     type: String,
-  },
-  phone: {
-    type: Number,
   },
 
   reference: {

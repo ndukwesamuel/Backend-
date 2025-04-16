@@ -71,6 +71,7 @@ userSchema.pre("findOneAndUpdate", async function (next) {
   if (!this._update.password) {
     return next();
   }
+
   try {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(this._update.password, salt);

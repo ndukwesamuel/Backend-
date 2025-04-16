@@ -22,7 +22,7 @@ const getCart = async (req, res) => {
 };
 
 const addToCart = async (req, res) => {
-  let { productId } = req.query;
+  let { productId, quantity } = req.query;
 
   try {
     // Find the product to get its price
@@ -37,7 +37,7 @@ const addToCart = async (req, res) => {
       // Create a new cart if one doesn't exist for the user
       const newCart = new Cart({
         userId: req.user.userId,
-        items: [{ productId, quantity: 1 }], // Set initial quantity to 1
+        items: [{ productId, quantity: quantity ? quantity : 1 }], // Set initial quantity to 1
         bill: product.price, // Set initial bill to the price of the product
       });
       await newCart.save();

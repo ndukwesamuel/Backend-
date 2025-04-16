@@ -3,6 +3,48 @@ require("dotenv").config();
 const paymentVerification = require("../Models/paymentVerification");
 const paystackKey = process.env.PAYSTACK_SECRET_KEY;
 const Order = require("../Models/Order");
+const User = require("../Models/Users");
+const axios = require("axios");
+const crypto = require("crypto");
+const initializePaystackPayment = async (req, res) => {
+  const { userId } = req.user;
+  const { amount } = req.body;
+  if (!amount) {
+    res.status(422).json({ message: "Amount is required" });
+    return;
+  }
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User details not found");
+    }
+    const response = await axios.post(
+      "https://api.paystack.co/transaction/initialize",
+      {
+        email: user.email,
+        amount: amount * 100,
+        callback_url: `${process.env.FRONTEND_URL}/verify`,
+        metadata: { userId: userId.toString() },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${paystackKey}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    res.status(200).json({
+      success: true,
+      message: "Payment initialized successfully",
+      data: {
+        authorizationUrl: response.data.data.authorization_url,
+        reference: response.data.data.reference,
+      },
+    });
+  } catch (error) {
+    throw error;
+  }
+};
 
 const payment = async (req, res) => {
   const { email, amount, firstname, lastname, phone } = req.body;
@@ -77,13 +119,22 @@ const verifyPayment = async (req, res) => {
 
       respaystack.on("end", async () => {
         const response = JSON.parse(data);
+        const userId = response.data.metadata.userId;
+        const reference = response.data.reference;
+        const isVerified = await paymentVerification.findOne({
+          userId,
+          reference,
+        });
+        if (isVerified) {
+          return res
+            .status(200)
+            .json({ message: "Payment is already verified." });
+        }
         if (response.message && response.status === true) {
           const amountPaid = response.data.amount / 100;
 
           const newVerification = new paymentVerification({
-            firstname: response.data.metadata.first_name,
-            lastname: response.data.metadata.last_name,
-            phone: response.data.metadata.phone,
+            userId,
             amount: amountPaid,
             email: response.data.customer.email,
             customer_code: response.data.customer.customer_code,
@@ -94,16 +145,7 @@ const verifyPayment = async (req, res) => {
           });
           newVerification.save();
         }
-        const isOrder = await Order.findOne({ user: req.user.userId });
-        if (!isOrder) {
-          return res
-            .status(404)
-            .json({ success: false, message: "No order yet:place one now!" });
-        }
-        await Order.findOneAndUpdate(
-          { _id: isOrder._id },
-          { $set: { paymentStatus: "completed" } }
-        );
+
         res.status(200).json(response);
       });
     })
@@ -113,7 +155,50 @@ const verifyPayment = async (req, res) => {
   reqpaystack.end();
 };
 
+const paystackWebhook = async (req, res) => {
+  try {
+    const event = req.body;
+    const secret = process.env.PAYSTACK_SECRET_KEY;
+    const hash = crypto
+      .createHmac("sha512", secret)
+      .update(JSON.stringify(req.body))
+      .digest("hex");
+
+    if (hash !== req.headers["x-paystack-signature"]) {
+      return res.status(401).json({ message: "Invalid signature" });
+    }
+    if (event.event === "charge.success") {
+      const { metadata, status, gateway_response } = event.data;
+      if (status === "success") {
+        const userId = metadata.userId;
+
+        const amountPaid = event.data.amount / 100;
+
+        const newVerification = new paymentVerification({
+          userId,
+          amount: amountPaid,
+          email: event.data.customer.email,
+          customer_code: event.data.customer.customer_code,
+          customer_id: event.data.customer.id,
+          verification_id: event.data.id,
+          reference: event.data.reference,
+          created_at: event.data.created_at,
+        });
+        newVerification.save();
+      }
+    }
+
+    res.status(200).json({
+      message: "Payment verification successful",
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   payment,
   verifyPayment,
+  initializePaystackPayment,
+  paystackWebhook,
 };

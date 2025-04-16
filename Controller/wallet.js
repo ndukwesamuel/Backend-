@@ -442,7 +442,6 @@ const ProductOrderpaymentForpersonalProductfluterwave_fun_money = async (
 
 const fluterwave_webhook = async (req, res) => {
   const payload = req.body;
-  console.log(payload);
   res.status(200).json({ message: "hello flutterwave post", data: payload });
 };
 

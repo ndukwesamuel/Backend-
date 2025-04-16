@@ -1,9 +1,15 @@
 const { Router } = require("express");
 const router = Router();
-const { payment, verifyPayment } = require("../Controller/paymentController");
+const {
+  payment,
+  verifyPayment,
+  initializePaystackPayment,
+  paystackWebhook,
+} = require("../Controller/paymentController");
 const { verifyToken } = require("../Middleware/auth");
 
-router.route("/payment").post(payment);
-router.route("/paymentVerification").post(verifyToken, verifyPayment);
+router.route("/").post(verifyToken, initializePaystackPayment);
+router.route("/verify").post(verifyToken, verifyPayment);
+router.route("/paystack/webhook").post(paystackWebhook);
 
 module.exports = router;

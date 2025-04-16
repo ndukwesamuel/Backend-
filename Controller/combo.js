@@ -89,21 +89,18 @@ const createCombo = asyncWrapper(async (req, res, next) => {
 });
 
 const getAllCombo = asyncWrapper(async (req, res, next) => {
-  const { active } = req.query;
   const userId = req.user.userId;
-
   const userProfile = await findUserProfileById(userId);
-
-  let query = { country: userProfile.user.country, isActive: true }; // Default to only active combos
-
-  // Optionally filter by active status if specified
-  if (active) {
-    query.isActive = active === "true"; // Set based on the active query parameter
-  }
-  const combos = await Combo.find(query);
+  const now = new Date();
+  //TODO
+  // Add cron job to update the status of combo products
   try {
+    const combos = await Combo.find({
+      country: userProfile.user.country,
+      isActive: true,
+    });
     res.status(StatusCodes.OK).json({
-      message: "Combo created successfully",
+      message: "Combo retrieved successfully",
       data: combos,
     });
   } catch (e) {
