@@ -86,7 +86,6 @@ const register = asyncWrapper(async (req, res) => {
       data: { result },
     });
   } catch (error) {
-    console.error("Error during registration:", error);
     res.status(500).json({ error: "An error occurred during registration" });
   }
 });
@@ -154,9 +153,6 @@ const updateUserProfile = async (req, res) => {
 
     res.status(200).json({ message: "User profile updated successfully" });
   } catch (err) {
-    console.log({
-      dddd: err,
-    });
     // const errors = handleErrors(err);
     res.status(500).json({ error: err, message: "Profile update failed" });
   }
@@ -208,9 +204,6 @@ const uploadProfileImage = async (req, res) => {
   const profile = await UserProfile.findOne({ user: req.user.userId });
 
   try {
-    // const userProfile____ = await UserProfile.findOne({
-    //   userId: userId,
-    // });
     profile.profileImage = profileImage || profile.profileImage;
     await profile.save();
 

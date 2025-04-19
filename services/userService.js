@@ -111,19 +111,9 @@ async function signIn(email, password) {
   const user = await findUserByEmail(email);
 
   await validatePassword(password, user.password);
-  const userProfile = await findUserProfileById(user._id);
-
-  console.log({
-    dsd: user,
-    userProfile,
-    email,
-    password,
-  });
   if (!user.verified) {
     throw customError(401, "Email not verified!");
   }
-
-  //generate new token
   const token = generateToken(user._id);
 
   const userInfo = {

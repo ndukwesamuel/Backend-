@@ -26,36 +26,7 @@ const {
   resendVerificationEmail,
 } = require("../Controller/verificationController");
 
-// const AdminRoute = Router();
-
-// const Creat_admin = async (req, res) => {
-//   // const { fullName, email, password, country } = req.body;
-
-//   try {
-//     const newUser = new User({
-//       fullName: "Ndukwe",
-//       email: "ndukwesamuel23@gmail.com",
-//       password: "adminndukwesamuel23@gmail.com",
-//       country: "NGR",
-//       verified: true,
-//       isAdmin: true, // Set isAdmin to true
-//     });
-
-//     // Save the user to the database
-//     await newUser.save();
-//     res
-//       .status(201)
-//       .json({ message: "Admin user created successfully", user: newUser });
-//   } catch (error) {
-//     console.log({
-//       error: error,
-//     });
-
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
-
-const Creat_admin = async (req, res) => {
+const Create_admin = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -98,7 +69,7 @@ const Creat_admin = async (req, res) => {
 };
 
 router.route("/").get(verifyTokenAndAdmin, getAllUser);
-router.route("/create-admin").get(Creat_admin);
+router.route("/create-admin").get(Create_admin);
 
 router
   .route("/profile")
