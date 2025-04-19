@@ -8,38 +8,6 @@ const mongoose = require("mongoose");
 const ComboOrder = require("../Models/comboOrder");
 const { findUserProfileById } = require("../services/userService");
 
-// Function to create an admin user
-
-// const createCombo = asyncWrapper(async (req, res, next) => {
-//   try {
-//     const { name, description, products, timeline, country } = req.body;
-
-//     const updatedProducts = products.map((product) => ({
-//       ...product,
-//       availableQuantity: product.totalQuantity,
-//     }));
-
-//     // Create new combo with provided data
-//     const combo = new Combo({
-//       name,
-//       description,
-//       products: updatedProducts,
-//       timeline,
-//       country,
-//     });
-//     await combo.save();
-
-//     res
-//       .status(StatusCodes.OK)
-//       .json({ message: "Combo created successfully", combo });
-//   } catch (e) {
-//     return res.status(404).json({
-//       success: false,
-//       message: `"Failed to create combo, ${e}`,
-//     });
-//   }
-// });
-
 const createCombo = asyncWrapper(async (req, res, next) => {
   try {
     const {

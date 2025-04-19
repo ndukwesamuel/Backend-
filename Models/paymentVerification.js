@@ -1,9 +1,6 @@
 const mongoose = require("mongoose");
 
 const verificationSchema = new mongoose.Schema({
-  email: {
-    type: String,
-  },
   amount: {
     type: Number,
   },

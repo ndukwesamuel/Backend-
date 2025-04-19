@@ -6,6 +6,7 @@ const Order = require("../Models/Order");
 const User = require("../Models/Users");
 const axios = require("axios");
 const crypto = require("crypto");
+
 const initializePaystackPayment = async (req, res) => {
   const { userId } = req.user;
   const { amount } = req.body;
@@ -136,7 +137,6 @@ const verifyPayment = async (req, res) => {
           const newVerification = new paymentVerification({
             userId,
             amount: amountPaid,
-            email: response.data.customer.email,
             customer_code: response.data.customer.customer_code,
             customer_id: response.data.customer.id,
             verification_id: response.data.id,
@@ -177,7 +177,6 @@ const paystackWebhook = async (req, res) => {
         const newVerification = new paymentVerification({
           userId,
           amount: amountPaid,
-          email: event.data.customer.email,
           customer_code: event.data.customer.customer_code,
           customer_id: event.data.customer.id,
           verification_id: event.data.id,

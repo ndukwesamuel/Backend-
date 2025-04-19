@@ -78,7 +78,9 @@ app.use("/api/category", categoryroute);
 app.use("/api/products", productroute);
 app.use("/api/cart", cartRoute);
 app.use("/api/wallet", walletRoute);
-app.use("/api/fund_wallet", paymentRoute);
+app.use("/api/checkout", paymentRoute);
+
+app.use("/api/fund_wallet", paymentRoute); // latest route
 app.use("/api/orders", orderRoute);
 app.use("/api/bank", BankRoute);
 app.use("/api/history", cartHistoryRoute);
