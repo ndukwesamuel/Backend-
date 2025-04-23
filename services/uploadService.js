@@ -25,8 +25,28 @@ const uploadComboProductImage = async (tempFilePath) => {
     throw error;
   }
 };
+const extractPublicIdFromUrl = (cloudinaryUrl) => {
+  if (!cloudinaryUrl || typeof cloudinaryUrl !== "string") {
+    return null;
+  }
 
+  try {
+    // Match pattern: /v{numbers}/{folder}/{filename}
+    const regex = /\/v\d+\/([^/]+\/[^.]+)/;
+    const match = cloudinaryUrl.match(regex);
+
+    if (match && match[1]) {
+      return match[1];
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error extracting public ID:", error);
+    return null;
+  }
+};
 module.exports = {
   uploadUserImage,
   uploadComboProductImage,
+  extractPublicIdFromUrl,
 };

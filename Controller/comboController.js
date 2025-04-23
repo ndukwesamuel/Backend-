@@ -2,6 +2,7 @@ const uploadService = require("../services/uploadService");
 const mongoose = require("mongoose");
 const Combo = require("../Models/comboModel");
 const asyncWrapper = require("../Middleware/asyncWrapper");
+
 const createCombo = asyncWrapper(async (req, res) => {
   const { name, description, country } = req.body;
   let products = [];
@@ -54,6 +55,74 @@ const createCombo = asyncWrapper(async (req, res) => {
   });
 });
 
+const getAllCombos = asyncWrapper(async (req, res) => {
+  const {
+    country,
+    minPrice,
+    maxPrice,
+    sort,
+    page = 1,
+    limit = 10,
+    search,
+  } = req.query;
+
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+
+  const filter = {};
+
+  // Apply search if provided (search in name and description)
+  if (search) {
+    filter.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { description: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  // Apply other filters if provided
+  if (country) filter.country = country;
+  if (minPrice || maxPrice) {
+    filter.totalPrice = {};
+    if (minPrice) filter.totalPrice.$gte = Number(minPrice);
+    if (maxPrice) filter.totalPrice.$lte = Number(maxPrice);
+  }
+
+  let sortOptions = {};
+  if (sort) {
+    const sortFields = sort.split(",");
+    sortFields.forEach((field) => {
+      // Check if field should be sorted in descending order
+      if (field.startsWith("-")) {
+        sortOptions[field.substring(1)] = -1;
+      } else {
+        sortOptions[field] = 1;
+      }
+    });
+  } else {
+    // Default sort by creation date, newest first
+    sortOptions = { createdAt: -1 };
+  }
+
+  const skip = (pageNum - 1) * limitNum;
+
+  const totalCombos = await Combo.countDocuments(filter);
+
+  const combos = await Combo.find(filter)
+    .sort(sortOptions)
+    .skip(skip)
+    .limit(limitNum);
+
+  res.status(200).json({
+    success: true,
+    count: combos.length,
+    totalPages: Math.ceil(totalCombos / limitNum),
+    currentPage: pageNum,
+    totalItems: totalCombos,
+    data: combos,
+  });
+});
+
 module.exports = {
   createCombo,
+  getAllCombos,
 };

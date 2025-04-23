@@ -7,7 +7,7 @@ const {
   getUserOrders,
   AdmingetAllCombo,
 } = require("../Controller/combo");
-const { createCombo } = require("../Controller/comboController");
+const { createCombo, getAllCombos } = require("../Controller/comboController");
 const { Router } = require("express");
 const {
   validateData,
@@ -29,6 +29,6 @@ router
     verifyTokenAndAdmin,
     createCombo
   )
-  .get(verifyTokenAndAdmin, AdmingetAllCombo);
+  .get(getAllCombos);
 
 module.exports = router;
