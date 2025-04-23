@@ -7,7 +7,11 @@ const {
   getUserOrders,
   AdmingetAllCombo,
 } = require("../Controller/combo");
-const { createCombo, getAllCombos } = require("../Controller/comboController");
+const {
+  createCombo,
+  getAllCombos,
+  getComboById,
+} = require("../Controller/comboController");
 const { Router } = require("express");
 const {
   validateData,
@@ -17,6 +21,8 @@ const { comboSchema } = require("../Middleware/schemaValidation/comboSchema");
 const router = Router();
 
 router.route("/").get(verifyToken, getAllCombo);
+router.route("/:id").get(getComboById);
+
 router
   .route("/order")
   .post(verifyToken, placeComboOrder)
