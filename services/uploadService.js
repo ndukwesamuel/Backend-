@@ -5,7 +5,7 @@ const uploadUserImage = async (tempFilePath) => {
   try {
     const { secure_url } = await cloudinary.uploader.upload(tempFilePath, {
       use_filename: true,
-      folder: "webuy",
+      folder: "webuyam",
     });
     return secure_url;
   } catch (error) {
@@ -29,11 +29,12 @@ const extractPublicIdFromUrl = (cloudinaryUrl) => {
   if (!cloudinaryUrl || typeof cloudinaryUrl !== "string") {
     return null;
   }
-
+  console.log(cloudinaryUrl);
   try {
     // Match pattern: /v{numbers}/{folder}/{filename}
     const regex = /\/v\d+\/([^/]+\/[^.]+)/;
     const match = cloudinaryUrl.match(regex);
+    console.log("is match", match);
 
     if (match && match[1]) {
       return match[1];
@@ -45,8 +46,20 @@ const extractPublicIdFromUrl = (cloudinaryUrl) => {
     return null;
   }
 };
+const deleteImage = async (publicId) => {
+  try {
+    const result = await cloudinary.uploader.destroy(publicId);
+    console.log("deleted image", result);
+
+    return result;
+  } catch (error) {
+    console.error(`Error deleting image with public ID ${publicId}:`, error);
+    throw error;
+  }
+};
 module.exports = {
   uploadUserImage,
   uploadComboProductImage,
   extractPublicIdFromUrl,
+  deleteImage,
 };

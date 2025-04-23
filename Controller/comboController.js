@@ -146,8 +146,94 @@ const getComboById = asyncWrapper(async (req, res) => {
     data: combo,
   });
 });
+
+const updateCombo = asyncWrapper(async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid combo ID format",
+    });
+  }
+
+  const combo = await Combo.findById(id);
+
+  if (!combo) {
+    return res.status(404).json({
+      success: false,
+      message: "Combo not found",
+    });
+  }
+
+  const { name, description, country, products } = req.body;
+
+  if (name) combo.name = name;
+  if (description) combo.description = description;
+  if (country) combo.country = country;
+
+  if (products && Array.isArray(products) && products.length > 0) {
+    // Extract current product images before updating
+    const oldProductImages = combo.products
+      .map((product) => product.image)
+      .filter(Boolean);
+    combo.products = products;
+
+    for (let i = 0; i < products.length; i++) {
+      const files = Object.fromEntries(
+        Object.entries(req.files || {}).map(([k, v]) => [k.trim(), v])
+      );
+
+      if (files && files[`productImage_${i}`]) {
+        const productImage = await uploadService.uploadComboProductImage(
+          files[`productImage_${i}`].tempFilePath
+        );
+        combo.products[i].image = productImage;
+      }
+    }
+
+    // Get new product images after update
+    const newProductImages = combo.products
+      .map((product) => product.image)
+      .filter(Boolean);
+
+    // Delete old product images that are no longer used
+    for (const oldImage of oldProductImages) {
+      if (!newProductImages.includes(oldImage)) {
+        const publicId = uploadService.extractPublicIdFromUrl(oldImage);
+        if (publicId) {
+          await uploadService.deleteImage(publicId);
+        }
+      }
+    }
+  }
+
+  // Update main combo image if provided
+  if (req.files && req.files.image) {
+    if (combo.image) {
+      const publicId = uploadService.extractPublicIdFromUrl(combo.image);
+      if (publicId) {
+        await uploadService.deleteImage(publicId);
+      }
+    }
+
+    combo.image = await uploadService.uploadComboProductImage(
+      req.files.image.tempFilePath
+    );
+  }
+
+  await combo.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Combo updated successfully",
+    data: combo,
+  });
+});
+
 module.exports = {
   createCombo,
   getAllCombos,
   getComboById,
+  updateCombo,
 };

@@ -54,7 +54,7 @@ mongoose.set("strictQuery", true);
 //   .catch((err) => console.log(err));
 
 const app = express();
-job.start();
+// job.start();
 app.use(cors());
 const httpServer = require("http").Server(app);
 

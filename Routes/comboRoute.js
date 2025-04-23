@@ -11,6 +11,7 @@ const {
   createCombo,
   getAllCombos,
   getComboById,
+  updateCombo,
 } = require("../Controller/comboController");
 const { Router } = require("express");
 const {
@@ -21,12 +22,6 @@ const { comboSchema } = require("../Middleware/schemaValidation/comboSchema");
 const router = Router();
 
 router.route("/").get(verifyToken, getAllCombo);
-router.route("/:id").get(getComboById);
-
-router
-  .route("/order")
-  .post(verifyToken, placeComboOrder)
-  .get(verifyToken, getUserOrders);
 router
   .route("/admin")
   .post(
@@ -36,5 +31,18 @@ router
     createCombo
   )
   .get(getAllCombos);
+router
+  .route("/order")
+  .post(verifyToken, placeComboOrder)
+  .get(verifyToken, getUserOrders);
+router
+  .route("/:id")
+  .get(getComboById)
+  .patch(
+    parseMultipartJson,
+    validateData(comboSchema),
+    verifyTokenAndAdmin,
+    updateCombo
+  );
 
 module.exports = router;
