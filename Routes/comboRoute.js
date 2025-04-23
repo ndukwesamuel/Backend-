@@ -12,6 +12,7 @@ const {
   getAllCombos,
   getComboById,
   updateCombo,
+  deleteCombo,
 } = require("../Controller/comboController");
 const { Router } = require("express");
 const {
@@ -39,10 +40,12 @@ router
   .route("/:id")
   .get(getComboById)
   .patch(
+    verifyTokenAndAdmin,
+
     parseMultipartJson,
     validateData(comboSchema),
-    verifyTokenAndAdmin,
     updateCombo
-  );
+  )
+  .delete(verifyTokenAndAdmin, deleteCombo);
 
 module.exports = router;

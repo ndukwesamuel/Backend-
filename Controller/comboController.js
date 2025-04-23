@@ -230,10 +230,58 @@ const updateCombo = asyncWrapper(async (req, res) => {
     data: combo,
   });
 });
+const deleteCombo = asyncWrapper(async (req, res) => {
+  const { id } = req.params;
 
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid combo ID format",
+    });
+  }
+
+  const combo = await Combo.findById(id);
+
+  if (!combo) {
+    return res.status(404).json({
+      success: false,
+      message: "Combo not found",
+    });
+  }
+
+  // Delete main combo image from Cloudinary if it exists
+  if (combo.image) {
+    // Extract public_id from the Cloudinary URL or stored value
+    const publicId = await uploadService.extractPublicIdFromUrl(combo.image);
+    if (publicId) {
+      await uploadService.deleteImage(publicId);
+    }
+  }
+
+  // Delete all product images from Cloudinary
+  if (combo.products && combo.products.length > 0) {
+    for (const product of combo.products) {
+      if (product.image) {
+        const publicId = uploadService.extractPublicIdFromUrl(product.image);
+        if (publicId) {
+          await uploadService.deleteImage(publicId);
+        }
+      }
+    }
+  }
+
+  // Delete the combo from database
+  await Combo.findByIdAndDelete(id);
+
+  res.status(200).json({
+    success: true,
+    message: "Combo deleted successfully",
+  });
+});
 module.exports = {
   createCombo,
   getAllCombos,
   getComboById,
   updateCombo,
+  deleteCombo,
 };
