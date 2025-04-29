@@ -19,10 +19,7 @@ const {
   updateAppImage,
 } = require("../Controller/productcontroler");
 
-router
-  .route("/")
-  .get(AdmingetAllProducts)
-  .post(verifyTokenAndAdmin, createProduct);
+router.route("/").get(getAllProducts).post(verifyTokenAndAdmin, createProduct);
 router
   .route("/:id")
   .patch(verifyTokenAndAdmin, updateProduct)

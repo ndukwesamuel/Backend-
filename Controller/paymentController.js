@@ -6,7 +6,6 @@ const Order = require("../Models/Order");
 const User = require("../Models/Users");
 const axios = require("axios");
 const crypto = require("crypto");
-
 const initializePaystackPayment = async (req, res) => {
   const { userId } = req.user;
   const { amount } = req.body;
@@ -122,6 +121,11 @@ const verifyPayment = async (req, res) => {
         const response = JSON.parse(data);
         const userId = response.data.metadata.userId;
         const reference = response.data.reference;
+
+        const user = await User.findById(userId);
+        if (!user) {
+          throw new Error("User details not found");
+        }
         const isVerified = await paymentVerification.findOne({
           userId,
           reference,
@@ -145,6 +149,11 @@ const verifyPayment = async (req, res) => {
           });
           newVerification.save();
         }
+
+        // Update the wallet
+
+        user.wallet += amountPaid;
+        await user.save();
 
         res.status(200).json(response);
       });
@@ -171,7 +180,10 @@ const paystackWebhook = async (req, res) => {
       const { metadata, status, gateway_response } = event.data;
       if (status === "success") {
         const userId = metadata.userId;
-
+        const user = await User.findById(userId);
+        if (!user) {
+          throw new Error("User details not found");
+        }
         const amountPaid = event.data.amount / 100;
 
         const newVerification = new paymentVerification({
@@ -184,6 +196,10 @@ const paystackWebhook = async (req, res) => {
           created_at: event.data.created_at,
         });
         newVerification.save();
+        // Update the wallet
+
+        user.wallet += amountPaid;
+        await user.save();
       }
     }
 

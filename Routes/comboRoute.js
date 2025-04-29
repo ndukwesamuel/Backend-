@@ -22,7 +22,7 @@ const {
 const { comboSchema } = require("../Middleware/schemaValidation/comboSchema");
 const router = Router();
 
-router.route("/").get(verifyToken, getAllCombo);
+router.route("/").get(verifyToken, getAllCombos);
 router
   .route("/admin")
   .post(

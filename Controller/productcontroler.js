@@ -65,20 +65,65 @@ const getProduct = async (req, res) => {
   }
 };
 
+// TODO
+// Use this country when there are users from other countries
+
+// const getAllProducts = async (req, res) => {
+//   const user_id = req.user?.userId;
+
+//   const user_info = await findUserProfileById(user_id);
+
+//   try {
+//     const products = await Product.find({
+//       country: user_info?.user?.country,
+//     }).sort({ createdAt: -1 });
+
+//     if (products.length < 1) {
+//       return res.status(200).json({ products: [] });
+//     }
+//     res.status(200).json(products);
+//   } catch (err) {
+//     const errors = handleErrors(err);
+//     res.status(500).json({ error: errors, message: err });
+//   }
+// };
 const getAllProducts = async (req, res) => {
-  const user_id = req.user?.userId;
-
-  const user_info = await findUserProfileById(user_id);
-
   try {
-    const products = await Product.find({
-      country: user_info?.user?.country,
-    }).sort({ createdAt: -1 });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const totalProducts = await Product.countDocuments();
+
+    const products = await Product.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     if (products.length < 1) {
-      return res.status(200).json({ products: [] });
+      return res.status(200).json({
+        products: [],
+        pagination: {
+          totalProducts: 0,
+          totalPages: 0,
+          currentPage: page,
+          limit,
+        },
+      });
     }
-    res.status(200).json(products);
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    res.status(200).json({
+      products,
+      pagination: {
+        totalProducts,
+        totalPages,
+        currentPage: page,
+        limit,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
   } catch (err) {
     const errors = handleErrors(err);
     res.status(500).json({ error: errors, message: err });
@@ -86,20 +131,42 @@ const getAllProducts = async (req, res) => {
 };
 
 const AdmingetAllProducts = async (req, res) => {
-  const user_id = req.user?.userId;
-
-  // const user_info = await findUserProfileById(user_id);
-  // console.log({
-  //   user_id: user_info,
-  // });
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const totalProducts = await Product.countDocuments();
+
+    const products = await Product.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     if (products.length < 1) {
-      return res.status(200).json({ products: [] });
+      return res.status(200).json({
+        products: [],
+        pagination: {
+          totalProducts: 0,
+          totalPages: 0,
+          currentPage: page,
+          limit,
+        },
+      });
     }
+    const totalPages = Math.ceil(totalProducts / limit);
 
-    res.status(200).json(products);
+    res.status(200).json({
+      products,
+      pagination: {
+        totalProducts,
+        totalPages,
+        currentPage: page,
+        limit,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
   } catch (err) {
     const errors = handleErrors(err);
     res.status(500).json({ error: errors, message: err });

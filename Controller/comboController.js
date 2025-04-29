@@ -111,14 +111,18 @@ const getAllCombos = asyncWrapper(async (req, res) => {
     .sort(sortOptions)
     .skip(skip)
     .limit(limitNum);
-
+  const totalPages = Math.ceil(totalCombos / limitNum);
   res.status(200).json({
     success: true,
-    count: combos.length,
-    totalPages: Math.ceil(totalCombos / limitNum),
-    currentPage: pageNum,
-    totalItems: totalCombos,
     data: combos,
+    pagination: {
+      totalCombos,
+      totalPages,
+      currentPage: pageNum,
+      limit,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+    },
   });
 });
 
@@ -249,7 +253,6 @@ const deleteCombo = asyncWrapper(async (req, res) => {
     });
   }
 
-  // Delete main combo image from Cloudinary if it exists
   if (combo.image) {
     // Extract public_id from the Cloudinary URL or stored value
     const publicId = await uploadService.extractPublicIdFromUrl(combo.image);

@@ -81,7 +81,7 @@ const register = asyncWrapper(async (req, res) => {
 
     const result = await BrevosendVerificationEmail(savedUser, res);
     res.status(201).json({
-      message: "Account created successfully",
+      message: result.message,
       success: true,
       data: { result },
     });
@@ -183,7 +183,7 @@ const getUserProfile = async (req, res) => {
     if (!profile) {
       res.status(401).json({ message: "You need to login" });
     }
-    res.status(StatusCodes.OK).json({ message: profile });
+    res.status(StatusCodes.OK).json({ message: profile, data: profile });
   } catch (error) {
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
