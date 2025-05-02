@@ -1,11 +1,12 @@
 const https = require("https");
 require("dotenv").config();
 const paymentVerification = require("../Models/paymentVerification");
-const paystackKey = process.env.PAYSTACK_SECRET_KEY;
-const Order = require("../Models/Order");
 const User = require("../Models/Users");
 const axios = require("axios");
 const crypto = require("crypto");
+
+const paystackKey = process.env.PAYSTACK_SECRET_KEY;
+
 const initializePaystackPayment = async (req, res) => {
   const { userId } = req.user;
   const { amount } = req.body;

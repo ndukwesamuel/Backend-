@@ -1,18 +1,14 @@
 const Cart = require("../Models/Cart");
 const mongoose = require("mongoose");
-
 const Order = require("../Models/Order");
 const OrderItem = require("../Models/OrderItems");
 const User = require("../Models/Users");
+const Product = require("../Models/Products");
 
 const userOrder = async (req, res) => {
   try {
     let userId = req.user.userId;
     let { orderStatus } = req.query;
-
-    console.log({
-      orderStatus,
-    });
 
     const searchCriteria = {
       user: userId,
@@ -198,60 +194,92 @@ const orderById = async (req, res) => {
 };
 
 const createOrder = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const userId = req.user.userId;
+    const { selectedCartItems, deliveryFee, shippingDetails, paymentMethod } =
+      req.body;
+    const { fullName, phoneNumber, street, area, additionalInfo } =
+      shippingDetails;
 
-    const orderItemsIds = [];
+    const cartItems = selectedCartItems.map((item) => ({
+      id: item.productId._id,
+      quantity: item.quantity,
+    }));
 
-    // Save order items
-    for (const orderItem of req.body.orderItems) {
-      const newOrderItem = new OrderItem({
-        quantity: orderItem.quantity,
-        product: orderItem.product,
-      });
-
-      const savedOrderItem = await newOrderItem.save();
-      orderItemsIds.push(savedOrderItem._id);
+    // Calculate total
+    let totalPrice = parseInt(deliveryFee);
+    for (const item of cartItems) {
+      const product = await Product.findById(item.id).session(session);
+      if (!product) throw new Error(`Product with ID ${item.id} not found`);
+      totalPrice += product.price * item.quantity;
     }
 
-    // Calculate total prices
-    let totalPrice = 0;
-    for (const orderItemId of orderItemsIds) {
-      const orderItem = await OrderItem.findById(orderItemId).populate(
-        "product",
-        "price"
-      );
-      totalPrice += orderItem.product.price * orderItem.quantity;
+    let paid = false;
+
+    if (paymentMethod === "wallet") {
+      const user = await User.findById(userId).session(session);
+      if (!user) throw new Error("User not found");
+
+      if (totalPrice > user.wallet) {
+        return res.status(400).json({
+          success: false,
+          message: "Insufficient balance in wallet to complete the transaction",
+        });
+      }
+
+      user.wallet -= totalPrice;
+      await user.save({ session });
+      paid = true;
     }
 
-    // Create and save the order
+    // Create order
     const order = new Order({
-      orderItems: orderItemsIds,
-      shippingAddress1: req.body.shippingAddress1,
-      shippingAddress2: req.body.shippingAddress2,
-      city: req.body.city,
-      zip: req.body.zip,
-      country: req.body.country,
-      phone: req.body.phone,
-      status: req.body.status,
-      totalPrice: totalPrice,
       user: userId,
+      phone: phoneNumber,
+      products: cartItems.map((item) => ({
+        product: item.id,
+        quantity: item.quantity,
+      })),
+      totalAmount: totalPrice,
+      shippingAddress: {
+        fullName,
+        address: `${street}, ${area}`,
+        additionalInfo,
+      },
+      paid,
     });
 
-    const savedOrder = await order.save();
+    await order.save({ session });
 
-    if (!savedOrder) {
-      return res.status(400).json({ message: "The order cannot be placed!" });
+    await session.commitTransaction();
+    session.endSession();
+
+    // Redirect for BNPL
+    if (paymentMethod === "bnpl") {
+      return res.status(201).json({
+        success: true,
+        redirect:
+          "https://checkout.credpal.com/?key=171e9536-7b31-46b0-80a4-d8fd9bb79b4b&method=payment_link",
+        message: "Order created successfully. Redirecting...",
+        data: order,
+      });
     }
-    await Cart.deleteOne({ userId: userId });
-    res.status(201).json({
-      message: "Order has been placed",
-      order: savedOrder,
+
+    return res.status(201).json({
+      success: true,
+      message: "Order created successfully",
+      data: order,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, message: "Internal Server Error " + error });
+    await session.abortTransaction();
+    session.endSession();
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create order: " + error.message,
+    });
   }
 };
 
