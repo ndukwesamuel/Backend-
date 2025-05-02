@@ -254,6 +254,21 @@ const createOrder = async (req, res) => {
 
     await order.save({ session });
 
+    // Remove the checkedout items from the cart
+
+    // Remove ordered items from cart
+    await Cart.updateOne(
+      { userId: userId },
+      {
+        $pull: {
+          items: {
+            productId: { $in: cartItems.map((item) => item.id) },
+          },
+        },
+      },
+      { session }
+    );
+
     await session.commitTransaction();
     session.endSession();
 

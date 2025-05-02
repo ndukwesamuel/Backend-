@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { string } = require("zod");
 
 const orderSchema = new mongoose.Schema(
   {
