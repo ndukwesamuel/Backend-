@@ -102,25 +102,41 @@ const PlaceOrderFromCart = async (req, res) => {
 // NOTE: NONE OF THIS ROUTE IS RESTRICTED AND SO I PASSED THE USER ID AS EITHER A BODY OR PARAMS. IF THIS IS WHAT WE WANT, I WILL RESTRICT THEM AND GET THE USER ID FROM req.user.userId
 
 const userOrderList = async (req, res) => {
-  const { userId } = req.user;
   try {
+    const { userId } = req.user;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const totalProducts = await Order.countDocuments({ user: userId });
+
     const orders = await Order.find({ user: userId })
       .populate({ path: "products", populate: "product" })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     if (!orders || orders.length === 0) {
       return res
         .status(404)
-        .json({ success: false, message: "No orders yet", orders: orders });
+        .json({ success: false, message: "No orders yet", data: [] });
     }
+    const totalPages = Math.ceil(totalProducts / limit);
 
     res.status(200).json({
       success: true,
       message: "Orders retrieved successfully",
-      orders: orders,
+      data: orders,
+      pagination: {
+        totalProducts,
+        totalPages,
+        currentPage: page,
+        limit,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };

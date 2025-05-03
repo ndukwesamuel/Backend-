@@ -145,7 +145,7 @@ const AdmingetAllProducts = async (req, res) => {
 
     if (products.length < 1) {
       return res.status(200).json({
-        products: [],
+        data: [],
         pagination: {
           totalProducts: 0,
           totalPages: 0,
@@ -157,7 +157,7 @@ const AdmingetAllProducts = async (req, res) => {
     const totalPages = Math.ceil(totalProducts / limit);
 
     res.status(200).json({
-      products,
+      data: products,
       pagination: {
         totalProducts,
         totalPages,
