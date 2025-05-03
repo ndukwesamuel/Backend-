@@ -172,10 +172,11 @@ const orderById = async (req, res) => {
 };
 
 const createOrder = async (req, res) => {
-  console.log("hereree");
   const session = await mongoose.startSession();
   session.startTransaction();
   const orderId = await generateOrderId();
+  const deliveryDate = new Date(Date.now() + 72 * 60 * 60 * 1000); // 72 hours from now
+
   try {
     const userId = req.user.userId;
     const { selectedCartItems, deliveryFee, shippingDetails, paymentMethod } =
@@ -230,6 +231,7 @@ const createOrder = async (req, res) => {
         additionalInfo,
       },
       paid,
+      deliveryDate,
     });
 
     await order.save({ session });
