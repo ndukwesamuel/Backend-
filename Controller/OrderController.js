@@ -5,6 +5,7 @@ const OrderItem = require("../Models/OrderItems");
 const User = require("../Models/Users");
 const Product = require("../Models/Products");
 
+// FOr mobile app
 const userOrder = async (req, res) => {
   try {
     let userId = req.user.userId;
@@ -27,53 +28,6 @@ const userOrder = async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 };
-
-// const PlaceOrderFromCart = async (req, res) => {
-//   try {
-//     let userId = req.user.userId;
-
-//     console.log({
-//       fff: req.user,
-//       yyy: userId,
-//     });
-
-//     const cart = await Cart.findOne({ userId }).populate({
-//       path: "items.productId",
-//       model: "product",
-//     });
-
-//     if (!cart || cart.items.length === 0) {
-//       return res
-//         .status(400)
-//         .json({ message: "Cart is empty or does not exist." });
-//     }
-
-//     const orderDetails = {
-//       user: userId,
-//       products: cart.items.map((item) => ({
-//         product: item.productId._id,
-//         quantity: item.quantity,
-//       })),
-//       totalAmount: cart.bill,
-//       // shippingAddress: "req.body.shippingAddress", // You can get this from req.body or user's profile
-//     };
-//     // Create the order
-//     const order = new Order(orderDetails);
-//     await order.save();
-
-//     // Clear the cart
-//     cart.items = [];
-//     cart.bill = 0;
-//     await cart.save();
-
-//     res.status(201).json({ message: "Order placed successfully", order });
-//   } catch (error) {
-//     console.log({
-//       error: error,
-//     });
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
 
 const PlaceOrderFromCart = async (req, res) => {
   const session = await mongoose.startSession();
@@ -146,6 +100,30 @@ const PlaceOrderFromCart = async (req, res) => {
 };
 
 // NOTE: NONE OF THIS ROUTE IS RESTRICTED AND SO I PASSED THE USER ID AS EITHER A BODY OR PARAMS. IF THIS IS WHAT WE WANT, I WILL RESTRICT THEM AND GET THE USER ID FROM req.user.userId
+
+const userOrderList = async (req, res) => {
+  const { userId } = req.user;
+  try {
+    const orders = await Order.find({ user: userId })
+      .populate({ path: "products", populate: "product" })
+      .sort({ createdAt: -1 });
+
+    if (!orders || orders.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No orders yet", orders: orders });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Orders retrieved successfully",
+      orders: orders,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
 
 const orderList = async (req, res) => {
   try {
@@ -254,8 +232,6 @@ const createOrder = async (req, res) => {
 
     await order.save({ session });
 
-    // Remove the checkedout items from the cart
-
     // Remove ordered items from cart
     await Cart.updateOne(
       { userId: userId },
@@ -342,6 +318,7 @@ const deleteOrder = (req, res) => {
 };
 
 module.exports = {
+  userOrderList,
   orderList,
   orderById,
   createOrder,

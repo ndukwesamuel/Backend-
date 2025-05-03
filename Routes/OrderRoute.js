@@ -3,6 +3,7 @@ const router = Router();
 const { verifyToken, verifyTokenAndAdmin } = require("../Middleware/auth");
 
 const {
+  userOrderList,
   orderList,
   orderById,
   createOrder,
@@ -20,7 +21,8 @@ router
 router
   .route("/user-order")
   .post(verifyToken, PlaceOrderFromCart)
-  .get(verifyToken, userOrder);
+  // .get(verifyToken, userOrder)
+  .get(verifyToken, userOrderList);
 
 router
   .route("/:id")
