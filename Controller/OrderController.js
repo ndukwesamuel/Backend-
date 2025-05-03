@@ -4,7 +4,7 @@ const Order = require("../Models/Order");
 const OrderItem = require("../Models/OrderItems");
 const User = require("../Models/Users");
 const Product = require("../Models/Products");
-
+const { generateOrderId } = require("../utils/codeGenerator");
 // FOr mobile app
 const userOrder = async (req, res) => {
   try {
@@ -172,9 +172,10 @@ const orderById = async (req, res) => {
 };
 
 const createOrder = async (req, res) => {
+  console.log("hereree");
   const session = await mongoose.startSession();
   session.startTransaction();
-
+  const orderId = await generateOrderId();
   try {
     const userId = req.user.userId;
     const { selectedCartItems, deliveryFee, shippingDetails, paymentMethod } =
@@ -215,6 +216,7 @@ const createOrder = async (req, res) => {
 
     // Create order
     const order = new Order({
+      orderId,
       user: userId,
       phone: phoneNumber,
       products: cartItems.map((item) => ({

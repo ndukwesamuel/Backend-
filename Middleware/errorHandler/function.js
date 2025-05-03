@@ -1,4 +1,3 @@
-const User = require("../../Models/Users");
 const handleErrors = (err) => {
   let errs = {};
 
@@ -40,28 +39,4 @@ const getImageId = (imageURL) => {
   return imageId;
 };
 
-const alphanumericChars =
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-const generateReferralCode = async () => {
-  let referralCode;
-  let isUnique = false;
-
-  while (!isUnique) {
-    referralCode = "";
-    for (let i = 0; i < 6; i++) {
-      referralCode += alphanumericChars.charAt(
-        Math.floor(Math.random() * alphanumericChars.length)
-      );
-    }
-
-    const existingUser = await User.findOne({ referralCode });
-    if (!existingUser) {
-      isUnique = true;
-    }
-  }
-
-  return referralCode;
-};
-
-module.exports = { handleErrors, getImageId, generateReferralCode };
+module.exports = { handleErrors, getImageId };

@@ -1,15 +1,9 @@
 const { StatusCodes } = require("http-status-codes");
 const jwt = require("jsonwebtoken");
 const { log } = require("console");
-const {
-  handleErrors,
-  getImageId,
-  generateReferralCode,
-} = require("../Middleware/errorHandler/function");
-const { createToken } = require("../Middleware/auth");
+
 const { BrevosendVerificationEmail } = require("../Middleware/Verification");
 const User = require("../Models/Users");
-const cloudinary = require("../utils/Cloudinary");
 const UserProfile = require("../Models/UserProfile");
 const { BadRequestError } = require("../errors");
 const asyncWrapper = require("../Middleware/asyncWrapper");
@@ -23,7 +17,7 @@ const { sendOTPByEmail } = require("../utils/emailUtils");
 const { validateOTP } = require("../utils/validationUtils");
 const customError = require("../utils/customError");
 const { uploadUserImage } = require("../services/uploadService");
-
+const { generateReferralCode } = require("../utils/codeGenerator");
 const register = asyncWrapper(async (req, res) => {
   let { name, email, password, country, referralCode } = req.body;
   let referrer;
@@ -185,6 +179,7 @@ const getUserProfile = async (req, res) => {
     }
     res.status(StatusCodes.OK).json({ message: profile, data: profile });
   } catch (error) {
+    console.log(error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Internal Server Error" });

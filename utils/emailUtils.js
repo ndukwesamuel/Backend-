@@ -5,7 +5,7 @@ const { fileURLToPath } = require("url");
 const { dirname, join } = require("path");
 const OTP = require("../Models/otp");
 
-const generateOTP = require("./generateOTP");
+const { generateOTP } = require("./codeGenerator");
 const formatDate = require("./dateUtils").formatDate;
 require("dotenv").config();
 

@@ -12,16 +12,17 @@ const {
   userOrder,
   PlaceOrderFromCart,
 } = require("../Controller/OrderController");
-
+const { orderSchema } = require("../Middleware/schemaValidation/orderSchema");
+const { validateData } = require("../Middleware/schemaValidation/validation");
 router
   .route("/")
-  .post(verifyToken, createOrder)
+  .post(validateData(orderSchema), verifyToken, createOrder)
   .get(verifyTokenAndAdmin, orderList);
 
 router
   .route("/user-order")
   .post(verifyToken, PlaceOrderFromCart)
-  // .get(verifyToken, userOrder)
+  // .get(verifyToken, userOrder) // for mobile
   .get(verifyToken, userOrderList);
 
 router

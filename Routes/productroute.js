@@ -17,7 +17,7 @@ const {
   createAppImage,
   getAllAppImages,
   updateAppImage,
-} = require("../Controller/productcontroler");
+} = require("../Controller/productController");
 
 router.route("/").get(getAllProducts).post(verifyTokenAndAdmin, createProduct);
 router
